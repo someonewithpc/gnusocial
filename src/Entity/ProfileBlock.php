@@ -20,7 +20,7 @@
 namespace App\Entity;
 
 /**
- * Entity for nonce
+ * Entity for User's Profile Block
  *
  * @category  DB
  * @package   GNUsocial
@@ -33,7 +33,7 @@ namespace App\Entity;
  * @copyright 2020 Free Software Foundation, Inc http://www.fsf.org
  * @license   https://www.gnu.org/licenses/agpl.html GNU AGPL v3 or later
  */
-class Nonce
+class ProfileBlock
 {
     // AUTOCODE BEGIN
 
@@ -42,17 +42,17 @@ class Nonce
     public static function schemaDef(): array
     {
         return [
-            'name'        => 'nonce',
-            'description' => 'OAuth nonce record',
-            'fields'      => [
-                'consumer_key' => ['type' => 'varchar', 'length' => 191, 'not null' => true, 'description' => 'unique identifier, root URL'],
-                'tok'          => ['type' => 'char', 'length' => 32, 'description' => 'buggy old value, ignored'],
-                'nonce'        => ['type' => 'char', 'length' => 32, 'not null' => true, 'description' => 'nonce'],
-                'ts'           => ['type' => 'datetime', 'not null' => true, 'description' => 'timestamp sent'],
-                'created'      => ['type' => 'datetime', 'not null' => true, 'default' => '0000-00-00 00:00:00', 'description' => 'date this record was created'],
-                'modified'     => ['type' => 'datetime', 'not null' => true, 'default' => 'CURRENT_TIMESTAMP', 'description' => 'date this record was modified'],
+            'name'   => 'profile_block',
+            'fields' => [
+                'blocker'  => ['type' => 'int', 'not null' => true, 'description' => 'user making the block'],
+                'blocked'  => ['type' => 'int', 'not null' => true, 'description' => 'profile that is blocked'],
+                'modified' => ['type' => 'datetime', 'not null' => true, 'default' => 'CURRENT_TIMESTAMP', 'description' => 'date of blocking'],
             ],
-            'primary key' => ['consumer_key', 'ts', 'nonce'],
+            'foreign keys' => [
+                'profile_block_blocker_fkey' => ['user', ['blocker' => 'id']],
+                'profile_block_blocked_fkey' => ['profile', ['blocked' => 'id']],
+            ],
+            'primary key' => ['blocker', 'blocked'],
         ];
     }
 }

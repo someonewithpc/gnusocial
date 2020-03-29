@@ -20,7 +20,7 @@
 namespace App\Entity;
 
 /**
- * Entity for nonce
+ * Entity for user remember me
  *
  * @category  DB
  * @package   GNUsocial
@@ -33,7 +33,7 @@ namespace App\Entity;
  * @copyright 2020 Free Software Foundation, Inc http://www.fsf.org
  * @license   https://www.gnu.org/licenses/agpl.html GNU AGPL v3 or later
  */
-class Nonce
+class RememberMe
 {
     // AUTOCODE BEGIN
 
@@ -42,17 +42,16 @@ class Nonce
     public static function schemaDef(): array
     {
         return [
-            'name'        => 'nonce',
-            'description' => 'OAuth nonce record',
-            'fields'      => [
-                'consumer_key' => ['type' => 'varchar', 'length' => 191, 'not null' => true, 'description' => 'unique identifier, root URL'],
-                'tok'          => ['type' => 'char', 'length' => 32, 'description' => 'buggy old value, ignored'],
-                'nonce'        => ['type' => 'char', 'length' => 32, 'not null' => true, 'description' => 'nonce'],
-                'ts'           => ['type' => 'datetime', 'not null' => true, 'description' => 'timestamp sent'],
-                'created'      => ['type' => 'datetime', 'not null' => true, 'default' => '0000-00-00 00:00:00', 'description' => 'date this record was created'],
-                'modified'     => ['type' => 'datetime', 'not null' => true, 'default' => 'CURRENT_TIMESTAMP', 'description' => 'date this record was modified'],
+            'name'   => 'remember_me',
+            'fields' => [
+                'code'     => ['type' => 'varchar', 'length' => 32, 'not null' => true, 'description' => 'good random code'],
+                'user_id'  => ['type' => 'int', 'not null' => true, 'description' => 'user who is logged in'],
+                'modified' => ['type' => 'datetime', 'not null' => true, 'default' => 'CURRENT_TIMESTAMP', 'description' => 'date this record was modified'],
             ],
-            'primary key' => ['consumer_key', 'ts', 'nonce'],
+            'primary key'  => ['code'],
+            'foreign keys' => [
+                'remember_me_user_id_fkey' => ['user', ['user_id' => 'id']],
+            ],
         ];
     }
 }

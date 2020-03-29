@@ -20,7 +20,7 @@
 namespace App\Entity;
 
 /**
- * Entity for user's avatar
+ * Entity for the Schema Version
  *
  * @category  DB
  * @package   GNUsocial
@@ -33,7 +33,7 @@ namespace App\Entity;
  * @copyright 2020 Free Software Foundation, Inc http://www.fsf.org
  * @license   https://www.gnu.org/licenses/agpl.html GNU AGPL v3 or later
  */
-class Avatar
+class SchemaVersion
 {
     // AUTOCODE BEGIN
 
@@ -42,27 +42,14 @@ class Avatar
     public static function schemaDef(): array
     {
         return [
-            'name'   => 'avatar',
-            'fields' => [
-                'profile_id' => ['type' => 'int', 'not null' => true, 'description' => 'foreign key to profile table'],
-                'original'   => ['type' => 'bool', 'default' => false, 'description' => 'uploaded by user or generated?'],
-                'width'      => ['type' => 'int', 'not null' => true, 'description' => 'image width'],
-                'height'     => ['type' => 'int', 'not null' => true, 'description' => 'image height'],
-                'mediatype'  => ['type' => 'varchar', 'length' => 32, 'not null' => true, 'description' => 'file type'],
-                'filename'   => ['type' => 'varchar', 'length' => 191, 'description' => 'local filename, if local'],
-                'created'    => ['type' => 'datetime', 'not null' => true, 'default' => '0000-00-00 00:00:00', 'description' => 'date this record was created'],
+            'name'        => 'schema_version',
+            'description' => 'To avoid checking database structure all the time, we store a checksum of the expected schema info for each table here. If it has not changed since the last time we checked the table, we can leave it as is.',
+            'fields'      => [
+                'table_name' => ['type' => 'varchar', 'length' => '64', 'not null' => true, 'description' => 'Table name'],
+                'checksum'   => ['type' => 'varchar', 'length' => '64', 'not null' => true, 'description' => 'Checksum of schema array; a mismatch indicates we should check the table more thoroughly.'],
                 'modified'   => ['type' => 'datetime', 'not null' => true, 'default' => 'CURRENT_TIMESTAMP', 'description' => 'date this record was modified'],
             ],
-            'primary key' => ['profile_id', 'width', 'height'],
-            'unique keys' => [
-                //                'avatar_filename_key' => array('filename'),
-            ],
-            'foreign keys' => [
-                'avatar_profile_id_fkey' => ['profile', ['profile_id' => 'id']],
-            ],
-            'indexes' => [
-                'avatar_profile_id_idx' => ['profile_id'],
-            ],
+            'primary key' => ['table_name'],
         ];
     }
 }

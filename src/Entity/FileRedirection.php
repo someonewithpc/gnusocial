@@ -20,7 +20,7 @@
 namespace App\Entity;
 
 /**
- * Entity for nonce
+ * Entity for File redirects
  *
  * @category  DB
  * @package   GNUsocial
@@ -33,7 +33,7 @@ namespace App\Entity;
  * @copyright 2020 Free Software Foundation, Inc http://www.fsf.org
  * @license   https://www.gnu.org/licenses/agpl.html GNU AGPL v3 or later
  */
-class Nonce
+class FileRedirection
 {
     // AUTOCODE BEGIN
 
@@ -42,17 +42,19 @@ class Nonce
     public static function schemaDef(): array
     {
         return [
-            'name'        => 'nonce',
-            'description' => 'OAuth nonce record',
-            'fields'      => [
-                'consumer_key' => ['type' => 'varchar', 'length' => 191, 'not null' => true, 'description' => 'unique identifier, root URL'],
-                'tok'          => ['type' => 'char', 'length' => 32, 'description' => 'buggy old value, ignored'],
-                'nonce'        => ['type' => 'char', 'length' => 32, 'not null' => true, 'description' => 'nonce'],
-                'ts'           => ['type' => 'datetime', 'not null' => true, 'description' => 'timestamp sent'],
-                'created'      => ['type' => 'datetime', 'not null' => true, 'default' => '0000-00-00 00:00:00', 'description' => 'date this record was created'],
+            'name'   => 'file_redirection',
+            'fields' => [
+                'urlhash'      => ['type' => 'varchar', 'length' => 64, 'not null' => true, 'description' => 'sha256 hash of the URL'],
+                'url'          => ['type' => 'text', 'description' => 'short URL (or any other kind of redirect) for file (id)'],
+                'file_id'      => ['type' => 'int', 'description' => 'short URL for what URL/file'],
+                'redirections' => ['type' => 'int', 'description' => 'redirect count'],
+                'httpcode'     => ['type' => 'int', 'description' => 'HTTP status code (20x, 30x, etc.)'],
                 'modified'     => ['type' => 'datetime', 'not null' => true, 'default' => 'CURRENT_TIMESTAMP', 'description' => 'date this record was modified'],
             ],
-            'primary key' => ['consumer_key', 'ts', 'nonce'],
+            'primary key'  => ['urlhash'],
+            'foreign keys' => [
+                'file_redirection_file_id_fkey' => ['file', ['file_id' => 'id']],
+            ],
         ];
     }
 }

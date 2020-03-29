@@ -20,7 +20,7 @@
 namespace App\Entity;
 
 /**
- * Entity for user's avatar
+ * Entity for Notice preferences
  *
  * @category  DB
  * @package   GNUsocial
@@ -29,11 +29,13 @@ namespace App\Entity;
  * @copyright 2010 StatusNet Inc.
  * @author    Mikael Nordfeldth <mmn@hethane.se>
  * @copyright 2009-2014 Free Software Foundation, Inc http://www.fsf.org
+ * @author    Diogo Cordeiro <diogo@fc.up.pt>
+ * @license   2018 Free Software Foundation, Inc http://www.fsf.org
  * @author    Hugo Sales <hugo@fc.up.pt>
  * @copyright 2020 Free Software Foundation, Inc http://www.fsf.org
  * @license   https://www.gnu.org/licenses/agpl.html GNU AGPL v3 or later
  */
-class Avatar
+class NoticePrefs
 {
     // AUTOCODE BEGIN
 
@@ -42,26 +44,21 @@ class Avatar
     public static function schemaDef(): array
     {
         return [
-            'name'   => 'avatar',
+            'name'   => 'notice_prefs',
             'fields' => [
-                'profile_id' => ['type' => 'int', 'not null' => true, 'description' => 'foreign key to profile table'],
-                'original'   => ['type' => 'bool', 'default' => false, 'description' => 'uploaded by user or generated?'],
-                'width'      => ['type' => 'int', 'not null' => true, 'description' => 'image width'],
-                'height'     => ['type' => 'int', 'not null' => true, 'description' => 'image height'],
-                'mediatype'  => ['type' => 'varchar', 'length' => 32, 'not null' => true, 'description' => 'file type'],
-                'filename'   => ['type' => 'varchar', 'length' => 191, 'description' => 'local filename, if local'],
-                'created'    => ['type' => 'datetime', 'not null' => true, 'default' => '0000-00-00 00:00:00', 'description' => 'date this record was created'],
-                'modified'   => ['type' => 'datetime', 'not null' => true, 'default' => 'CURRENT_TIMESTAMP', 'description' => 'date this record was modified'],
+                'notice_id' => ['type' => 'int', 'not null' => true, 'description' => 'user'],
+                'namespace' => ['type' => 'varchar', 'length' => 191, 'not null' => true, 'description' => 'namespace, like pluginname or category'],
+                'topic'     => ['type' => 'varchar', 'length' => 191, 'not null' => true, 'description' => 'preference key, i.e. description, age...'],
+                'data'      => ['type' => 'blob', 'description' => 'topic data, may be anything'],
+                'created'   => ['type' => 'datetime', 'not null' => true, 'default' => '0000-00-00 00:00:00', 'description' => 'date this record was created'],
+                'modified'  => ['type' => 'datetime', 'not null' => true, 'default' => 'CURRENT_TIMESTAMP', 'description' => 'date this record was modified'],
             ],
-            'primary key' => ['profile_id', 'width', 'height'],
-            'unique keys' => [
-                //                'avatar_filename_key' => array('filename'),
-            ],
+            'primary key'  => ['notice_id', 'namespace', 'topic'],
             'foreign keys' => [
-                'avatar_profile_id_fkey' => ['profile', ['profile_id' => 'id']],
+                'notice_prefs_notice_id_fkey' => ['notice', ['notice_id' => 'id']],
             ],
             'indexes' => [
-                'avatar_profile_id_idx' => ['profile_id'],
+                'notice_prefs_notice_id_idx' => ['notice_id'],
             ],
         ];
     }

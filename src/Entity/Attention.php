@@ -1,73 +1,65 @@
 <?php
-/*
- * GNU social - a federating social network
- * Copyright (C) 2014, Free Software Foundation, Inc.
+
+/* {{{ License
+ * This file is part of GNU social - https://www.gnu.org/software/social
  *
- * This program is free software: you can redistribute it and/or modify
+ * GNU social is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful,
+ * GNU social is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Affero General Public License for more details.
  *
  * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with GNU social.  If not, see <http://www.gnu.org/licenses/>.
+ }}} */
+
+namespace App\Entity;
+
+/**
+ * Entity for attentions
+ *
+ * @category  DB
+ * @package   GNUsocial
+ *
+ * @author    Zach Copley <zach@status.net>
+ * @copyright 2010 StatusNet Inc.
+ * @author    Mikael Nordfeldth <mmn@hethane.se>
+ * @copyright 2009-2014 Free Software Foundation, Inc http://www.fsf.org
+ * @author    Hugo Sales <hugo@fc.up.pt>
+ * @copyright 2020 Free Software Foundation, Inc http://www.fsf.org
+ * @license   https://www.gnu.org/licenses/agpl.html GNU AGPL v3 or later
  */
-
-class Attention extends Managed_DataObject
+class Attention
 {
-    public $__table = 'attention';  // table name
-    public $notice_id;              // int(4) primary_key not_null
-    public $profile_id;             // int(4) primary_key not_null
-    public $reason;                 // varchar(191)   not 255 because utf8mb4 takes more space
-    public $created;                // datetime()   not_null default_0000-00-00%2000%3A00%3A00
-    public $modified;               // datetime()   not_null default_CURRENT_TIMESTAMP
+    // AUTOCODE BEGIN
 
-    public static function schemaDef()
+    // AUTOCODE END
+
+    public static function schemaDef(): array
     {
-        return array(
+        return [
+            'name'        => 'attention',
             'description' => 'Notice attentions to profiles (that are not a mention and not result of a subscription)',
-            'fields' => array(
-                'notice_id' => array('type' => 'int', 'not null' => true, 'description' => 'notice_id to give attention'),
-                'profile_id' => array('type' => 'int', 'not null' => true, 'description' => 'profile_id for feed receiver'),
-                'reason' => array('type' => 'varchar', 'length' => 191, 'description' => 'Optional reason why this was brought to the attention of profile_id'),
-                'created' => array('type' => 'datetime', 'not null' => true, 'default' => '0000-00-00 00:00:00', 'description' => 'date this record was created'),
-                'modified' => array('type' => 'datetime', 'not null' => true, 'default' => 'CURRENT_TIMESTAMP', 'description' => 'date this record was modified'),
-            ),
-            'primary key' => array('notice_id', 'profile_id'),
-            'foreign keys' => array(
-                'attention_notice_id_fkey' => array('notice', array('notice_id' => 'id')),
-                'attention_profile_id_fkey' => array('profile', array('profile_id' => 'id')),
-            ),
-            'indexes' => array(
-                'attention_notice_id_idx' => array('notice_id'),
-                'attention_profile_id_idx' => array('profile_id'),
-            ),
-        );
-    }
-
-    public static function saveNew(Notice $notice, Profile $target, $reason=null)
-    {
-        try {
-            $att = Attention::getByKeys(['notice_id'=>$notice->getID(), 'profile_id'=>$target->getID()]);
-            throw new AlreadyFulfilledException('Attention already exists with reason: '._ve($att->reason));
-        } catch (NoResultException $e) {
-            $att = new Attention();
-        
-            $att->notice_id = $notice->getID();
-            $att->profile_id = $target->getID();
-            $att->reason = $reason;
-            $att->created = common_sql_now();
-            $result = $att->insert();
-
-            if ($result === false) {
-                throw new Exception('Failed Attention::saveNew for notice id=='.$notice->getID().' target id=='.$target->getID().', reason=="'.$reason.'"');
-            }
-        }
-        self::blow('attention:stream:%d', $target->getID());
-        return $att;
+            'fields'      => [
+                'notice_id'  => ['type' => 'int', 'not null' => true, 'description' => 'notice_id to give attention'],
+                'profile_id' => ['type' => 'int', 'not null' => true, 'description' => 'profile_id for feed receiver'],
+                'reason'     => ['type' => 'varchar', 'length' => 191, 'description' => 'Optional reason why this was brought to the attention of profile_id'],
+                'created'    => ['type' => 'datetime', 'not null' => true, 'default' => '0000-00-00 00:00:00', 'description' => 'date this record was created'],
+                'modified'   => ['type' => 'datetime', 'not null' => true, 'default' => 'CURRENT_TIMESTAMP', 'description' => 'date this record was modified'],
+            ],
+            'primary key'  => ['notice_id', 'profile_id'],
+            'foreign keys' => [
+                'attention_notice_id_fkey'  => ['notice', ['notice_id' => 'id']],
+                'attention_profile_id_fkey' => ['profile', ['profile_id' => 'id']],
+            ],
+            'indexes' => [
+                'attention_notice_id_idx'  => ['notice_id'],
+                'attention_profile_id_idx' => ['profile_id'],
+            ],
+        ];
     }
 }

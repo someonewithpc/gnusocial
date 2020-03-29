@@ -20,7 +20,7 @@
 namespace App\Entity;
 
 /**
- * Entity for nonce
+ * Entity for a Queue Item
  *
  * @category  DB
  * @package   GNUsocial
@@ -33,7 +33,7 @@ namespace App\Entity;
  * @copyright 2020 Free Software Foundation, Inc http://www.fsf.org
  * @license   https://www.gnu.org/licenses/agpl.html GNU AGPL v3 or later
  */
-class Nonce
+class QueueItem
 {
     // AUTOCODE BEGIN
 
@@ -42,17 +42,18 @@ class Nonce
     public static function schemaDef(): array
     {
         return [
-            'name'        => 'nonce',
-            'description' => 'OAuth nonce record',
-            'fields'      => [
-                'consumer_key' => ['type' => 'varchar', 'length' => 191, 'not null' => true, 'description' => 'unique identifier, root URL'],
-                'tok'          => ['type' => 'char', 'length' => 32, 'description' => 'buggy old value, ignored'],
-                'nonce'        => ['type' => 'char', 'length' => 32, 'not null' => true, 'description' => 'nonce'],
-                'ts'           => ['type' => 'datetime', 'not null' => true, 'description' => 'timestamp sent'],
-                'created'      => ['type' => 'datetime', 'not null' => true, 'default' => '0000-00-00 00:00:00', 'description' => 'date this record was created'],
-                'modified'     => ['type' => 'datetime', 'not null' => true, 'default' => 'CURRENT_TIMESTAMP', 'description' => 'date this record was modified'],
+            'name'   => 'queue_item',
+            'fields' => [
+                'id'        => ['type' => 'serial', 'not null' => true, 'description' => 'unique identifier'],
+                'frame'     => ['type' => 'blob', 'not null' => true, 'description' => 'data: object reference or opaque string'],
+                'transport' => ['type' => 'varchar', 'length' => 32, 'not null' => true, 'description' => 'queue for what? "email", "xmpp", "sms", "irc", ...'],
+                'created'   => ['type' => 'datetime', 'not null' => true, 'default' => '0000-00-00 00:00:00', 'description' => 'date this record was created'],
+                'claimed'   => ['type' => 'datetime', 'description' => 'date this item was claimed'],
             ],
-            'primary key' => ['consumer_key', 'ts', 'nonce'],
+            'primary key' => ['id'],
+            'indexes'     => [
+                'queue_item_created_idx' => ['created'],
+            ],
         ];
     }
 }

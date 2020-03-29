@@ -20,7 +20,7 @@
 namespace App\Entity;
 
 /**
- * Entity for nonce
+ * Entity for related groups
  *
  * @category  DB
  * @package   GNUsocial
@@ -33,7 +33,7 @@ namespace App\Entity;
  * @copyright 2020 Free Software Foundation, Inc http://www.fsf.org
  * @license   https://www.gnu.org/licenses/agpl.html GNU AGPL v3 or later
  */
-class Nonce
+class RelatedGroup
 {
     // AUTOCODE BEGIN
 
@@ -42,17 +42,18 @@ class Nonce
     public static function schemaDef(): array
     {
         return [
-            'name'        => 'nonce',
-            'description' => 'OAuth nonce record',
-            'fields'      => [
-                'consumer_key' => ['type' => 'varchar', 'length' => 191, 'not null' => true, 'description' => 'unique identifier, root URL'],
-                'tok'          => ['type' => 'char', 'length' => 32, 'description' => 'buggy old value, ignored'],
-                'nonce'        => ['type' => 'char', 'length' => 32, 'not null' => true, 'description' => 'nonce'],
-                'ts'           => ['type' => 'datetime', 'not null' => true, 'description' => 'timestamp sent'],
-                'created'      => ['type' => 'datetime', 'not null' => true, 'default' => '0000-00-00 00:00:00', 'description' => 'date this record was created'],
-                'modified'     => ['type' => 'datetime', 'not null' => true, 'default' => 'CURRENT_TIMESTAMP', 'description' => 'date this record was modified'],
+            'name' => 'related_group',
+            // @fixme description for related_group?
+            'fields' => [
+                'group_id'         => ['type' => 'int', 'not null' => true, 'description' => 'foreign key to user_group'],
+                'related_group_id' => ['type' => 'int', 'not null' => true, 'description' => 'foreign key to user_group'],
+                'created'          => ['type' => 'datetime', 'not null' => true, 'default' => '0000-00-00 00:00:00', 'description' => 'date this record was created'],
             ],
-            'primary key' => ['consumer_key', 'ts', 'nonce'],
+            'primary key'  => ['group_id', 'related_group_id'],
+            'foreign keys' => [
+                'related_group_group_id_fkey'         => ['user_group', ['group_id' => 'id']],
+                'related_group_related_group_id_fkey' => ['user_group', ['related_group_id' => 'id']],
+            ],
         ];
     }
 }

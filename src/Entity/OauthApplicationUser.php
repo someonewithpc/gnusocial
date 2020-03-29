@@ -20,7 +20,7 @@
 namespace App\Entity;
 
 /**
- * Entity for nonce
+ * Entity for OAuth Application User
  *
  * @category  DB
  * @package   GNUsocial
@@ -33,7 +33,7 @@ namespace App\Entity;
  * @copyright 2020 Free Software Foundation, Inc http://www.fsf.org
  * @license   https://www.gnu.org/licenses/agpl.html GNU AGPL v3 or later
  */
-class Nonce
+class OauthApplicationUser
 {
     // AUTOCODE BEGIN
 
@@ -42,17 +42,20 @@ class Nonce
     public static function schemaDef(): array
     {
         return [
-            'name'        => 'nonce',
-            'description' => 'OAuth nonce record',
-            'fields'      => [
-                'consumer_key' => ['type' => 'varchar', 'length' => 191, 'not null' => true, 'description' => 'unique identifier, root URL'],
-                'tok'          => ['type' => 'char', 'length' => 32, 'description' => 'buggy old value, ignored'],
-                'nonce'        => ['type' => 'char', 'length' => 32, 'not null' => true, 'description' => 'nonce'],
-                'ts'           => ['type' => 'datetime', 'not null' => true, 'description' => 'timestamp sent'],
-                'created'      => ['type' => 'datetime', 'not null' => true, 'default' => '0000-00-00 00:00:00', 'description' => 'date this record was created'],
-                'modified'     => ['type' => 'datetime', 'not null' => true, 'default' => 'CURRENT_TIMESTAMP', 'description' => 'date this record was modified'],
+            'name'   => 'oauth_application_user',
+            'fields' => [
+                'profile_id'     => ['type' => 'int', 'not null' => true, 'description' => 'user of the application'],
+                'application_id' => ['type' => 'int', 'not null' => true, 'description' => 'id of the application'],
+                'access_type'    => ['type' => 'int', 'size' => 'tiny', 'default' => 0, 'description' => 'access type, bit 1 = read, bit 2 = write'],
+                'token'          => ['type' => 'varchar', 'length' => 191, 'description' => 'request or access token'],
+                'created'        => ['type' => 'datetime', 'not null' => true, 'default' => '0000-00-00 00:00:00', 'description' => 'date this record was created'],
+                'modified'       => ['type' => 'datetime', 'not null' => true, 'default' => 'CURRENT_TIMESTAMP', 'description' => 'date this record was modified'],
             ],
-            'primary key' => ['consumer_key', 'ts', 'nonce'],
+            'primary key'  => ['profile_id', 'application_id'],
+            'foreign keys' => [
+                'oauth_application_user_profile_id_fkey'     => ['profile', ['profile_id' => 'id']],
+                'oauth_application_user_application_id_fkey' => ['oauth_application', ['application_id' => 'id']],
+            ],
         ];
     }
 }

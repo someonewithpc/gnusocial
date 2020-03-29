@@ -20,7 +20,7 @@
 namespace App\Entity;
 
 /**
- * Entity for user's avatar
+ * Entity for user's foreign subscriptions
  *
  * @category  DB
  * @package   GNUsocial
@@ -33,7 +33,7 @@ namespace App\Entity;
  * @copyright 2020 Free Software Foundation, Inc http://www.fsf.org
  * @license   https://www.gnu.org/licenses/agpl.html GNU AGPL v3 or later
  */
-class Avatar
+class ForeignSubscription
 {
     // AUTOCODE BEGIN
 
@@ -42,26 +42,23 @@ class Avatar
     public static function schemaDef(): array
     {
         return [
-            'name'   => 'avatar',
+            'name' => 'foreign_subscription',
+
             'fields' => [
-                'profile_id' => ['type' => 'int', 'not null' => true, 'description' => 'foreign key to profile table'],
-                'original'   => ['type' => 'bool', 'default' => false, 'description' => 'uploaded by user or generated?'],
-                'width'      => ['type' => 'int', 'not null' => true, 'description' => 'image width'],
-                'height'     => ['type' => 'int', 'not null' => true, 'description' => 'image height'],
-                'mediatype'  => ['type' => 'varchar', 'length' => 32, 'not null' => true, 'description' => 'file type'],
-                'filename'   => ['type' => 'varchar', 'length' => 191, 'description' => 'local filename, if local'],
+                'service'    => ['type' => 'int', 'not null' => true, 'description' => 'service where relationship happens'],
+                'subscriber' => ['type' => 'int', 'size' => 'big', 'not null' => true, 'description' => 'subscriber on foreign service'],
+                'subscribed' => ['type' => 'int', 'size' => 'big', 'not null' => true, 'description' => 'subscribed user'],
                 'created'    => ['type' => 'datetime', 'not null' => true, 'default' => '0000-00-00 00:00:00', 'description' => 'date this record was created'],
-                'modified'   => ['type' => 'datetime', 'not null' => true, 'default' => 'CURRENT_TIMESTAMP', 'description' => 'date this record was modified'],
             ],
-            'primary key' => ['profile_id', 'width', 'height'],
-            'unique keys' => [
-                //                'avatar_filename_key' => array('filename'),
-            ],
+            'primary key'  => ['service', 'subscriber', 'subscribed'],
             'foreign keys' => [
-                'avatar_profile_id_fkey' => ['profile', ['profile_id' => 'id']],
+                'foreign_subscription_service_fkey'    => ['foreign_service', ['service' => 'id']],
+                'foreign_subscription_subscriber_fkey' => ['foreign_user', ['subscriber' => 'id', 'service' => 'service']],
+                'foreign_subscription_subscribed_fkey' => ['foreign_user', ['subscribed' => 'id', 'service' => 'service']],
             ],
             'indexes' => [
-                'avatar_profile_id_idx' => ['profile_id'],
+                'foreign_subscription_subscriber_idx' => ['service', 'subscriber'],
+                'foreign_subscription_subscribed_idx' => ['service', 'subscribed'],
             ],
         ];
     }

@@ -20,7 +20,7 @@
 namespace App\Entity;
 
 /**
- * Entity for user's avatar
+ * Entity for Profile Tag Subscription
  *
  * @category  DB
  * @package   GNUsocial
@@ -33,7 +33,7 @@ namespace App\Entity;
  * @copyright 2020 Free Software Foundation, Inc http://www.fsf.org
  * @license   https://www.gnu.org/licenses/agpl.html GNU AGPL v3 or later
  */
-class Avatar
+class ProfileTagSubscription
 {
     // AUTOCODE BEGIN
 
@@ -42,26 +42,23 @@ class Avatar
     public static function schemaDef(): array
     {
         return [
-            'name'   => 'avatar',
+            'name'   => 'profile_tag_subscription',
             'fields' => [
-                'profile_id' => ['type' => 'int', 'not null' => true, 'description' => 'foreign key to profile table'],
-                'original'   => ['type' => 'bool', 'default' => false, 'description' => 'uploaded by user or generated?'],
-                'width'      => ['type' => 'int', 'not null' => true, 'description' => 'image width'],
-                'height'     => ['type' => 'int', 'not null' => true, 'description' => 'image height'],
-                'mediatype'  => ['type' => 'varchar', 'length' => 32, 'not null' => true, 'description' => 'file type'],
-                'filename'   => ['type' => 'varchar', 'length' => 191, 'description' => 'local filename, if local'],
-                'created'    => ['type' => 'datetime', 'not null' => true, 'default' => '0000-00-00 00:00:00', 'description' => 'date this record was created'],
-                'modified'   => ['type' => 'datetime', 'not null' => true, 'default' => 'CURRENT_TIMESTAMP', 'description' => 'date this record was modified'],
+                'profile_tag_id' => ['type' => 'int', 'not null' => true, 'description' => 'foreign key to profile_tag'],
+                'profile_id'     => ['type' => 'int', 'not null' => true, 'description' => 'foreign key to profile table'],
+
+                'created'  => ['type' => 'datetime', 'not null' => true, 'default' => '0000-00-00 00:00:00', 'description' => 'date this record was created'],
+                'modified' => ['type' => 'datetime', 'not null' => true, 'default' => 'CURRENT_TIMESTAMP', 'description' => 'date this record was modified'],
             ],
-            'primary key' => ['profile_id', 'width', 'height'],
-            'unique keys' => [
-                //                'avatar_filename_key' => array('filename'),
-            ],
+            'primary key'  => ['profile_tag_id', 'profile_id'],
             'foreign keys' => [
-                'avatar_profile_id_fkey' => ['profile', ['profile_id' => 'id']],
+                'profile_tag_subscription_profile_list_id_fkey' => ['profile_list', ['profile_tag_id' => 'id']],
+                'profile_tag_subscription_profile_id_fkey'      => ['profile', ['profile_id' => 'id']],
             ],
             'indexes' => [
-                'avatar_profile_id_idx' => ['profile_id'],
+                // @fixme probably we want a (profile_id, created) index here?
+                'profile_tag_subscription_profile_id_idx' => ['profile_id'],
+                'profile_tag_subscription_created_idx'    => ['created'],
             ],
         ];
     }

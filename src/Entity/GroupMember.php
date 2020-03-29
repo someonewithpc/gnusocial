@@ -20,7 +20,7 @@
 namespace App\Entity;
 
 /**
- * Entity for user's avatar
+ * Entity for a Group Member
  *
  * @category  DB
  * @package   GNUsocial
@@ -33,7 +33,7 @@ namespace App\Entity;
  * @copyright 2020 Free Software Foundation, Inc http://www.fsf.org
  * @license   https://www.gnu.org/licenses/agpl.html GNU AGPL v3 or later
  */
-class Avatar
+class GroupMember
 {
     // AUTOCODE BEGIN
 
@@ -42,26 +42,29 @@ class Avatar
     public static function schemaDef(): array
     {
         return [
-            'name'   => 'avatar',
+            'name'   => 'group_member',
             'fields' => [
+                'group_id'   => ['type' => 'int', 'not null' => true, 'description' => 'foreign key to user_group'],
                 'profile_id' => ['type' => 'int', 'not null' => true, 'description' => 'foreign key to profile table'],
-                'original'   => ['type' => 'bool', 'default' => false, 'description' => 'uploaded by user or generated?'],
-                'width'      => ['type' => 'int', 'not null' => true, 'description' => 'image width'],
-                'height'     => ['type' => 'int', 'not null' => true, 'description' => 'image height'],
-                'mediatype'  => ['type' => 'varchar', 'length' => 32, 'not null' => true, 'description' => 'file type'],
-                'filename'   => ['type' => 'varchar', 'length' => 191, 'description' => 'local filename, if local'],
+                'is_admin'   => ['type' => 'bool', 'default' => false, 'description' => 'is this user an admin?'],
+                'uri'        => ['type' => 'varchar', 'length' => 191, 'description' => 'universal identifier'],
                 'created'    => ['type' => 'datetime', 'not null' => true, 'default' => '0000-00-00 00:00:00', 'description' => 'date this record was created'],
                 'modified'   => ['type' => 'datetime', 'not null' => true, 'default' => 'CURRENT_TIMESTAMP', 'description' => 'date this record was modified'],
             ],
-            'primary key' => ['profile_id', 'width', 'height'],
+            'primary key' => ['group_id', 'profile_id'],
             'unique keys' => [
-                //                'avatar_filename_key' => array('filename'),
+                'group_member_uri_key' => ['uri'],
             ],
             'foreign keys' => [
-                'avatar_profile_id_fkey' => ['profile', ['profile_id' => 'id']],
+                'group_member_group_id_fkey'   => ['user_group', ['group_id' => 'id']],
+                'group_member_profile_id_fkey' => ['profile', ['profile_id' => 'id']],
             ],
             'indexes' => [
-                'avatar_profile_id_idx' => ['profile_id'],
+                // @fixme probably we want a (profile_id, created) index here?
+                'group_member_profile_id_idx'         => ['profile_id'],
+                'group_member_created_idx'            => ['created'],
+                'group_member_profile_id_created_idx' => ['profile_id', 'created'],
+                'group_member_group_id_created_idx'   => ['group_id', 'created'],
             ],
         ];
     }
