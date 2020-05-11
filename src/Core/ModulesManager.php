@@ -31,10 +31,10 @@
  * @license   https://www.gnu.org/licenses/agpl.html GNU AGPL v3 or later
  */
 
-namespace App\Util;
+namespace App\Core;
 
-use App\Util\GSEvent as Event;
 use Functional as F;
+use GSEvent as Event;
 
 abstract class ModulesManager
 {
