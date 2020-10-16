@@ -18,12 +18,13 @@
  * ActivityPub implementation for GNU social
  *
  * @package   GNUsocial
+ *
  * @author    Diogo Cordeiro <diogo@fc.up.pt>
  * @copyright 2018-2019 Free Software Foundation, Inc http://www.fsf.org
  * @license   https://www.gnu.org/licenses/agpl.html GNU AGPL v3 or later
- * @link      http://www.gnu.org/software/social/
+ *
+ * @see      http://www.gnu.org/software/social/
  */
-
 defined('GNUSOCIAL') || die();
 
 /**
@@ -31,6 +32,7 @@ defined('GNUSOCIAL') || die();
  *
  * @category  Plugin
  * @package   GNUsocial
+ *
  * @author    Diogo Cordeiro <diogo@fc.up.pt>
  * @license   https://www.gnu.org/licenses/agpl.html GNU AGPL v3 or later
  */
@@ -40,16 +42,19 @@ class Activitypub_notice
      * Generates a pretty notice from a Notice object
      *
      * @param Notice $notice
-     * @return array array to be used in a response
+     *
      * @throws EmptyPkeyValueException
      * @throws InvalidUrlException
      * @throws ServerException
      * @throws Exception
+     *
+     * @return array array to be used in a response
+     *
      * @author Diogo Cordeiro <diogo@fc.up.pt>
      */
     public static function notice_to_array(Notice $notice): array
     {
-        $profile = $notice->getProfile();
+        $profile     = $notice->getProfile();
         $attachments = [];
         foreach ($notice->attachments() as $attachment) {
             $attachments[] = Activitypub_attachment::attachment_to_array($attachment);
@@ -57,7 +62,7 @@ class Activitypub_notice
 
         $tags = [];
         foreach ($notice->getTags() as $tag) {
-            if ($tag != "") {       // Hacky workaround to avoid stupid outputs
+            if ($tag != '') {       // Hacky workaround to avoid stupid outputs
                 $tags[] = Activitypub_tag::tag_to_array($tag);
             }
         }
@@ -75,46 +80,25 @@ class Activitypub_notice
         }
 
         foreach ($notice->getAttentionProfiles() as $to_profile) {
-            $to[] = $href = $to_profile->getUri();
+            $to[]   = $href   = $to_profile->getUri();
             $tags[] = Activitypub_mention_tag::mention_tag_to_array_from_values($href, $to_profile->getNickname() . '@' . parse_url($href, PHP_URL_HOST));
         }
 
-        if (ActivityUtils::compareVerbs($notice->getVerb(), ActivityVerb::DELETE)) {
-            $item = [
-                '@context' => 'https://www.w3.org/ns/activitystreams',
-                'id' => self::getUri($notice),
-                'type' => 'Delete',
-                // XXX: A bit of ugly code here
-                'object' => array_merge(Activitypub_tombstone::tombstone_to_array((int)substr(explode(':', $notice->getUri())[2], 9)), ['deleted' => str_replace(' ', 'T', $notice->getCreated()) . 'Z']),
-                'url' => $notice->getUrl(),
-                'actor' => $profile->getUri(),
-                'to' => $to,
-                'cc' => $cc,
-                'conversationId' => $notice->getConversationUrl(false),
-                'conversationUrl' => $notice->getConversationUrl(),
-                'content' => $notice->getRendered(),
-                'isLocal' => $notice->isLocal(),
-                'attachment' => $attachments,
-                'tag' => $tags
-            ];
-        } else { // Note
-            $item = [
-                '@context' => 'https://www.w3.org/ns/activitystreams',
-                'id' => self::note_uri($notice->getID()),
-                'type' => 'Note',
-                'published' => str_replace(' ', 'T', $notice->getCreated()) . 'Z',
-                'url' => $notice->getUrl(),
-                'attributedTo' => $profile->getUri(),
-                'to' => $to,
-                'cc' => $cc,
-                'conversationId' => $notice->getConversationUrl(false),
-                'conversationUrl' => $notice->getConversationUrl(),
-                'content' => $notice->getRendered(),
-                'isLocal' => $notice->isLocal(),
-                'attachment' => $attachments,
-                'tag' => $tags
-            ];
-        }
+        $item = [
+            '@context'     => 'https://www.w3.org/ns/activitystreams',
+            'id'           => self::getUrl($notice),
+            'type'         => 'Note',
+            'published'    => str_replace(' ', 'T', $notice->getCreated()) . 'Z',
+            'url'          => self::getUrl($notice),
+            'attributedTo' => $profile->getUri(),
+            'to'           => $to,
+            'cc'           => $cc,
+            'conversation' => $notice->getConversationUrl(),
+            'content'      => $notice->getRendered(),
+            'isLocal'      => $notice->isLocal(),
+            'attachment'   => $attachments,
+            'tag'          => $tags,
+        ];
 
         // Is this a reply?
         if (!empty($notice->reply_to)) {
@@ -123,8 +107,8 @@ class Activitypub_notice
 
         // Do we have a location for this notice?
         try {
-            $location = Notice_location::locFromStored($notice);
-            $item['latitude'] = $location->lat;
+            $location          = Notice_location::locFromStored($notice);
+            $item['latitude']  = $location->lat;
             $item['longitude'] = $location->lon;
         } catch (Exception $e) {
             // Apparently no.
@@ -137,17 +121,20 @@ class Activitypub_notice
      * Create a Notice via ActivityPub Note Object.
      * Returns created Notice.
      *
-     * @param array $object
+     * @param array   $object
      * @param Profile $actor_profile
-     * @param bool $directMessage
-     * @return Notice
+     * @param bool    $directMessage
+     *
      * @throws Exception
+     *
+     * @return Notice
+     *
      * @author Diogo Cordeiro <diogo@fc.up.pt>
      */
     public static function create_notice(array $object, Profile $actor_profile, bool $directMessage = false): Notice
     {
-        $id = $object['id'];                                 // int
-        $url = isset($object['url']) ? $object['url'] : $id; // string
+        $id      = $object['id'];                                 // int
+        $url     = isset($object['url']) ? $object['url'] : $id; // string
         $content = $object['content'];                       // string
 
         // possible keys: ['inReplyTo', 'latitude', 'longitude']
@@ -162,15 +149,15 @@ class Activitypub_notice
             $settings['longitude'] = $object['longitude'];
         }
 
-        $act = new Activity();
-        $act->verb = ActivityVerb::POST;
-        $act->time = time();
-        $act->actor = $actor_profile->asActivityObject();
+        $act          = new Activity();
+        $act->verb    = ActivityVerb::POST;
+        $act->time    = time();
+        $act->actor   = $actor_profile->asActivityObject();
         $act->context = new ActivityContext();
-        $options = ['source' => 'ActivityPub',
-            'uri' => $id,
-            'url' => $url,
-            'is_local' => self::getNotePolicyType($object, $actor_profile)];
+        $options      = ['source' => 'ActivityPub',
+            'uri'                 => $id,
+            'url'                 => $url,
+            'is_local'            => self::getNotePolicyType($object, $actor_profile), ];
 
         if ($directMessage) {
             $options['scope'] = Notice::MESSAGE_SCOPE;
@@ -179,8 +166,8 @@ class Activitypub_notice
         // Is this a reply?
         if (isset($settings['inReplyTo'])) {
             try {
-                $inReplyTo = ActivityPubPlugin::grab_notice_from_url($settings['inReplyTo']);
-                $act->context->replyToID = $inReplyTo->getUri();
+                $inReplyTo                = ActivityPubPlugin::grab_notice_from_url($settings['inReplyTo']);
+                $act->context->replyToID  = $inReplyTo->getUri();
                 $act->context->replyToUrl = $inReplyTo->getUrl();
             } catch (Exception $e) {
                 // It failed to grab, maybe we got this note from another source
@@ -203,7 +190,7 @@ class Activitypub_notice
             }
         }
         $mentions_profiles = [];
-        $discovery = new Activitypub_explorer;
+        $discovery         = new Activitypub_explorer;
         foreach ($mentions as $mention) {
             try {
                 $mentioned_profile = $discovery->lookup($mention);
@@ -240,6 +227,7 @@ class Activitypub_notice
                     && $attachment['type'] === 'Document'
                     && array_key_exists('url', $attachment)) {
                     try {
+<<<<<<< HEAD
                         $file = new File();
                         $file->url = $attachment['url'];
                         $file->title = array_key_exists('type', $attachment) ? $attachment['name'] : null;
@@ -267,6 +255,12 @@ class Activitypub_notice
                         $file->saveFile();
                         $act->enclosures[] = $file->getEnclosure();
                         $attachments[] = $file;
+=======
+                        // throws exception on failure
+                        $attachment        = MediaFile::fromUrl($attachment['url'], $actor_profile, $attachment['name']);
+                        $act->enclosures[] = $attachment->getEnclosure();
+                        $attachments[]     = $attachment;
+>>>>>>> bebf253353 ([TESTS] Added unit tests)
                     } catch (Exception $e) {
                         // Whatever.
                         continue;
@@ -275,8 +269,8 @@ class Activitypub_notice
             }
         }
 
-        $actobj = new ActivityObject();
-        $actobj->type = ActivityObject::NOTE;
+        $actobj          = new ActivityObject();
+        $actobj->type    = ActivityObject::NOTE;
         $actobj->content = strip_tags($content, '<p><b><i><u><a><ul><ol><li>');
 
         // Finally add the activity object to our activity
@@ -285,8 +279,13 @@ class Activitypub_notice
         $note = Notice::saveActivity($act, $actor_profile, $options);
 
         // Attachments (last part)
+<<<<<<< HEAD
         foreach ($attachments as $file) {
             File_to_post::processNew($file, $note);
+=======
+        foreach ($attachments as $attachment) {
+            $attachment->attachToNotice($note);
+>>>>>>> bebf253353 ([TESTS] Added unit tests)
         }
 
         return $note;
@@ -296,8 +295,11 @@ class Activitypub_notice
      * Validates a note.
      *
      * @param array $object
-     * @return bool false if unacceptable for GS but valid ActivityPub object
+     *
      * @throws Exception if invalid ActivityPub object
+     *
+     * @return bool false if unacceptable for GS but valid ActivityPub object
+     *
      * @author Diogo Cordeiro <diogo@fc.up.pt>
      */
     public static function validate_note(array $object): bool
@@ -317,7 +319,7 @@ class Activitypub_notice
             common_debug('ActivityPub Notice Validator: Rejected because Object URL is invalid.');
             throw new Exception('Invalid Object URL.');
         }
-        if (!(isset($object['to']) && isset($object['cc']))) {
+        if (!(isset($object['to'], $object['cc']))) {
             common_debug('ActivityPub Notice Validator: Rejected because either Object CC or TO wasn\'t specified.');
             throw new Exception('Either Object CC or TO wasn\'t specified.');
         }
@@ -332,9 +334,12 @@ class Activitypub_notice
      * Get the original representation URL of a given notice.
      *
      * @param Notice $notice notice from which to retrieve the URL
-     * @return string URL
+     *
      * @throws InvalidUrlException
      * @throws Exception
+     *
+     * @return string URL
+     *
      * @author Bruno Casteleiro <brunoccast@fc.up.pt>
      * @see note_uri when it's not a generic activity but a object type note
      */
@@ -363,9 +368,11 @@ class Activitypub_notice
     /**
      * Extract note policy type from note targets.
      *
-     * @param array $note received Note
+     * @param array   $note          received Note
      * @param Profile $actor_profile Note author
+     *
      * @return int Notice policy type
+     *
      * @author Bruno Casteleiro <brunoccast@fc.up.pt>
      */
     public static function getNotePolicyType(array $note, Profile $actor_profile): int
