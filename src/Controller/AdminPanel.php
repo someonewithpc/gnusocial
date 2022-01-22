@@ -54,7 +54,7 @@ class AdminPanel extends Controller
      */
     public function site(Request $request)
     {
-        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+        $this->denyAccessUnlessGranted('ROLE_OPERATOR');
         $defaults = Common::getConfigDefaults();
         $options  = [];
         foreach ($defaults as $key => $inner) {
