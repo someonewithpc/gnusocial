@@ -175,7 +175,7 @@ class Favourite extends FeedController
 
         return [
             '_template'  => 'collection/notes.html.twig',
-            'page_title' => 'Favourites feed.',
+            'page_title' => 'Favourites',
             'notes'      => $notes,
         ];
     }

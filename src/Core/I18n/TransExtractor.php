@@ -95,7 +95,7 @@ class TransExtractor extends AbstractFileExtractor implements ExtractorInterface
     /**
      * Prefix for new found message.
      */
-    private string $prefix = '';
+    private string $prefix = ' ';
 
     /**
      * {@inheritDoc}
@@ -106,10 +106,13 @@ class TransExtractor extends AbstractFileExtractor implements ExtractorInterface
             return;
         }
 
-        $files = $this->extractFiles($dir);
-        foreach ($files as $file) {
-            $this->parseTokens(token_get_all(file_get_contents($file)), $catalog, $file);
+        // Find all files in the current directory
+        $finder = new Finder();
+        $finder->files()->in($dir);
 
+        foreach ($finder as $file) {
+            $absoluteFilePath = $file->getRealPath();
+            $this->parseTokens(token_get_all(file_get_contents($absoluteFilePath)), $catalog, $absoluteFilePath);
             gc_mem_caches();
         }
     }

@@ -16,9 +16,9 @@
     {% if notes is defined %}
         <header class="feed-header">
             {% if page_title is defined %}
-                <h1 class="heading-no-margin">{{ page_title | trans }}</h1>
+                <span class="section-title">{{ page_title | trans }}</span>
             {% else %}
-                <h3 class="heading-no-margin">{{ 'Notes' | trans }}</h3>
+                <span class="section-title">{{ 'Notes' | trans }}</span>
             {% endif %}
             <nav class="feed-actions">
                 <details class="feed-actions-details">
@@ -49,6 +49,10 @@
                         <hr tabindex="0" title="{{ 'End of note and replies.' | trans }}">
                     {% endblock current_note %}
                 {% endfor %}
+            </section>
+        {% else %}
+            <section class="feed h-feed hfeed notes" tabindex="0" role="feed">
+                <span>{% trans %}No notes here...{% endtrans %}</span>
             </section>
         {% endif %}
     {% endif %}
