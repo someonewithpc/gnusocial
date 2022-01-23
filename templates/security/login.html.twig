@@ -20,12 +20,12 @@
                 {% endif %}
 
                 {% if app.user %}
-                    <h2>
+                    <span>
                         {{ "You are logged in as" | trans }} {{ app.user.username }}.
                         <button class="btn btn-lg btn-primary">
                             <a href="{{ path('app_logout') }}">{{ "Logout" | trans }}</a>
                         </button>
-                    </h2>
+                    </span>
                 {% else %}
                     <div class="form-row">
                         <label class="section-form-label" for="inputNicknameOrEmail">{{ "Nickname or Email" | trans }}</label>

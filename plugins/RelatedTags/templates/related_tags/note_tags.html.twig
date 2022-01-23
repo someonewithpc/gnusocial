@@ -1,6 +1,6 @@
 {% if note_tags is not empty %}
   <div class="frame-section frame-section-padding">
-    <h2>Related tags:</h2>
+    <h1>Related tags</h1>
 
     {% for nt in note_tags %}
       {% include 'cards/tag/note_tag.html.twig' with { 'tag': nt } %}

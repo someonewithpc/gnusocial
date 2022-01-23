@@ -134,7 +134,7 @@
 .feed-header {
     display: flex;
     margin-top: var(--s);
-    margin-bottom: var(--s);
+    margin-bottom: var(--m);
     align-items: center;
 }
 

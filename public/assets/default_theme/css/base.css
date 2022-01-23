@@ -132,7 +132,7 @@ html {
 .section-panel .panel-content {
     background: var(--background-hard);
     display: block;
-    height: 100vh;
+    height: max-content;
 }
 
 @media only screen and (max-width: 1280px) {
@@ -166,6 +166,8 @@ html {
         overflow-y: auto;
         width: 100vw;
         z-index: 1;
+        background: var(--background-hard);
+        box-shadow: var(--shadow);
     }
 }
 

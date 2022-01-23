@@ -306,6 +306,16 @@
     width: 100%;
 }
 
+.details-summary-title {
+    line-height: initial;
+    font-weight: 700;
+    font-size: 1.067em;
+    padding: 6px 12px;
+}
+.details-summary-subtitle {
+    font-weight: 700;
+}
+
 .details-summary-title:after {
     content: "\2193";
     float: right;
@@ -333,10 +343,6 @@
 .section-details-title[open] > .details-summary-title:after {
     animation: fadeOut 200ms cubic-bezier(0, 0.55, 0.45, 1);
     transform: rotate(180deg);
-}
-
-.details-summary-title {
-    padding: 6px 12px;
 }
 
 .section-form {

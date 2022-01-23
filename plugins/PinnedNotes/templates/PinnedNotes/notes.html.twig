@@ -3,7 +3,7 @@
 {# Backwards compatibility with hAtom 0.1 #}
 {% if pinnednotes is not empty %}
     <main class="feed pinned" tabindex="0" role="feed">
-        <h2>Pinned Notes</h2>
+        <h1>Pinned Notes</h1>
         <div class="h-feed hfeed notes">
             {% for conversation in pinnednotes %}
                 {% block current_note %}

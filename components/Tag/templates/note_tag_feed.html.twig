@@ -9,10 +9,10 @@
 {% block body %}
     {% if tag_name is defined and tag_name is not null %}
         {% if tag_name is instanceof('string') %}
-            <h2>{% trans %}Notes with tag: %tag_name%{% endtrans %}</h2>
+            <h1>{% trans %}Notes with tag: %tag_name%{% endtrans %}</h1>
         {% else %}
             {% set tags = tag_name|join(', ') %} {# TODO Not ideal, hard to translate #}
-            <h2>{% trans %}People with tags: %tags%{% endtrans %}</h2>
+            <h1>{% trans %}People with tags: %tags%{% endtrans %}</h1>
         {% endif %}
     {% endif %}
 
@@ -26,7 +26,7 @@
         {% endblock current_note %}
     {% endfor %}
 
-    <div class="frame-section frame-section-padding frame-section-paging">
+    <div class="frame-section-button-like">
         {{ "Page " ~ page }}
     </div>
 {% endblock %}

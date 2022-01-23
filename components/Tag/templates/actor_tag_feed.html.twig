@@ -8,10 +8,10 @@
 {% block body %}
     {% if tag_name is defined and tag_name is not null %}
         {% if tag_name is instanceof('string') %}
-            <h2>{% trans %}Actors with tag: %tag_name%{% endtrans %}</h2>
+            <h1>{% trans %}Actors with tag: %tag_name%{% endtrans %}</h1>
         {% else %}
             {% set tags = tag_name|join(',') %} {# TODO Not ideal, hard to translate #}
-            <h2>{% trans %}Actors with tags: %tags%{% endtrans %}</h2>
+            <h1>{% trans %}Actors with tags: %tags%{% endtrans %}</h1>
         {% endif %}
     {% endif %}
 
@@ -23,7 +23,7 @@
         {% block profile_view %}{% include 'cards/profile/view.html.twig' %}{% endblock profile_view %}
     {% endfor %}
 
-    <div class="frame-section frame-section-padding">
+    <div class="frame-section-button-like">
         {{ "Page: " ~ page }}
     </div>
 {% endblock %}

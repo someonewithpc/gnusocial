@@ -3,7 +3,7 @@
     <details class="section-details-title" open="open"
              title="{{ 'Expand if you want to access more options.' | trans }}">
       <summary class="details-summary-title">
-        <h2>{{ 'Feeds' | trans }}</h2>
+        <span>{{ 'Feeds' | trans }}</span>
         {% if app.user %}
           {# User custom feeds #}
           <a class="edit-feed-link" href="{{ path('edit_feeds') }}">{{ icon('edit', 'icon icon-edit-feed') | raw }}</a>

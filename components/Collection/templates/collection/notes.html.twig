@@ -15,8 +15,13 @@
 
     {% if notes is defined %}
         <header class="feed-header">
+            {% set current_path = app.request.get('_route') %}
             {% if page_title is defined %}
-                <span class="section-title">{{ page_title | trans }}</span>
+                {% if current_path starts with 'feed_' %}
+                    <h1 class="section-title">{{ page_title | trans }}</h1>
+                {% else %}
+                    <span class="section-title">{{ page_title | trans }}</span>
+                {% endif %}
             {% else %}
                 <span class="section-title">{{ 'Notes' | trans }}</span>
             {% endif %}

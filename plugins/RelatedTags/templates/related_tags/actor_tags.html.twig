@@ -1,9 +1,9 @@
 {% if actor_tags is not empty %}
-<div class="frame-section frame-section-padding">
-  <h2>Related tags:</h2>
+<section class="frame-section frame-section-padding">
+  <span class="section-title">Related tags</span>
   {% for at in actor_tags %}
     {% include 'cards/tag/actor_tag.html.twig' with { 'tag': at, 'actor': null } %}
   {% endfor %}
-</div>
+</section>
 {% endif %}
 

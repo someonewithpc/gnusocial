@@ -17,14 +17,14 @@
                 <details class="section-details-title" open="open"
                          title="{{ 'Expand if you want to access more options.' | trans }}">
                     <summary class="details-summary-title">
-                        <h2>
+                        <span>
                             {% set current_path = app.request.get('_route') %}
                             {% if current_path == 'conversation_reply_to' %}
                                 {{ "Reply to note" | trans }}
                             {% else %}
                                 {{ "Create a note" | trans }}
                             {% endif %}
-                        </h2>
+                        </span>
                     </summary>
 
                     <section class="section-form">

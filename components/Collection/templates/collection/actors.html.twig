@@ -50,15 +50,16 @@
         </form>
     </details>
 
-    <section class="frame-section-padding">
+    <section class="frame-section frame-section-padding">
+        <h2>{% trans %}Results{% endtrans %}</h2>
         {% if actors is defined and actors is not empty %}
             {% for actor in actors %}
                 {% block profile_view %}{% include 'cards/profile/view.html.twig' %}{% endblock profile_view %}
                 <hr>
             {% endfor %}
-            <p>{% trans %}Page: %page%{% endtrans %}</p>
+            <span class="frame-section-button-like">{% trans %}Page: %page%{% endtrans %}</span>
         {% else %}
-            <h2>{{ empty_message }}</h2>
+            <span>{{ empty_message }}</span>
         {% endif %}
     </section>
 </section>
