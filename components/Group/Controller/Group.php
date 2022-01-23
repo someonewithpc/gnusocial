@@ -48,6 +48,7 @@ use Component\Group\Entity\LocalGroup;
 use Component\Subscription\Entity\ActorSubscription;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
+use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
 
 class Group extends FeedController
@@ -130,6 +131,53 @@ class Group extends FeedController
             throw new RedirectException('security_login');
         }
 
+        $create_form = self::getGroupCreateForm($request, $actor);
+
+        return [
+            '_template'   => 'group/create.html.twig',
+            'create_form' => $create_form->createView(),
+        ];
+    }
+
+    /**
+     * Settings page for the group with the provided nickname, checks if the current actor can administrate given group
+     *
+     * @throws ClientException
+     * @throws NicknameEmptyException
+     * @throws NicknameInvalidException
+     * @throws NicknameNotAllowedException
+     * @throws NicknameTakenException
+     * @throws NicknameTooLongException
+     * @throws NoLoggedInUser
+     * @throws ServerException
+     *
+     * @return array
+     */
+    public function groupSettings(Request $request, string $nickname)
+    {
+        $local_group = LocalGroup::getByNickname($nickname);
+        $group_actor = $local_group->getActor();
+        $actor       = Common::actor();
+        if (!\is_null($group_actor) && $actor->canAdmin($group_actor)) {
+            return [
+                '_template'          => 'group/settings.html.twig',
+                'group'              => $group_actor,
+                'personal_info_form' => ActorForms::personalInfo($request, $actor, $local_group)->createView(),
+                'open_details_query' => $this->string('open'),
+            ];
+        } else {
+            throw new ClientException(_m('You do not have permission to edit settings for the group "{group}"', ['{group}' => $nickname]), code: 404);
+        }
+    }
+
+    /**
+     * Create a new Group FormInterface getter
+     *
+     * @throws RedirectException
+     * @throws ServerException
+     */
+    public static function getGroupCreateForm(Request $request, E\Actor $actor): FormInterface
+    {
         $create_form = Form::create([
             ['group_nickname', TextType::class, ['label' => _m('Group nickname')]],
             ['group_create', SubmitType::class, ['label' => _m('Create this group!')]],
@@ -172,41 +220,6 @@ class Group extends FeedController
 
             throw new RedirectException();
         }
-
-        return [
-            '_template'   => 'group/create.html.twig',
-            'create_form' => $create_form->createView(),
-        ];
-    }
-
-    /**
-     * Settings page for the group with the provided nickname, checks if the current actor can administrate given group
-     *
-     * @throws ClientException
-     * @throws NicknameEmptyException
-     * @throws NicknameInvalidException
-     * @throws NicknameNotAllowedException
-     * @throws NicknameTakenException
-     * @throws NicknameTooLongException
-     * @throws NoLoggedInUser
-     * @throws ServerException
-     *
-     * @return array
-     */
-    public function groupSettings(Request $request, string $nickname)
-    {
-        $local_group = LocalGroup::getByNickname($nickname);
-        $group_actor = $local_group->getActor();
-        $actor       = Common::actor();
-        if (!\is_null($group_actor) && $actor->canAdmin($group_actor)) {
-            return [
-                '_template'          => 'group/settings.html.twig',
-                'group'              => $group_actor,
-                'personal_info_form' => ActorForms::personalInfo($request, $actor, $local_group)->createView(),
-                'open_details_query' => $this->string('open'),
-            ];
-        } else {
-            throw new ClientException(_m('You do not have permission to edit settings for the group "{group}"', ['{group}' => $nickname]), code: 404);
-        }
+        return $create_form;
     }
 }

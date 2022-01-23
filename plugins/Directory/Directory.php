@@ -27,6 +27,12 @@ use App\Core\Event;
 use App\Core\Modules\Plugin;
 use App\Core\Router\RouteLoader;
 use App\Core\Router\Router;
+use App\Util\Common;
+use App\Util\Exception\RedirectException;
+use App\Util\Exception\ServerException;
+use App\Util\Formatting;
+use Component\Group\Controller as ComponentGroupController;
+use Symfony\Component\HttpFoundation\Request;
 
 class Directory extends Plugin
 {
@@ -52,6 +58,30 @@ class Directory extends Plugin
     {
         $res[] = ['title' => 'People', 'path' => Router::url($path_id = 'directory_people', []), 'path_id' => $path_id];
         $res[] = ['title' => 'Groups', 'path' => Router::url($path_id = 'directory_groups', []), 'path_id' => $path_id];
+        return Event::next;
+    }
+
+    /**
+     * Prepend various widgets to Actors Collection template
+     *
+     * @param $elements array of widgets to be prepended
+     *
+     * @throws RedirectException
+     * @throws ServerException
+     *
+     * @return bool EventHook
+     */
+    public function onPrependActorsCollection(Request $request, array &$elements): bool
+    {
+        if (\is_null($actor = Common::actor())) {
+            return Event::next;
+        }
+
+        if ($request->get('_route') === 'directory_groups') {
+            $elements[] = Formatting::twigRenderFile('cards/group/create_widget.html.twig', context: [
+                'create_form' => ComponentGroupController\Group::getGroupCreateForm($request, $actor)->createView(),
+            ]);
+        }
         return Event::next;
     }
 }

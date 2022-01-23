@@ -67,17 +67,4 @@ class LeftPanel extends Component
             return Event::stop;
         }
     }
-
-    /**
-     * Output our dedicated stylesheet
-     *
-     * @param array $styles stylesheets path
-     *
-     * @return bool hook value; true means continue processing, false means stop
-     */
-    public function onEndShowStyles(array &$styles, string $route): bool
-    {
-        $styles[] = 'components/LeftPanel/assets/css/view.css';
-        return Event::next;
-    }
 }

@@ -3,8 +3,13 @@
 {% block title %}{{ title }}{% endblock %}
 
 {% block body %}
-<div class="frame-section frame-section-padding">
+<section class="frame-section frame-section-padding">
     <h1 class="frame-section-title">{{ title }}</h1>
+
+    {% set prepend_actors_collection = handle_event('PrependActorsCollection', request) %}
+    {% for widget in prepend_actors_collection %}
+        {{ widget | raw }}
+    {% endfor %}
 
     <details class="frame-section section-details-title">
         <summary class="details-summary-title">
@@ -56,5 +61,5 @@
             <h2>{{ empty_message }}</h2>
         {% endif %}
     </section>
-</div>
+</section>
 {% endblock body %}

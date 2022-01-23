@@ -48,10 +48,6 @@ fieldset {
     all: unset;
 }
 
-section {
-    all: unset;
-}
-
 :link img, :visited img, a img {
     border: 0;
 }
