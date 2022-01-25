@@ -1,7 +1,8 @@
 {% block rightpanel %}
+{% set current_path = app.request.get('_route') %}
 <label class="panel-right-icon" for="toggle-panel-right" tabindex="-1">{{ icon('chevron-left', 'icon icon-right') | raw }}</label>
 <a id="anchor-right-panel" class="anchor-hidden" tabindex="0" title="{{ 'Press tab followed by a space to access right panel' | trans }}"></a>
-<input type="checkbox" id="toggle-panel-right" tabindex="0" title="{{ 'Open right panel' | trans }}">
+<input type="checkbox" id="toggle-panel-right" tabindex="0" title="{{ 'Open right panel' | trans }}" {% if current_path == 'conversation_reply_to' %}checked{% endif %}>
 
 <aside class="section-panel section-panel-right">
     <section class="panel-content accessibility-target">
@@ -10,12 +11,10 @@
             {{ widget | raw }}
         {% endfor %}
 
-        {% set current_path = app.request.get('_route') %}
         {% set blocks = handle_event('AppendRightPostingBlock', request) %}
         {% if blocks['post_form'] is defined %}
             <section class="frame-section" title="{{ 'Create a new note.' | trans }}">
-                <details class="section-details-title" open="open"
-                         title="{{ 'Expand if you want to access more options.' | trans }}">
+                <details class="section-details-title" open="open" title="{{ 'Expand if you want to access more options.' | trans }}">
                     <summary class="details-summary-title">
                         <span>
                             {% set current_path = app.request.get('_route') %}
@@ -26,6 +25,15 @@
                             {% endif %}
                         </span>
                     </summary>
+
+                    {% if current_path == 'conversation_reply_to' %}
+                        <section class="frame-section-padding">
+                            {% set prepend_posting_form = handle_event('PrependPostingForm', request) %}
+                            {% for widget in prepend_posting_form %}
+                                {{ widget | raw }}
+                            {% endfor %}
+                        </section>
+                    {% endif %}
 
                     <section class="section-form">
                         {{ form_start(blocks['post_form']) }}

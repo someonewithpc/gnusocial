@@ -240,7 +240,7 @@ embed header {
 }
 .note-info-start {
     flex: 1;
-    width: 150px;
+    width: 15px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;

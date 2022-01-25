@@ -34,6 +34,8 @@ use App\Entity\Activity;
 use App\Entity\Actor;
 use App\Entity\Note;
 use App\Util\Common;
+use App\Util\Exception\RedirectException;
+use App\Util\Formatting;
 use Component\Conversation\Entity\Conversation as ConversationEntity;
 use Component\Conversation\Entity\ConversationMute;
 use Functional as F;
@@ -191,6 +193,17 @@ class Conversation extends Component
             $context_actor = Actor::getById(Note::getById((int) $to_note_id)->getActorId());
             return Event::stop;
         }
+        return Event::next;
+    }
+
+    /**
+     * Add minimal Note card to RightPanel template
+     *
+     * @throws RedirectException
+     */
+    public function onPrependPostingForm(Request $request, array &$elements)
+    {
+        $elements[] = Formatting::twigRenderFile('cards/note/macro_note_minimal_wrapper.html.twig', ['note' => Note::getById((int) $request->query->get('reply_to_id'))]);
         return Event::next;
     }
 
