@@ -43,6 +43,7 @@ use League\OAuth2\Server\AuthorizationServer;
 use League\OAuth2\Server\CryptKey;
 use League\OAuth2\Server\Grant\AuthCodeGrant;
 use Plugin\OAuth2\Controller as C;
+use Plugin\OAuth2\Util\ExpandedBearerTokenResponse;
 use XML_XRD_Element_Link;
 
 /**
@@ -71,6 +72,7 @@ class OAuth2 extends Plugin
             new Repository\Scope,
             privateKey: new CryptKey(keyPath: Common::config('oauth2', 'private_key'), passPhrase: Common::config('oauth2', 'private_key_password')),
             encryptionKey: Common::config('oauth2', 'encryption_key'),
+            responseType: new ExpandedBearerTokenResponse(),
         );
 
         self::$authorization_server->enableGrantType(
