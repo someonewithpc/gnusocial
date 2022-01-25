@@ -79,20 +79,17 @@
 
 {% block note_author %}
     {# Microformat's h-card properties indicates a face icon is a "u-logo" #}
-    <a href="{{ actor_url }}">
-        <header class="note-author-fullname" tabindex="0"
-                title="{{ 'Begin a note by the user: ' | trans }} {{ nickname }}">
-            {% if fullname is not null %}
-                {{ fullname }}
-            {% else %}
-                {{ nickname }}
-            {% endif %}
-        </header>
+    <a href="{{ actor_url }}" class="note-author-url u-url" tabindex="0" title="{{ 'Begin a note by the user: ' | trans }} {{ nickname }}">
+        {% if fullname is not null %}
+            {{ fullname }}
+        {% else %}
+            {{ nickname }}
+        {% endif %}
     </a>
 
-    <small class="note-author-nickname">
+    <small class="note-author-uri">
         <a href="{{ actor_uri }}"
-           class="note-author-url u-url">{{ mention }}</a>
+           class="u-url">{{ mention }}</a>
     </small>
 {% endblock note_author %}
 
@@ -107,7 +104,7 @@
 {% endblock note_sidebar %}
 
 {% block note_info %}
-    <div class="note-info-start">
+    <span class="note-info-start">
         {{ block('note_author') }}
         <small class="note-conversation-info">
             <a href="{{ note.getConversationUrl() }}"
@@ -115,7 +112,7 @@
             <a href="{{ note.getUrl() }}"
                class="note-url">{{ note.getModified() | ago }}</a>
         </small>
-    </div>
+    </span>
 {% endblock note_info %}
 
 {% block note_complementary_info %}
