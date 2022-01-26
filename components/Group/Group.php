@@ -82,7 +82,9 @@ class Group extends Component
         if (str_starts_with($request->get('_route'), 'group_actor_view_')) {
             if (!\is_null($id = $request->get('id'))) {
                 return Actor::getById((int) $id);
-            } elseif (!\is_null($nickname = $request->get('nickname'))) {
+            }
+
+            if (!\is_null($nickname = $request->get('nickname'))) {
                 return LocalGroup::getActorByNickname($nickname);
             }
         }
@@ -99,7 +101,18 @@ class Group extends Component
         return Event::next;
     }
 
-    public function onPostingGetContextActor(Request $request, Actor $actor, ?Actor $context_actor)
+    /**
+     * Indicates the context in which Posting's form is to be presented. Passing on $context_actor to Posting's
+     * onAppendRightPostingBlock event, the Group a given $actor is currently browsing.
+     *
+     * Makes it possible to automagically fill in the targets (aka the Group which this $request route is connected to)
+     * in the Posting's form.
+     *
+     * @param null|Actor $context_actor Actor group, if current route is part of an existing Group set of routes
+     *
+     * @return bool
+     */
+    public function onPostingGetContextActor(Request $request, Actor $actor, ?Actor &$context_actor)
     {
         $ctx = $this->getGroupFromContext($request);
         if (!\is_null($ctx)) {

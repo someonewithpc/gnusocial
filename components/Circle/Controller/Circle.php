@@ -31,6 +31,14 @@ use Component\Collection\Util\Controller\CircleController;
 
 class Circle extends CircleController
 {
+    /**
+     * Render an existing ActorCircle with the given id as a Collection of Actors
+     *
+     * @param ActorCircle|int $circle_id the desired ActorCircle id
+     *
+     * @throws \App\Util\Exception\ServerException
+     * @throws ClientException
+     */
     public function circleById(int|ActorCircle $circle_id): array
     {
         $circle = \is_int($circle_id) ? ActorCircle::getByPK(['id' => $circle_id]) : $circle_id;

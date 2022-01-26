@@ -64,7 +64,9 @@ class Posting extends Component
      * HTML render event handler responsible for adding and handling
      * the result of adding the note submission form, only if a user is logged in
      *
+     * @throws BugFoundException
      * @throws ClientException
+     * @throws DuplicateFoundException
      * @throws RedirectException
      * @throws ServerException
      */
@@ -191,11 +193,19 @@ class Posting extends Component
      * $actor_id, possibly as a reply to note $reply_to and with flag
      * $is_local. Sanitizes $content and $attachments
      *
-     * @param array $attachments                     Array of UploadedFile to be stored as GSFiles associated to this note
-     * @param array $processed_attachments           Array of [Attachment, Attachment's name] to be associated to this $actor and Note
-     * @param array $process_note_content_extra_args Extra arguments for the event ProcessNoteContent
+     * @param Actor                $actor                           The Actor responsible for the creation of this Note
+     * @param null|string          $content                         The raw text content sent via Posting form
+     * @param string               $content_type                    Indicating one of the various supported text format (Plain Text, Markdown, LaTeX...)
+     * @param null|string          $locale                          Note's written text language, set by the default Actor language or upon filling Posting's form
+     * @param null|VisibilityScope $scope                           The scope of this Note
+     * @param null|Actor|int       $target                          Filled by PostingFillTargetChoices, representing an Actor in its many forms to be targeted by this Note
+     * @param null|int             $reply_to_id                     The soon-to-be Note parent's id, if it's a Reply itself
+     * @param array                $attachments                     Array of UploadedFile to be stored as GSFiles associated to this note
+     * @param array                $processed_attachments           Array of [Attachment, Attachment's name] to be associated to this $actor and Note
+     * @param array                $process_note_content_extra_args Extra arguments for the event ProcessNoteContent
+     * @param bool                 $notify                          True if the newly created Note activity should be passed on as a Notification
+     * @param null|string          $rendered                        The Note's content post RenderNoteContent event, which sanitizes and processes the raw content sent
      *
-     * @throws BugFoundException
      * @throws ClientException
      * @throws DuplicateFoundException
      * @throws ServerException

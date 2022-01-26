@@ -195,6 +195,17 @@ class Circle extends Component
         return \in_array($vars['path'], ['actor_view_nickname', 'actor_view_id']);
     }
 
+    /**
+     * Retrieves an array of Collections owned by an Actor.
+     * In this case, Collections of those within Actor's own circle of Actors, aka ActorCircle.
+     *
+     * Differs from the overwritten method in MetaCollectionsTrait, since retrieved Collections come from the $owner
+     * itself, and from every Actor that is a part of its ActorCircle.
+     *
+     * @param Actor      $owner    the Actor, and by extension its own circle of Actors
+     * @param null|array $vars     Page vars sent by AppendRightPanelBlock event
+     * @param bool       $ids_only true if only the Collections ids are to be returned
+     */
     protected function getCollectionsBy(Actor $owner, ?array $vars = null, bool $ids_only = false): array
     {
         $tagged_id = !\is_null($vars) ? $this->getActorIdFromVars($vars) : null;

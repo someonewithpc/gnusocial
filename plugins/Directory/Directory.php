@@ -38,6 +38,8 @@ class Directory extends Plugin
 {
     /**
      * Map URLs to Controllers
+     * @param RouteLoader $r
+     * @return bool
      */
     public function onAddRoute(RouteLoader $r)
     {
@@ -50,6 +52,7 @@ class Directory extends Plugin
     /**
      * Add Links to menu
      *
+     * @param array $vars
      * @param array $res out menu items
      *
      * @return bool hook value; true means continue processing, false means stop
@@ -64,12 +67,12 @@ class Directory extends Plugin
     /**
      * Prepend various widgets to Actors Collection template
      *
+     * @param Request $request
      * @param $elements array of widgets to be prepended
      *
+     * @return bool EventHook
      * @throws RedirectException
      * @throws ServerException
-     *
-     * @return bool EventHook
      */
     public function onPrependActorsCollection(Request $request, array &$elements): bool
     {
