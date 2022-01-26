@@ -228,7 +228,8 @@ class GNUsocial implements EventSubscriberInterface
         // Overriding doesn't work as we want, overrides the top-most key, do it manually
         $local_file = INSTALLDIR . '/social.local.yaml';
         if (!file_exists($local_file)) {
-            file_put_contents($local_file, "parameters:\n  locals:\n    gnusocial:\n");
+            $node_name = $_ENV['SOCIAL_NODE_NAME'];
+            file_put_contents($local_file, "parameters:\n  locals:\n    gnusocial:\n      site:\n        name: {$node_name}\n");
         }
 
         // Load .local
@@ -244,7 +245,7 @@ class GNUsocial implements EventSubscriberInterface
         $module_configs = ModuleManager::configureContainer($container, $loader);
 
         // Merge parameter $from with values already set in $to
-        $merge_local_config = function ($from, $to = null) use ($container, $locals) {
+        $merge_local_config = static function ($from, $to = null) use ($container, $locals) {
             $to ??= $from;
             $wrapper = $container->hasParameter($to) ? $container->getParameter($to) : [];
             $content = [$from => $container->getParameter($from)];
