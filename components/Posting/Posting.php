@@ -158,7 +158,7 @@ class Posting extends Component
                         content_type: $content_type,
                         locale: $data['language'],
                         scope: VisibilityScope::from($data['visibility']),
-                        target: $target ?? null, // @phpstan-ignore-line
+                        target: $target ?? null,
                         reply_to_id: $data['reply_to_id'],
                         attachments: $data['attachments'],
                         process_note_content_extra_args: $extra_args,

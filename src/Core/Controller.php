@@ -41,13 +41,13 @@ use App\Util\Exception\RedirectException;
 use App\Util\Exception\ServerException;
 use Component\Collection\Util\Controller\FeedController;
 use Exception;
+use RuntimeException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
-use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Event\ControllerEvent;
 use Symfony\Component\HttpKernel\Event\ExceptionEvent;
 use Symfony\Component\HttpKernel\Event\ViewEvent;
@@ -61,6 +61,8 @@ use Throwable;
  * @method ?string string(string $param, ?\Throwable $throw = null)
  * @method ?string params(string $param)
  * @method mixed   handle(Request $request, mixed ...$extra)
+ *
+ * @return array
  */
 abstract class Controller extends AbstractController implements EventSubscriberInterface
 {
@@ -85,15 +87,15 @@ abstract class Controller extends AbstractController implements EventSubscriberI
         $attributes    = array_diff_key($request->attributes->get('_route_params'), array_flip(['_format', '_fragment', '_locale', 'template', 'accept', 'is_system_path']));
         if (method_exists($class, $method)) {
             return $this->{$method}($request, ...$attributes);
-        } else {
-            return $this->handle($request, ...$attributes);
         }
+
+        return $this->handle($request, ...$attributes);
     }
 
     /**
      * Symfony event when it's searching for which controller to use
      */
-    public function onKernelController(ControllerEvent $event)
+    public function onKernelController(ControllerEvent $event): ControllerEvent
     {
         $controller = $event->getController();
         $request    = $event->getRequest();
@@ -116,7 +118,7 @@ abstract class Controller extends AbstractController implements EventSubscriberI
      * @throws ClientException
      * @throws ServerException
      */
-    public function onKernelView(ViewEvent $event)
+    public function onKernelView(ViewEvent $event): ViewEvent
     {
         $request  = $event->getRequest();
         $response = $event->getControllerResult();
@@ -154,19 +156,14 @@ abstract class Controller extends AbstractController implements EventSubscriberI
             'vars' => $this->vars,
             'response' => &$potential_response,
         ]) !== Event::stop) {
-            switch ($format) {
-            case 'json':
+            if ($format === 'json') {
                 $event->setResponse(new JsonResponse($response));
-                break;
-            default: // html (assume if not specified)
-                if ($redirect !== false) {
-                    $event->setResponse(new RedirectResponse($redirect));
-                } elseif (!\is_null($template)) {
-                    $event->setResponse($this->render($template, $this->vars));
-                    break;
-                } else {
-                    throw new ClientException(_m('Unsupported format: {format}', ['format' => $format]), 406); // 406 Not Acceptable
-                }
+            } elseif ($redirect !== false) {
+                $event->setResponse(new RedirectResponse($redirect));
+            } elseif (!\is_null($template)) {
+                $event->setResponse($this->render($template, $this->vars));
+            } else {
+                throw new ClientException(_m('Unsupported format: {format}', ['format' => $format]), 406); // 406 Not Acceptable
             }
         } else {
             if (\is_null($potential_response)) {
@@ -197,7 +194,7 @@ abstract class Controller extends AbstractController implements EventSubscriberI
      *
      * @codeCoverageIgnore
      */
-    public function onKernelException(ExceptionEvent $event)
+    public function onKernelException(ExceptionEvent $event): ExceptionEvent
     {
         $except = $event->getThrowable();
         if ($_ENV['APP_ENV'] !== 'dev') {
@@ -206,13 +203,13 @@ abstract class Controller extends AbstractController implements EventSubscriberI
         }
         do {
             if ($except instanceof RedirectException) {
-                if (($redir = $except->redirect_response) != null) {
+                if (($redir = $except->redirect_response) !== null) {
                     $event->setResponse($redir);
                 } else {
                     $event->setResponse(new RedirectResponse($event->getRequest()->getPathInfo()));
                 }
             }
-        } while ($except != null && ($except = $except->getPrevious()) != null);
+        } while (($except = $except->getPrevious()) !== null);
 
         Event::handle('CleanupModule');
 
@@ -222,7 +219,7 @@ abstract class Controller extends AbstractController implements EventSubscriberI
     /**
      * @codeCoverageIgnore
      */
-    public static function getSubscribedEvents()
+    public static function getSubscribedEvents(): array
     {
         return [
             KernelEvents::CONTROLLER => 'onKernelController',
@@ -235,6 +232,7 @@ abstract class Controller extends AbstractController implements EventSubscriberI
      * Get and convert GET parameters. Can be called with `int`, `bool`, `string`, etc
      *
      * @throws Exception
+     * @throws Throwable
      * @throws ValidatorException
      *
      * @return null|array|bool|int|string the value or null if no parameter exists
@@ -242,27 +240,29 @@ abstract class Controller extends AbstractController implements EventSubscriberI
     public function __call(string $method, array $args): array|bool|int|string|null
     {
         switch ($method) {
-        case 'int':
-        case 'bool':
-        case 'string':
-            if ($this->request->query->has($args[0])) {
-                return match ($method) {
-                    'int'    => $this->request->query->getInt($args[0]),
-                    'bool'   => $this->request->query->getBoolean($args[0]),
-                    'string' => $this->request->query->get($args[0]),
-                    default  => throw new BugFoundException('Inconsistent switch/match spotted'),
-                };
-            } elseif (\array_key_exists(1, $args) && $args[1] instanceof Throwable) {
-                throw $args[1];
-            } else {
+            case 'int':
+            case 'bool':
+            case 'string':
+                if ($this->request->query->has($args[0])) {
+                    return match ($method) {
+                        'int'    => $this->request->query->getInt($args[0]),
+                        'bool'   => $this->request->query->getBoolean($args[0]),
+                        'string' => $this->request->query->get($args[0]),
+                        default  => throw new BugFoundException('Inconsistent switch/match spotted'),
+                    };
+                }
+
+                if (\array_key_exists(1, $args) && ($args[1] instanceof Throwable)) {
+                    throw $args[1];
+                }
+
                 return null;
-            }
-        case 'params':
-            return $this->request->query->all();
-        default:
-            // @codeCoverageIgnoreStart
-            Log::critical($m = "Method '{$method}' on class App\\Core\\Controller not found (__call)");
-            throw new Exception($m);
+            case 'params':
+                return $this->request->query->all();
+            default:
+                // @codeCoverageIgnoreStart
+                Log::critical($m = "Method '{$method}' on class App\\Core\\Controller not found (__call)");
+                throw new RuntimeException($m);
             // @codeCoverageIgnoreEnd
         }
     }

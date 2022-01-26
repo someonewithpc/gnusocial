@@ -37,8 +37,8 @@ use Symfony\Component\HttpFoundation\Request;
 class Directory extends Plugin
 {
     /**
-     * Map URLs to Controllers
-     * @param RouteLoader $r
+     * Map Directory routes to its corresponding Controllers
+     *
      * @return bool
      */
     public function onAddRoute(RouteLoader $r)
@@ -50,9 +50,8 @@ class Directory extends Plugin
     }
 
     /**
-     * Add Links to menu
+     * Add Links to main navigation card
      *
-     * @param array $vars
      * @param array $res out menu items
      *
      * @return bool hook value; true means continue processing, false means stop
@@ -67,12 +66,12 @@ class Directory extends Plugin
     /**
      * Prepend various widgets to Actors Collection template
      *
-     * @param Request $request
-     * @param $elements array of widgets to be prepended
+     * @param array $elements array of widgets to be prepended
      *
-     * @return bool EventHook
      * @throws RedirectException
      * @throws ServerException
+     *
+     * @return bool EventHook
      */
     public function onPrependActorsCollection(Request $request, array &$elements): bool
     {
