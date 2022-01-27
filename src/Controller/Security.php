@@ -18,6 +18,7 @@ use App\Security\Authenticator;
 use App\Security\EmailVerifier;
 use App\Util\Common;
 use App\Util\Exception\DuplicateFoundException;
+use App\Util\Exception\EmailException;
 use App\Util\Exception\EmailTakenException;
 use App\Util\Exception\NicknameEmptyException;
 use App\Util\Exception\NicknameException;
@@ -81,7 +82,7 @@ class Security extends Controller
      * possibly sending a confirmation email
      *
      * @throws DuplicateFoundException
-     * @throws EmailTakenException
+     * @throws EmailException
      * @throws EmailTakenException
      * @throws NicknameEmptyException
      * @throws NicknameException
@@ -144,6 +145,12 @@ class Security extends Controller
                     throw new EmailTakenException($found_user->getActor());
                 }
                 unset($found_user);
+
+                // Check if email is valid
+                $data['email'] = filter_var($data['email'], \FILTER_SANITIZE_EMAIL);
+                if (filter_var($data['email'], \FILTER_VALIDATE_EMAIL)) {
+                    throw new EmailException('Invalid email entry, please use a valid email');
+                }
             } catch (NotFoundException) {
                 // continue
             }
