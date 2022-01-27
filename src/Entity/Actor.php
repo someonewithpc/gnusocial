@@ -436,24 +436,21 @@ class Actor extends Entity
 
     /**
      * Get a URL for this actor, i.e. a user friendly URL, using the nickname
+     *
+     * @param int $type
+     * @return string
+     * @throws BugFoundException
      */
     public function getUrl(int $type = Router::ABSOLUTE_URL): string
     {
         if ($this->getIsLocal()) {
             $url = null;
             if (Event::handle('StartGetActorUrl', [$this, $type, &$url]) === Event::next) {
-                switch ($this->type) {
-                    case self::PERSON:
-                    case self::ORGANISATION:
-                    case self::BOT:
-                        $url = Router::url('actor_view_nickname', ['nickname' => $this->getNickname()], $type);
-                        break;
-                    case self::GROUP:
-                        $url = Router::url('group_actor_view_nickname', ['nickname' => $this->getNickname()], $type);
-                        break;
-                    default:
-                        throw new BugFoundException('Actor type added but `Actor::getUrl` was not updated');
-                }
+                $url = match ($this->type) {
+                    self::PERSON, self::ORGANISATION, self::BOT => Router::url('actor_view_nickname', ['nickname' => mb_strtolower($this->getNickname())], $type),
+                    self::GROUP => Router::url('group_actor_view_nickname', ['nickname' => $this->getNickname()], $type),
+                    default => throw new BugFoundException('Actor type added but `Actor::getUrl` was not updated'),
+                };
                 Event::handle('EndGetActorUrl', [$this, $type, &$url]);
             }
         } else {
