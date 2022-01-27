@@ -19,11 +19,13 @@
             {% if page_title is defined %}
                 {% if current_path starts with 'feed_' %}
                     <h1 class="section-title">{{ page_title | trans }}</h1>
-                {% else %}
-                    <span class="section-title">{{ page_title | trans }}</span>
                 {% endif %}
             {% else %}
-                <span class="section-title">{{ 'Notes' | trans }}</span>
+                {% if current_path starts with 'search' %}
+                    <h3 class="heading-no-margin">{{ 'Notes found' | trans }}</h3>
+                {% else %}
+                    <span class="section-title">{{ 'Notes' | trans }}</span>
+                {% endif %}
             {% endif %}
             <nav class="feed-actions">
                 <details class="feed-actions-details">

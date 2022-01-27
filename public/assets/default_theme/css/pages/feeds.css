@@ -134,7 +134,6 @@
 
 .feed-header {
     display: flex;
-    margin-top: var(--s);
     margin-bottom: var(--m);
     align-items: center;
 }
@@ -200,10 +199,6 @@
 
 .h-entry[id^="note-anchor-"]:target {
     border: 2px solid var(--accent) !important;
-}
-
-.h-feed hr, .notes hr {
-    margin-top: var(--s);
 }
 
 .note-attachments {

@@ -8,6 +8,11 @@ html {
     scroll-margin-top: var(--xxl);
 }
 
+hr {
+    margin-top: var(--s);
+    margin-bottom: var(--s);
+}
+
 .icon {
     align-self: center;
     fill: var(--foreground);
