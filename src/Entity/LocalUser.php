@@ -28,6 +28,7 @@ use App\Core\DB\DB;
 use App\Core\Entity;
 use App\Core\ActorLocalRoles;
 use App\Util\Common;
+use App\Util\Exception\EmailException;
 use App\Util\Exception\NicknameEmptyException;
 use App\Util\Exception\NicknameException;
 use App\Util\Exception\NicknameInvalidException;
@@ -366,6 +367,40 @@ class LocalUser extends Entity implements UserInterface, PasswordAuthenticatedUs
         $this->getActor()->setNickname($nickname);
         Cache::delete(self::cacheKeys($this->getId())['nickname']);
         Cache::delete(Actor::cacheKeys($this->getId())['nickname']);
+        return $this;
+    }
+
+    /**
+     * Validates desired email, throwing an EmailException if it's invalid
+     *
+     * @param string|null $email The desired outgoing email
+     * @return LocalUser
+     * @throws EmailException
+     */
+    public function setOutgoingEmailSanitized(?string $email): self
+    {
+        $sanitized_email = filter_var($email, FILTER_SANITIZE_EMAIL);
+        if (!is_null($email) && !filter_var($sanitized_email, FILTER_VALIDATE_EMAIL)) {
+            throw new EmailException('Invalid email entry, please use a valid email');
+        }
+        $this->outgoing_email = \is_null($sanitized_email) ? null : \mb_substr($sanitized_email, 0, 191);
+        return $this;
+    }
+
+    /**
+     * Validates desired email, throwing an EmailException if it's invalid
+     *
+     * @param string|null $email The desired incoming email
+     * @return LocalUser
+     * @throws EmailException
+     */
+    public function setIncomingEmailSanitized(?string $email): self
+    {
+        $sanitized_email = filter_var($email, FILTER_SANITIZE_EMAIL);
+        if (!is_null($email) && !filter_var($sanitized_email, FILTER_VALIDATE_EMAIL)) {
+            throw new EmailException('Invalid email entry, please use a valid email');
+        }
+        $this->incoming_email = \is_null($sanitized_email) ? null : \mb_substr($sanitized_email, 0, 191);
         return $this;
     }
 

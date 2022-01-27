@@ -138,7 +138,9 @@ class Security extends Controller
                 $found_user = DB::findOneBy('local_user', ['or' => ['nickname' => $nickname, 'outgoing_email' => $data['email']]]);
                 if ($found_user->getNickname() === $nickname) {
                     throw new NicknameTakenException($found_user->getActor());
-                } elseif ($found_user->getOutgoingEmail() === $data['email']) {
+                }
+
+                if ($found_user->getOutgoingEmail() === $data['email']) {
                     throw new EmailTakenException($found_user->getActor());
                 }
                 unset($found_user);
@@ -164,7 +166,7 @@ class Security extends Controller
                 DB::persistWithSameId(
                     $actor,
                     $user,
-                    function (int $id) use ($user) {
+                    static function (int $id) use ($user) {
                         // Self subscription for the Home feed and alike
                         DB::persist(ActorSubscription::create(['subscriber_id' => $id, 'subscribed_id' => $id]));
                         Feed::createDefaultFeeds($id, $user);

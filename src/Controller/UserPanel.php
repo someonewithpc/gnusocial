@@ -115,8 +115,22 @@ class UserPanel extends Controller
         // TODO Add support missing settings
 
         $form = Form::create([
-            ['outgoing_email', TextType::class, ['label' => _m('Outgoing email'), 'required' => false, 'help' => _m('Change the email we use to contact you')]],
-            ['incoming_email', TextType::class, ['label' => _m('Incoming email'), 'required' => false, 'help' => _m('Change the email you use to contact us (for posting, for instance)')]],
+            ['outgoing_email_sanitized', TextType::class,
+                [
+                    'label'    => _m('Outgoing email'),
+                    'required' => false,
+                    'help'     => _m('Change the email we use to contact you'),
+                    'data'     => $user->getOutgoingEmail() ?: '',
+                ],
+            ],
+            ['incoming_email_sanitized', TextType::class,
+                [
+                    'label'    => _m('Incoming email'),
+                    'required' => false,
+                    'help'     => _m('Change the email you use to contact us (for posting, for instance)'),
+                    'data'     => $user->getIncomingEmail() ?: '',
+                ],
+            ],
             ['save_email', SubmitType::class, ['label' => _m('Save email info')]],
         ]);
 
