@@ -39,13 +39,14 @@ use App\Core\Form;
 use function App\Core\I18n\_m;
 use App\Entity\Actor;
 use App\Entity\LocalUser;
+use App\Util\Exception\ClientException;
 use App\Util\Exception\NicknameEmptyException;
 use App\Util\Exception\NicknameInvalidException;
 use App\Util\Exception\NicknameNotAllowedException;
 use App\Util\Exception\NicknameTakenException;
 use App\Util\Exception\NicknameTooLongException;
-use App\Util\Exception\NoLoggedInUser;
 use App\Util\Exception\ServerException;
+use App\Util\Nickname;
 use Component\Group\Entity\LocalGroup;
 use Misd\PhoneNumberBundle\Form\Type\PhoneNumberType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
@@ -58,12 +59,13 @@ class ActorForms
     /**
      * Actor personal information panel
      *
+     * @throws \App\Util\Exception\NicknameException
+     * @throws ClientException
      * @throws NicknameEmptyException
      * @throws NicknameInvalidException
      * @throws NicknameNotAllowedException
      * @throws NicknameTakenException
      * @throws NicknameTooLongException
-     * @throws NoLoggedInUser
      * @throws ServerException
      */
     public static function personalInfo(Request $request, Actor $target, LocalUser|LocalGroup $user): mixed
@@ -80,9 +82,15 @@ class ActorForms
         ];
 
         // Setting nickname normalised and setting actor cache
-        $extra_step = function ($data, $extra_args) use ($user, $target) {
-            if ($user->getNickname() !== $data['nickname']) {
-                $user->setNicknameSanitizedAndCached($data['nickname']);
+        $extra_step = static function ($data, $extra_args) use ($user, $target) {
+            if (!strcmp($user->getNickname(), $data['nickname'])) {
+                $data['nickname'] = Nickname::normalize($data['nickname'], check_already_used: false, which: Nickname::CHECK_LOCAL_GROUP, check_is_allowed: true);
+            }
+            if (!strcmp($target->getFullname(), $data['full_name'])) {
+                $data['full_name'] = trim($data['full_name']);
+                if (mb_strlen($data['full_name']) > 64) {
+                    throw new ClientException('Fullname cannot be more than 64 character long.');
+                }
             }
 
             $cache_keys = Actor::cacheKeys($target->getId());
