@@ -49,7 +49,7 @@ use Symfony\Component\HttpFoundation\Request;
 class Oomox extends Plugin
 {
     /**
-     * Map URLs to actions
+     * Maps Routes to their respective Controllers
      */
     public function onAddRoute(RouteLoader $r): bool
     {
@@ -108,10 +108,8 @@ class Oomox extends Plugin
 
     /**
      * Adds to array $styles the generated CSS according to user settings, if any are present.
-     *
-     * @return bool
      */
-    public function onEndShowStyles(array &$styles, string $route)
+    public function onEndShowStyles(array &$styles, string $route): bool
     {
         $user = Common::user();
         if (!\is_null($user) && !\is_null(Cache::get(self::cacheKey($user), fn () => self::getEntity($user)))) {

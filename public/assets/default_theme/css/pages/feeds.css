@@ -98,10 +98,11 @@
 
 .feed-actions-details[open] > .feed-actions-details-dropdown, .note-actions-extra-details[open] > summary + * {
     background: var(--background-card);
-    border: 2px solid var(--border);
+    border: 1px solid var(--border);
     border-radius: var(--s);
     box-shadow: var(--shadow);
     display: flex;
+    flex-direction: column;
     padding: 4px 8px;
     position: absolute;
     right: 0;
@@ -167,14 +168,16 @@
     text-decoration: underline;
 }
 
-.h-entry figure {
+.h-entry figure,
+.note-attachments-unit figure {
     background: var(--gradient);
     border-radius: var(--s);
     margin: unset;
     padding: var(--s);
 }
 
-.h-entry img {
+.h-entry img,
+.note-attachments-unit figure img {
     background: repeating-conic-gradient(#ffffff66 0deg 90deg, #ffffff33 0deg 180deg) 0 0/40px 40px round;
 }
 
@@ -279,7 +282,7 @@ embed header {
 .note-actions-extra-details summary {
     opacity: 0.5;
 }
-.note-actions-extra-details[open] > summary + * > li {
+.note-actions-extra-details[open] > summary + * > a {
     font-size: 0.937rem;
     line-height: 2;
 }

@@ -19,6 +19,13 @@ declare(strict_types = 1);
 // along with GNU social.  If not, see <http://www.gnu.org/licenses/>.
 // }}}
 
+/**
+ * @author    Eliseu Amaro <mail@eliseuama.ro>
+ * @author    Diogo Peralta Cordeiro <@diogo.site>
+ * @copyright 2021-2022 Free Software Foundation, Inc http://www.fsf.org
+ * @license   https://www.gnu.org/licenses/agpl.html GNU AGPL v3 or later
+ */
+
 namespace Plugin\RepeatNote;
 
 use App\Core\Cache;
@@ -32,7 +39,6 @@ use App\Entity\Activity;
 use App\Entity\Actor;
 use App\Entity\Note;
 use App\Util\Common;
-use App\Util\Exception\BugFoundException;
 use App\Util\Exception\ClientException;
 use App\Util\Exception\DuplicateFoundException;
 use App\Util\Exception\ServerException;
@@ -57,7 +63,9 @@ class RepeatNote extends NoteHandlerPlugin
      * In the end, the Activity is created, and a new notification for the
      * repeat Activity created
      *
-     * @throws BugFoundException
+     * @param Note $note     Note being repeated
+     * @param int  $actor_id Actor id of whom is performing the repeat Activity
+     *
      * @throws ClientException
      * @throws DuplicateFoundException
      * @throws ServerException
@@ -116,6 +124,11 @@ class RepeatNote extends NoteHandlerPlugin
      * Finally, creates a new Activity, undoing the repeat, and the respective
      * Notification is handled.
      *
+     * @param int $note_id  Note id being unrepeated
+     * @param int $actor_id Actor undoing repeat Activity
+     *
+     * @throws \App\Util\Exception\NotFoundException
+     * @throws DuplicateFoundException
      * @throws ServerException
      */
     public static function unrepeatNote(int $note_id, int $actor_id, string $source = 'web'): ?Activity
@@ -176,6 +189,10 @@ class RepeatNote extends NoteHandlerPlugin
     /**
      * Filters repeats out of Conversations, and replaces a repeat with the
      * original Note on Actor feed
+     *
+     * @param array $notes List of Notes to be filtered
+     *
+     * @return bool Event hook, Event::next (true) is returned to allow Event to be handled by other handlers
      */
     public function onFilterNoteList(?Actor $actor, array &$notes, Request $request): bool
     {
@@ -183,7 +200,7 @@ class RepeatNote extends NoteHandlerPlugin
         // it's pretty cool
         if (str_starts_with($request->get('_route'), 'actor_view_')) {
             $notes = array_map(
-                fn (Note $note) => RepeatEntity::isNoteRepeat($note)
+                static fn (Note $note) => RepeatEntity::isNoteRepeat($note)
                     ? Note::getById(RepeatEntity::getByPK($note->getId())->getRepeatOf())
                     : $note,
                 $notes,
@@ -192,7 +209,7 @@ class RepeatNote extends NoteHandlerPlugin
         }
 
         // Filter out repeats altogether
-        $notes = array_filter($notes, fn (Note $note) => !RepeatEntity::isNoteRepeat($note));
+        $notes = array_filter($notes, static fn (Note $note) => !RepeatEntity::isNoteRepeat($note));
         return Event::next;
     }
 
@@ -200,7 +217,7 @@ class RepeatNote extends NoteHandlerPlugin
      * HTML rendering event that adds the repeat form as a note
      * action, if a user is logged in
      *
-     * @return bool Event hook
+     * @return bool Event hook, Event::next (true) is returned to allow Event to be handled by other handlers
      */
     public function onAddNoteActions(Request $request, Note $note, array &$actions): bool
     {
@@ -244,7 +261,7 @@ class RepeatNote extends NoteHandlerPlugin
      * @param array $result Rendered String containing anchors for Actors that
      *                      repeated the Note
      *
-     * @return bool
+     * @return bool Event hook, Event::next (true) is returned to allow Event to be handled by other handlers
      */
     public function onAppendCardNote(array $vars, array &$result)
     {
@@ -278,6 +295,11 @@ class RepeatNote extends NoteHandlerPlugin
     /**
      * Deletes every repeat entity that is related to a deleted Note in its
      * respective table
+     *
+     * @param Note  $note  Note to be deleted
+     * @param Actor $actor Who performed the Delete action
+     *
+     * @return bool Event hook, Event::next (true) is returned to allow Event to be handled by other handlers
      */
     public function onNoteDeleteRelated(Note &$note, Actor $actor): bool
     {
@@ -299,7 +321,7 @@ class RepeatNote extends NoteHandlerPlugin
      * - **repeat_remove**
      *  same as above, except that it undoes the aforementioned action
      *
-     * @return bool Event hook
+     * @return bool Event hook, Event::next (true) is returned to allow Event to be handled by other handlers
      */
     public function onAddRoute(RouteLoader $r): bool
     {
@@ -319,6 +341,16 @@ class RepeatNote extends NoteHandlerPlugin
      * @param \ActivityPhp\Type\AbstractObject                    $type_activity Activity Streams 2.0 Activity
      * @param mixed                                               $type_object   Activity's Object
      * @param null|\Plugin\ActivityPub\Entity\ActivitypubActivity $ap_act        Resulting ActivitypubActivity
+     *
+     * @throws \App\Util\Exception\NoSuchActorException
+     * @throws \App\Util\Exception\NotFoundException
+     * @throws \Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface
+     * @throws \Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface
+     * @throws \Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface
+     * @throws \Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface
+     * @throws ClientException
+     * @throws DuplicateFoundException
+     * @throws ServerException
      *
      * @return bool Returns `Event::stop` if handled, `Event::next` otherwise
      */
@@ -387,6 +419,16 @@ class RepeatNote extends NoteHandlerPlugin
      * @param \ActivityPhp\Type\AbstractObject                    $type_object   Activity Streams 2.0 Object
      * @param null|\Plugin\ActivityPub\Entity\ActivitypubActivity $ap_act        Resulting ActivitypubActivity
      *
+     * @throws \App\Util\Exception\NoSuchActorException
+     * @throws \App\Util\Exception\NotFoundException
+     * @throws \Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface
+     * @throws \Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface
+     * @throws \Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface
+     * @throws \Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface
+     * @throws ClientException
+     * @throws DuplicateFoundException
+     * @throws ServerException
+     *
      * @return bool Returns `Event::stop` if handled, `Event::next` otherwise
      */
     public function onNewActivityPubActivity(Actor $actor, \ActivityPhp\Type\AbstractObject $type_activity, \ActivityPhp\Type\AbstractObject $type_object, ?\Plugin\ActivityPub\Entity\ActivitypubActivity &$ap_act): bool
@@ -401,6 +443,16 @@ class RepeatNote extends NoteHandlerPlugin
      * @param \ActivityPhp\Type\AbstractObject                    $type_activity Activity Streams 2.0 Activity
      * @param mixed                                               $type_object   Object
      * @param null|\Plugin\ActivityPub\Entity\ActivitypubActivity $ap_act        Resulting ActivitypubActivity
+     *
+     * @throws \App\Util\Exception\NoSuchActorException
+     * @throws \App\Util\Exception\NotFoundException
+     * @throws \Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface
+     * @throws \Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface
+     * @throws \Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface
+     * @throws \Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface
+     * @throws ClientException
+     * @throws DuplicateFoundException
+     * @throws ServerException
      *
      * @return bool Returns `Event::stop` if handled, `Event::next` otherwise
      */

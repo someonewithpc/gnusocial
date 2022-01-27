@@ -1,9 +1,7 @@
 <?php
 
 declare(strict_types = 1);
-
 // {{{ License
-
 // This file is part of GNU social - https://www.gnu.org/software/social
 //
 // GNU social is free software: you can redistribute it and/or modify
@@ -18,8 +16,14 @@ declare(strict_types = 1);
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with GNU social.  If not, see <http://www.gnu.org/licenses/>.
-
 // }}}
+
+/**
+ * @author    Hugo Sales <hugo@hsal.es>
+ * @author    Eliseu Amaro <mail@eliseuama.ro>
+ * @copyright 2021-2022 Free Software Foundation, Inc http://www.fsf.org
+ * @license   https://www.gnu.org/licenses/agpl.html GNU AGPL v3 or later
+ */
 
 namespace Component\Conversation;
 
@@ -34,7 +38,6 @@ use App\Entity\Activity;
 use App\Entity\Actor;
 use App\Entity\Note;
 use App\Util\Common;
-use App\Util\Exception\RedirectException;
 use App\Util\Formatting;
 use Component\Conversation\Entity\Conversation as ConversationEntity;
 use Component\Conversation\Entity\ConversationMute;
@@ -101,6 +104,8 @@ class Conversation extends Component
      *                                  'id' (HTML markup id used to redirect user to this anchor upon performing the action)
      *
      * @throws \App\Util\Exception\ServerException
+     *
+     * @return bool EventHook
      */
     public function onAddNoteActions(Request $request, Note $note, array &$actions): bool
     {
@@ -134,7 +139,14 @@ class Conversation extends Component
     }
 
     /**
-     * Posting event to add extra info to a note
+     * Posting event to add extra information to Component\Posting form data
+     *
+     * @param array $data Transport data to be filled with reply_to_id
+     *
+     * @throws \App\Util\Exception\ClientException
+     * @throws \App\Util\Exception\NoSuchNoteException
+     *
+     * @return bool EventHook
      */
     public function onPostingModifyData(Request $request, Actor $actor, array &$data): bool
     {
@@ -153,6 +165,8 @@ class Conversation extends Component
      *
      * @param array $vars   Contains information related to Note currently being rendered
      * @param array $result Contains keys 'actors', and 'action'. Needed to construct a string, stating who ($result['actors']), has already performed a reply ($result['action']), in the given Note (vars['note'])
+     *
+     * @return bool EventHook
      */
     public function onAppendCardNote(array $vars, array &$result): bool
     {
@@ -184,8 +198,10 @@ class Conversation extends Component
      *
      * @param \App\Entity\Actor      $actor         The Actor currently attempting to post a Note
      * @param null|\App\Entity\Actor $context_actor The 'owner' of the current route (e.g. Group or Actor), used to target it
+     *
+     * @return bool EventHook
      */
-    public function onPostingGetContextActor(Request $request, Actor $actor, ?Actor &$context_actor)
+    public function onPostingGetContextActor(Request $request, Actor $actor, ?Actor &$context_actor): bool
     {
         $to_note_id = $request->query->get('reply_to_id');
         if (!\is_null($to_note_id)) {
@@ -198,10 +214,8 @@ class Conversation extends Component
 
     /**
      * Add minimal Note card to RightPanel template
-     *
-     * @throws RedirectException
      */
-    public function onPrependPostingForm(Request $request, array &$elements)
+    public function onPrependPostingForm(Request $request, array &$elements): bool
     {
         $elements[] = Formatting::twigRenderFile('cards/note/macro_note_minimal_wrapper.html.twig', ['note' => Note::getById((int) $request->query->get('reply_to_id'))]);
         return Event::next;
@@ -213,6 +227,8 @@ class Conversation extends Component
      *
      * @param \App\Entity\Note  $note  Note being deleted
      * @param \App\Entity\Actor $actor Actor that performed the delete action
+     *
+     * @return bool EventHook
      */
     public function onNoteDeleteRelated(Note &$note, Actor $actor): bool
     {
@@ -233,7 +249,7 @@ class Conversation extends Component
      *
      * @return bool EventHook
      */
-    public function onAddExtraNoteActions(Request $request, Note $note, array &$actions)
+    public function onAddExtraNoteActions(Request $request, Note $note, array &$actions): bool
     {
         if (\is_null($user = Common::user())) {
             return Event::next;
@@ -261,7 +277,14 @@ class Conversation extends Component
         return Event::next;
     }
 
-    public function onNewNotificationShould(Activity $activity, Actor $actor)
+    /**
+     * Prevents new Notifications to appear for muted conversations
+     *
+     * @param Activity $activity Notification Activity
+     *
+     * @return bool EventHook
+     */
+    public function onNewNotificationShould(Activity $activity, Actor $actor): bool
     {
         if ($activity->getObjectType() === 'note' && ConversationMute::isMuted($activity, $actor)) {
             return Event::stop;

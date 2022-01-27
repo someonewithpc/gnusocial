@@ -30,13 +30,11 @@
                     <summary>
                         {{ icon('filter', 'icon icon-feed-actions') | raw }} {# button-container #}
                     </summary>
-                    <div class="feed-actions-details-dropdown">
-                        <menu>
-                            {% for block in handle_event('AddFeedActions', app.request, notes is defined and notes is not empty) %}
-                                {{ block | raw }}
-                            {% endfor %}
-                        </menu>
-                    </div>
+                    <menu class="feed-actions-details-dropdown">
+                        {% for block in handle_event('AddFeedActions', app.request, notes is defined and notes is not empty) %}
+                            {{ block | raw }}
+                        {% endfor %}
+                    </menu>
                 </details>
             </nav>
         </header>

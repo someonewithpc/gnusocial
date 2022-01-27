@@ -4,29 +4,20 @@
             <li class="note-actions-extra">
                 <details class="note-actions-extra-details">
                     <summary>
-                        {{ icon('kebab', 'icon icon-note-actions-extra') | raw }} {# button-container #}
+                        {{ icon('kebab', 'icon icon-note-actions-extra') | raw }}
                     </summary>
-                    <ul>
-                        <li>
-                            <a href="{{ note.getUrl() }}">{{ 'Permalink' | trans }}</a>
-                        </li>
+                    <menu>
+                        <a href="{{ note.getUrl() }}">{{ 'Permalink' | trans }}</a>
                         <hr>
                         {% for current_action in get_extra_note_actions(note) %}
-                            <li>
-                                <a class="{{ current_action["classes"] }}"
-                                   href="{{ current_action["url"] }}">{{ current_action['title'] }}</a>
-                            </li>
+                        <a class="{{ current_action["classes"] }}" href="{{ current_action["url"] }}">{{ current_action['title'] }}</a>
                         {% endfor %}
-                    </ul>
+                    </menu>
                 </details>
             </li>
             <span class="note-actions-separator"></span>
             {% for current_action in get_note_actions(note) %}
-                <li>
-                    <a title="{{ current_action["title"] | trans }}"
-                       class="{{ current_action["classes"] }}"
-                       href="{{ current_action["url"] }}"></a>
-                </li>
+                <li><a title="{{ current_action["title"] | trans }}" class="{{ current_action["classes"] }}" href="{{ current_action["url"] }}"></a></li>
             {% endfor %}
         </menu>
     {% endif %}
@@ -79,7 +70,8 @@
 
 {% block note_author %}
     {# Microformat's h-card properties indicates a face icon is a "u-logo" #}
-    <a href="{{ actor_url }}" class="note-author-url u-url" tabindex="0" title="{{ 'Begin a note by the user: ' | trans }} {{ nickname }}">
+    <a href="{{ actor_url }}" class="note-author-url u-url" tabindex="0"
+       title="{{ 'Begin a note by the user: ' | trans }} {{ nickname }}">
         {% if fullname is not null %}
             {{ fullname }}
         {% else %}

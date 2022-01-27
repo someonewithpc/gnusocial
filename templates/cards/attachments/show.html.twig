@@ -1,10 +1,9 @@
 {% extends 'stdgrid.html.twig' %}
 
 {% block body %}
-    <div class="page">
-        <section class="frame-section frame-section-padding">
-            {% include '/cards/attachments/view.html.twig' with {'attachment': attachment, 'note': note, 'title': title} only %}
-            <a class="frame-section-button-like" href="{{ download }}"> {{ 'Download link' | trans }}</a>
-        </section>
-    </div>
+    <section class="frame-section frame-section-padding">
+        <h1>{{ 'Attachment' | trans }} {{ title }}</h1>
+        {% include '/cards/attachments/view.html.twig' with {'attachment': attachment, 'note': note, 'title': title} only %}
+        <a class="frame-section-button-like" href="{{ download }}"> {{ 'Original attachment link' | trans }}</a>
+    </section>
 {% endblock body %}

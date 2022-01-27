@@ -33,7 +33,6 @@ use App\Entity\Note;
 use App\Util\Common;
 use App\Util\Exception\ClientException;
 use App\Util\Exception\NoLoggedInUser;
-use App\Util\Exception\NoSuchNoteException;
 use App\Util\Exception\RedirectException;
 use App\Util\Exception\ServerException;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
@@ -44,9 +43,11 @@ class Repeat extends Controller
     /**
      * Controller for the note repeat non-JS page
      *
+     * @param int $note_id Note being repeated
+     *
+     * @throws \App\Util\Exception\DuplicateFoundException
      * @throws ClientException
      * @throws NoLoggedInUser
-     * @throws NoSuchNoteException
      * @throws RedirectException
      * @throws ServerException
      */
@@ -79,14 +80,13 @@ class Repeat extends Controller
                 if (Router::isAbsolute($from)) {
                     Log::warning("Actor {$actor_id} attempted to reply to a note and then get redirected to another host, or the URL was invalid ({$from})");
                     throw new ClientException(_m('Can not redirect to outside the website from here'), 400); // 400 Bad request (deceptive)
-                } else {
-                    // TODO anchor on element id
-                    throw new RedirectException(url: $from);
                 }
-            } else {
-                // If we don't have a URL to return to, go to the instance root
-                throw new RedirectException('root');
+                // TODO anchor on element id
+                throw new RedirectException(url: $from);
             }
+
+            // If we don't have a URL to return to, go to the instance root
+            throw new RedirectException('root');
         }
 
         return [
@@ -97,9 +97,14 @@ class Repeat extends Controller
     }
 
     /**
+     * Controller for the note unrepeat non-JS page
+     *
+     * @param int $note_id Note being unrepeated
+     *
+     * @throws \App\Util\Exception\DuplicateFoundException
+     * @throws \App\Util\Exception\NotFoundException
      * @throws ClientException
      * @throws NoLoggedInUser
-     * @throws NoSuchNoteException
      * @throws RedirectException
      * @throws ServerException
      */
@@ -134,14 +139,13 @@ class Repeat extends Controller
                 if (Router::isAbsolute($from)) {
                     Log::warning("Actor {$actor_id} attempted to reply to a note and then get redirected to another host, or the URL was invalid ({$from})");
                     throw new ClientException(_m('Can not redirect to outside the website from here'), 400); // 400 Bad request (deceptive)
-                } else {
-                    // TODO anchor on element id
-                    throw new RedirectException(url: $from);
                 }
-            } else {
-                // If we don't have a URL to return to, go to the instance root
-                throw new RedirectException('root');
+                // TODO anchor on element id
+                throw new RedirectException(url: $from);
             }
+
+            // If we don't have a URL to return to, go to the instance root
+            throw new RedirectException('root');
         }
 
         return [

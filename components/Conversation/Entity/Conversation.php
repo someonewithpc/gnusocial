@@ -26,7 +26,6 @@ namespace Component\Conversation\Entity;
 use App\Core\DB\DB;
 use App\Core\Entity;
 use App\Core\Router\Router;
-use App\Entity\Note;
 
 /**
  * Entity class for Conversations

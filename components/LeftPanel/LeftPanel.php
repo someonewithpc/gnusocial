@@ -42,7 +42,12 @@ class LeftPanel extends Component
         return Event::next;
     }
 
-    public function onAppendFeed(Actor $actor, string $title, string $route, array $route_params)
+    /**
+     * @throws \App\Util\Exception\DuplicateFoundException
+     * @throws \App\Util\Exception\ServerException
+     * @throws ClientException
+     */
+    public function onAppendFeed(Actor $actor, string $title, string $route, array $route_params): bool
     {
         $cache_key = Feed::cacheKey($actor);
         $feeds     = Feed::getFeeds($actor);

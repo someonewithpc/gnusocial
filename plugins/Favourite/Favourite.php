@@ -21,6 +21,13 @@ declare(strict_types = 1);
 
 // }}}
 
+/**
+ * @author    Eliseu Amaro <mail@eliseuama.ro>
+ * @author    Diogo Peralta Cordeiro <@diogo.site>
+ * @copyright 2021-2022 Free Software Foundation, Inc http://www.fsf.org
+ * @license   https://www.gnu.org/licenses/agpl.html GNU AGPL v3 or later
+ */
+
 namespace Plugin\Favourite;
 
 use App\Core\Cache;
@@ -49,10 +56,10 @@ class Favourite extends NoteHandlerPlugin
      *
      * A new notification is then handled, informing all interested Actors of this action
      *
+     * @param int $note_id  Note id being favoured
+     * @param int $actor_id Actor performing favourite Activity
+     *
      * @throws \App\Util\Exception\ServerException
-     * @throws \Doctrine\ORM\OptimisticLockException
-     * @throws \Doctrine\ORM\ORMException
-     * @throws \Doctrine\ORM\TransactionRequiredException
      */
     public static function favourNote(int $note_id, int $actor_id, string $source = 'web'): ?Activity
     {
@@ -84,20 +91,21 @@ class Favourite extends NoteHandlerPlugin
      *
      * Informs all interested Actors of this action, handling out the NewNotification event
      *
+     * @param int $note_id  Note id being unfavoured
+     * @param int $actor_id Actor undoing favourite Activity
+     *
      * @throws \App\Util\Exception\ServerException
-     * @throws \Doctrine\ORM\OptimisticLockException
-     * @throws \Doctrine\ORM\ORMException
-     * @throws \Doctrine\ORM\TransactionRequiredException
      */
     public static function unfavourNote(int $note_id, int $actor_id, string $source = 'web'): ?Activity
     {
         $note_already_favoured = Cache::get(
             FavouriteEntity::cacheKeys($note_id, $actor_id)['favourite'],
-            fn () => DB::findOneBy('note_favourite', ['note_id' => $note_id, 'actor_id' => $actor_id], return_null: true),
+            static fn () => DB::findOneBy('note_favourite', ['note_id' => $note_id, 'actor_id' => $actor_id], return_null: true),
         );
         $activity = null;
         if (!\is_null($note_already_favoured)) {
-            DB::remove($note_already_favoured);
+            DB::removeBy(FavouriteEntity::class, ['note_id' => $note_id, 'actor_id' => $actor_id]);
+
             Cache::delete(FavouriteEntity::cacheKeys($note_id, $actor_id)['favourite']);
             $favourite_activity = DB::findBy('activity', ['verb' => 'favourite', 'object_type' => 'note', 'actor_id' => $actor_id, 'object_id' => $note_id], order_by: ['created' => 'DESC'])[0];
             $activity           = Activity::create([
@@ -118,11 +126,10 @@ class Favourite extends NoteHandlerPlugin
      * HTML rendering event that adds the favourite form as a note
      * action, if a user is logged in
      *
-     * @throws \Doctrine\ORM\OptimisticLockException
-     * @throws \Doctrine\ORM\ORMException
-     * @throws \Doctrine\ORM\TransactionRequiredException
+     * @param Note  $note    Current Note being rendered
+     * @param array $actions Array containing all Note actions to be rendered
      *
-     * @return bool Event hook
+     * @return bool Event hook, Event::next (true) is returned to allow Event to be handled by other handlers
      */
     public function onAddNoteActions(Request $request, Note $note, array &$actions): bool
     {
@@ -134,9 +141,9 @@ class Favourite extends NoteHandlerPlugin
         $opts         = ['note_id' => $note->getId(), 'actor_id' => $user->getId()];
         $is_favourite = !\is_null(
             Cache::get(
-            FavouriteEntity::cacheKeys($note->getId(), $user->getId())['favourite'],
-            fn () => DB::findOneBy('note_favourite', $opts, return_null: true),
-        ),
+                FavouriteEntity::cacheKeys($note->getId(), $user->getId())['favourite'],
+                static fn () => DB::findOneBy('note_favourite', $opts, return_null: true),
+            ),
         );
 
         // Generating URL for favourite action route
@@ -162,7 +169,15 @@ class Favourite extends NoteHandlerPlugin
         return Event::next;
     }
 
-    public function onAppendCardNote(array $vars, array &$result)
+    /**
+     * Appends on Note currently being rendered complementary information regarding whom (subject) performed which Activity (verb) on aforementioned Note (object)
+     *
+     * @param array $vars   Array containing necessary info to process event. In this case, contains the current Note being rendered
+     * @param array $result Contains a hashmap for each Activity performed on Note (object)
+     *
+     * @return bool Event hook, Event::next (true) is returned to allow Event to be handled by other handlers
+     */
+    public function onAppendCardNote(array $vars, array &$result): bool
     {
         // If note is the original and user isn't the one who repeated, append on end "user repeated this"
         // If user is the one who repeated, append on end "you repeated this, remove repeat?"
@@ -198,6 +213,9 @@ class Favourite extends NoteHandlerPlugin
         return Event::next;
     }
 
+    /**
+     * Maps Routes to their respective Controllers
+     */
     public function onAddRoute(RouteLoader $r): bool
     {
         // Add/remove note to/from favourites
@@ -214,7 +232,14 @@ class Favourite extends NoteHandlerPlugin
         return Event::next;
     }
 
-    public function onCreateDefaultFeeds(int $actor_id, LocalUser $user, int &$ordering)
+    /**
+     * Creates two feeds, including reverse favourites or favourites performed by given Actor
+     *
+     * @param int $actor_id Whom the favourites belong to
+     *
+     * @throws \App\Util\Exception\ServerException
+     */
+    public function onCreateDefaultFeeds(int $actor_id, LocalUser $user, int &$ordering): bool
     {
         DB::persist(Feed::create([
             'actor_id' => $actor_id,
@@ -243,6 +268,15 @@ class Favourite extends NoteHandlerPlugin
      * @param mixed                                               $type_object   Activity's Object
      * @param null|\Plugin\ActivityPub\Entity\ActivitypubActivity $ap_act        Resulting ActivitypubActivity
      *
+     * @throws \App\Util\Exception\ClientException
+     * @throws \App\Util\Exception\DuplicateFoundException
+     * @throws \App\Util\Exception\NoSuchActorException
+     * @throws \App\Util\Exception\ServerException
+     * @throws \Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface
+     * @throws \Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface
+     * @throws \Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface
+     * @throws \Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface
+     *
      * @return bool Returns `Event::stop` if handled, `Event::next` otherwise
      */
     private function activitypub_handler(Actor $actor, \ActivityPhp\Type\AbstractObject $type_activity, mixed $type_object, ?\Plugin\ActivityPub\Entity\ActivitypubActivity &$ap_act): bool
@@ -262,24 +296,22 @@ class Favourite extends NoteHandlerPlugin
             } else {
                 return Event::next;
             }
-        } else { // Undo Favourite
-            if ($type_object instanceof \ActivityPhp\Type\AbstractObject) {
-                $ap_prev_favourite_act = \Plugin\ActivityPub\Util\Model\Activity::fromJson($type_object);
-                $prev_favourite_act    = $ap_prev_favourite_act->getActivity();
-                if ($prev_favourite_act->getVerb() === 'favourite' && $prev_favourite_act->getObjectType() === 'note') {
-                    $note_id = $prev_favourite_act->getObjectId();
-                } else {
-                    return Event::next;
-                }
-            } elseif ($type_object instanceof Activity) {
-                if ($type_object->getVerb() === 'favourite' && $type_object->getObjectType() === 'note') {
-                    $note_id = $type_object->getObjectId();
-                } else {
-                    return Event::next;
-                }
+        } elseif ($type_object instanceof \ActivityPhp\Type\AbstractObject) {
+            $ap_prev_favourite_act = \Plugin\ActivityPub\Util\Model\Activity::fromJson($type_object);
+            $prev_favourite_act    = $ap_prev_favourite_act->getActivity();
+            if ($prev_favourite_act->getVerb() === 'favourite' && $prev_favourite_act->getObjectType() === 'note') {
+                $note_id = $prev_favourite_act->getObjectId();
             } else {
                 return Event::next;
             }
+        } elseif ($type_object instanceof Activity) {
+            if ($type_object->getVerb() === 'favourite' && $type_object->getObjectType() === 'note') {
+                $note_id = $type_object->getObjectId();
+            } else {
+                return Event::next;
+            }
+        } else {
+            return Event::next;
         }
 
         if ($type_activity->get('type') === 'Like') {
@@ -308,6 +340,15 @@ class Favourite extends NoteHandlerPlugin
      * @param \ActivityPhp\Type\AbstractObject                    $type_object   Activity Streams 2.0 Object
      * @param null|\Plugin\ActivityPub\Entity\ActivitypubActivity $ap_act        Resulting ActivitypubActivity
      *
+     * @throws \App\Util\Exception\ClientException
+     * @throws \App\Util\Exception\DuplicateFoundException
+     * @throws \App\Util\Exception\NoSuchActorException
+     * @throws \App\Util\Exception\ServerException
+     * @throws \Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface
+     * @throws \Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface
+     * @throws \Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface
+     * @throws \Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface
+     *
      * @return bool Returns `Event::stop` if handled, `Event::next` otherwise
      */
     public function onNewActivityPubActivity(Actor $actor, \ActivityPhp\Type\AbstractObject $type_activity, \ActivityPhp\Type\AbstractObject $type_object, ?\Plugin\ActivityPub\Entity\ActivitypubActivity &$ap_act): bool
@@ -322,6 +363,15 @@ class Favourite extends NoteHandlerPlugin
      * @param \ActivityPhp\Type\AbstractObject                    $type_activity Activity Streams 2.0 Activity
      * @param mixed                                               $type_object   Object
      * @param null|\Plugin\ActivityPub\Entity\ActivitypubActivity $ap_act        Resulting ActivitypubActivity
+     *
+     * @throws \App\Util\Exception\ClientException
+     * @throws \App\Util\Exception\DuplicateFoundException
+     * @throws \App\Util\Exception\NoSuchActorException
+     * @throws \App\Util\Exception\ServerException
+     * @throws \Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface
+     * @throws \Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface
+     * @throws \Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface
+     * @throws \Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface
      *
      * @return bool Returns `Event::stop` if handled, `Event::next` otherwise
      */
