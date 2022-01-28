@@ -14,12 +14,14 @@ hr {
 }
 
 .icon {
-    align-self: center;
+    vertical-align: center;
     fill: var(--foreground);
+    height: 1em;
+    width: 1em;
 }
 
 .active {
-    font: 600 1.1em Poppins, sans-serif;
+    font: 600 1em Poppins, sans-serif;
 }
 
 .anchor-hidden {
@@ -57,7 +59,7 @@ hr {
 }
 
 .page-header {
-    align-items: baseline;
+    align-items: center;
     background: var(--gradient) !important;
     box-shadow: var(--shadow);
     display: flex;
@@ -132,6 +134,10 @@ hr {
 
 .section-panel-right {
     right: 0;
+}
+
+.panel-left-icon, .panel-right-icon {
+    display: inherit;
 }
 
 .section-panel .panel-content {

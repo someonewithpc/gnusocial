@@ -33,10 +33,10 @@
     border: none !important;
     display: inline-block;
     height: var(--unit);
+    width: var(--unit);
     mask-repeat: no-repeat !important;
     mask-size: cover !important;
     opacity: .33;
-    width: var(--unit);
 }
 
 .button-container:focus, .button-container:hover {

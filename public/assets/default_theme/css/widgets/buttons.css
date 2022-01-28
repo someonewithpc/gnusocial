@@ -1,36 +1,9 @@
-input {
-    all: unset;
+label {
+    font-weight: 700;
 }
 
-input[type=checkbox] {
-    background: var(--accent) !important;
-    cursor: pointer;
-    display: inline-block;
-    height: 1em !important;
-    width: 1em !important;
-}
-
-input[type=checkbox]:not(:hover,:focus) {
-    background: var(--foreground) !important;
-}
-
-input[type=checkbox] {
-    border: unset !important;
-}
-
-input[type=radio] {
-    background: var(--border);
-    border-radius: 50%;
-    box-shadow: inset 0 0 0 2px var(--background-hard) !important;
-    display: inline-block;
-    height: var(--s) !important;
-    padding-right: 4px !important;
-    width: var(--s) !important;
-}
-
-input[type=radio]:checked {
-    background: var(--foreground);
-    box-shadow: inset 0 0 0 2px var(--foreground) !important;
+input + label {
+    margin-left: 3px;
 }
 
 input[type=file] {
@@ -41,22 +14,6 @@ input[type=file] {
     font-family: 'Open Sans', sans-serif !important;
     font-weight: 400 !important;
     padding: unset !important;
-}
-
-input[type=checkbox] {
-    -moz-mask-image: url(../../icons/check-off.svg) !important;
-    -o-mask-image: url(../../icons/check-off.svg) !important;
-    -webkit-mask-image: url(../../icons/check-off.svg) !important;
-    background-size: contain !important;
-    margin-right: 4px !important;
-    mask-image: url(../../icons/check-off.svg) !important;
-}
-
-input[type=checkbox]:checked {
-    -moz-mask-image: url(../../icons/check-on.svg) !important;
-    -o-mask-image: url(../../icons/check-on.svg) !important;
-    -webkit-mask-image: url(../../icons/check-on.svg) !important;
-    mask-image: url(../../icons/check-on.svg) !important;
 }
 
 input[type=color] {
@@ -123,7 +80,6 @@ button, input, select, textarea {
     border-radius: var(--s);
     display: inline-block;
     font-size: inherit;
-    line-height: initial !important;
     max-width: border-box !important;
     overflow: hidden;
     padding: 6px 8px !important;
