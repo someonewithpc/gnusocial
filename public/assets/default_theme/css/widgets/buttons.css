@@ -16,25 +16,6 @@ input[type=file] {
     padding: unset !important;
 }
 
-input[type=color] {
-    appearance: none;
-    background-color: transparent;
-    border: none;
-    cursor: pointer;
-    height: var(--xxl);
-    width: var(--xxl);
-}
-
-input[type=color]::-webkit-color-swatch {
-    border: none;
-    border-radius: var(--s);
-}
-
-input[type=color]::-moz-color-swatch {
-    border: none;
-    border-radius: var(--s);
-}
-
 ::file-selector-button {
     background-color: unset;
     border: unset;
@@ -76,13 +57,12 @@ select::-ms-expand {
 }
 
 button, input, select, textarea {
+    font-size: inherit;
     border: 1px solid var(--border) !important;
     border-radius: var(--s);
-    display: inline-block;
-    font-size: inherit;
-    max-width: border-box !important;
+    max-width: border-box;
     overflow: hidden;
-    padding: 6px 8px !important;
+    padding: 6px 8px;
     width: auto;
 }
 
@@ -98,7 +78,7 @@ select {
     background-repeat: no-repeat;
     border-radius: var(--s);
     cursor: pointer;
-    max-width: 100% !important;
+    max-width: 100%;
 }
 
 select[multiple] {
@@ -107,5 +87,34 @@ select[multiple] {
 }
 
 button:focus, button:hover, input:focus, input:hover, select:focus, select:hover, textarea:focus, textarea:hover {
-    box-shadow: var(--shadow-inset-accent) !important;
+    box-shadow: var(--shadow-inset-accent);
+}
+
+input[type=color] {
+    appearance: none;
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    height: var(--xxl);
+    width: var(--xxl);
+}
+
+input[type=color]::-webkit-color-swatch {
+    border: none;
+    border-radius: var(--s);
+}
+
+input[type=color]::-moz-color-swatch {
+    border: none;
+    border-radius: var(--s);
+}
+
+input[type=checkbox]:focus,
+input[type=checkbox]:hover {
+    outline: 2px solid var(--accent);
+}
+
+input[type=checkbox]
+{
+    accent-color: var(--accent);
 }
