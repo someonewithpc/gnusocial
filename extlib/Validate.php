@@ -729,9 +729,8 @@ class Validate
     /**
      * Substr
      *
-     * @param string       &$date Date
-     * @param string       $num   Length
-     * @param false|string $opt   Unknown
+     * @param string       $num Length
+     * @param false|string $opt Unknown
      */
     private static function substr(
         string &$date,

@@ -70,7 +70,7 @@ class Subscription extends Component
         $cache_subscriber = Cache::delete(Actor::cacheKeys($subscriber_id)['subscribed']);
         $cache_subscribed = Cache::delete(Actor::cacheKeys($subscribed_id)['subscribers']);
 
-        return [$cache_subscriber,$cache_subscribed];
+        return [$cache_subscriber, $cache_subscribed];
     }
 
     /**

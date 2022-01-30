@@ -305,8 +305,6 @@ abstract class I18n
  *    _m(string|string[] $msg, array $params)              -- message
  *    _m(string $ctx, string|string[] $msg, array $params) -- combination of the previous two
  *
- * @param mixed ...$args
- *
  * @throws ServerException
  *
  * @todo add parameters
