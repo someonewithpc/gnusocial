@@ -33,6 +33,7 @@ declare(strict_types = 1);
 
 use App\CacheKernel;
 use App\Kernel;
+use App\Util\Formatting;
 use Symfony\Component\ErrorHandler\Debug;
 use Symfony\Component\HttpFoundation\Request;
 
@@ -68,7 +69,12 @@ if ('prod' === $kernel->getEnvironment() || isset($_ENV['SOCIAL_USE_CACHE_KERNEL
     $kernel = new CacheKernel($kernel);
 }
 
-$request  = Request::createFromGlobals();
+$request = Request::createFromGlobals();
+$_ENV    = array_filter(
+    $_ENV,
+    fn (string $key) => Formatting::startsWith($key, ['HTTP', 'APP']) && $key !== 'APP_SECRET',
+    \ARRAY_FILTER_USE_KEY,
+);
 $response = $kernel->handle($request);
 $response->send();
 $kernel->terminate($request, $response);
