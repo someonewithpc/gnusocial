@@ -64,7 +64,22 @@
 {% block note_text %}
     <div class="note-text" tabindex="0"
          title="{{ 'Note text content.' | trans }}">
-        {{ note.getRendered() | raw }}
+        {% set paragraph_array = note.getRenderedSplit() %}
+        {% if 'conversation' not in app.request.get('_route') and paragraph_array | length > 3 %}
+            <p>{{ paragraph_array[0] | raw }}</p>
+            <details class="note-text-details">
+                <summary class="note-text-details-summary">
+                    <small>{% trans %}Expand to see all content{% endtrans %}</small>
+                </summary>
+                {% for paragraph in paragraph_array |  slice(1, paragraph_array | length)  %}
+                    <p>{{ paragraph | raw }}</p>
+                {% endfor %}
+            </details>
+        {% else %}
+            {% for paragraph in paragraph_array %}
+                <p>{{ paragraph | raw }}</p>
+            {% endfor %}
+        {% endif %}
     </div>
 {% endblock note_text %}
 

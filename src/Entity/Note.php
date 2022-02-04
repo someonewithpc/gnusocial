@@ -286,6 +286,11 @@ class Note extends Entity
         return !\is_null($this->getLanguageId()) ? Language::getById($this->getLanguageId())->getLocale() : null;
     }
 
+    public function getRenderedSplit(): array
+    {
+        return preg_split('/(<\s*p\s*\/?>)|(<\s*br\s*\/?>)|(\s\s+)|(<\s*\/p\s*\/?>)/', $this->getRendered(), -1, PREG_SPLIT_NO_EMPTY);
+    }
+
     public static function getAllNotesByActor(Actor $actor): array
     {
         // TODO: Enforce scoping on the notes before returning

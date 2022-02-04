@@ -324,6 +324,29 @@ embed header {
     text-decoration: underline !important;
 }
 
+.note-text p:not(:last-of-type) {
+    display: block;
+    margin-bottom: var(--s);
+    width: 100%;
+}
+
+.note-text-details-summary:after {
+    content: "\2193";
+}
+
+.note-text-details .note-text-details-summary small {
+    font-style: italic;
+}
+
+.note-text-details[open] summary:after {
+    content: "\2191";
+    float: right;
+}
+
+.note-text-details[open] .note-text-details-summary small {
+    display: none;
+}
+
 .note-wrapper {
     height: inherit;
     width: 100%;

@@ -55,7 +55,7 @@ class AttachmentCollection extends Entity
     public static function schemaDef()
     {
         return [
-            'name'   => 'collection',
+            'name'   => 'attachment_collection',
             'fields' => [
                 'id'       => ['type' => 'serial', 'not null' => true, 'description' => 'unique identifier'],
                 'name'     => ['type' => 'varchar', 'length' => 255, 'not null' => true, 'description' => 'collection\'s name'],

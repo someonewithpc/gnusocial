@@ -152,8 +152,12 @@ class NoteFavourite extends Entity
                 'created'  => ['type' => 'datetime', 'not null' => true, 'description' => 'date this record was created'],
                 'modified' => ['type' => 'timestamp', 'not null' => true, 'description' => 'date this record was modified'],
             ],
-            'primary key' => ['note_id', 'actor_id'],
-            'indexes'     => [
+            'primary key'  => ['note_id', 'actor_id'],
+            'foreign keys' => [
+                'note_id_to_id_fkey'     => ['note', ['note_id' => 'id']],
+                'actor_reply_to_id_fkey' => ['actor', ['actor_id' => 'id']],
+            ],
+            'indexes' => [
                 'fave_note_id_idx'  => ['note_id'],
                 'fave_actor_id_idx' => ['actor_id', 'modified'],
                 'fave_modified_idx' => ['modified'],
