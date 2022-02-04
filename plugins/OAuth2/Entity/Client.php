@@ -52,20 +52,14 @@ class Client extends Entity implements ClientEntityInterface
     private DateTimeInterface $created;
     private DateTimeInterface $modified;
 
-    public function setId(string $id): self
-    {
-        $this->id = mb_substr($id, 0, 64);
-        return $this;
-    }
-
     public function getId(): string
     {
         return $this->id;
     }
 
-    public function setSecret(string $secret): self
+    public function setId(string $id): self
     {
-        $this->secret = mb_substr($secret, 0, 64);
+        $this->id = mb_substr($id, 0, 64);
         return $this;
     }
 
@@ -74,9 +68,9 @@ class Client extends Entity implements ClientEntityInterface
         return $this->secret;
     }
 
-    public function setActive(bool $active): self
+    public function setSecret(string $secret): self
     {
-        $this->active = $active;
+        $this->secret = mb_substr($secret, 0, 64);
         return $this;
     }
 
@@ -85,9 +79,9 @@ class Client extends Entity implements ClientEntityInterface
         return $this->active;
     }
 
-    public function setPlainPcke(bool $plain_pcke): self
+    public function setActive(bool $active): self
     {
-        $this->plain_pcke = $plain_pcke;
+        $this->active = $active;
         return $this;
     }
 
@@ -96,9 +90,9 @@ class Client extends Entity implements ClientEntityInterface
         return $this->plain_pcke;
     }
 
-    public function setIsConfidential(bool $is_confidential): self
+    public function setPlainPcke(bool $plain_pcke): self
     {
-        $this->is_confidential = $is_confidential;
+        $this->plain_pcke = $plain_pcke;
         return $this;
     }
 
@@ -107,9 +101,9 @@ class Client extends Entity implements ClientEntityInterface
         return $this->is_confidential;
     }
 
-    public function setRedirectUris(string $redirect_uris): self
+    public function setIsConfidential(bool $is_confidential): self
     {
-        $this->redirect_uris = $redirect_uris;
+        $this->is_confidential = $is_confidential;
         return $this;
     }
 
@@ -118,9 +112,9 @@ class Client extends Entity implements ClientEntityInterface
         return $this->redirect_uris;
     }
 
-    public function setGrants(string $grants): self
+    public function setRedirectUris(string $redirect_uris): self
     {
-        $this->grants = $grants;
+        $this->redirect_uris = $redirect_uris;
         return $this;
     }
 
@@ -129,15 +123,21 @@ class Client extends Entity implements ClientEntityInterface
         return $this->grants;
     }
 
-    public function setScopes(string $scopes): self
+    public function setGrants(string $grants): self
     {
-        $this->scopes = $scopes;
+        $this->grants = $grants;
         return $this;
     }
 
     public function getScopes(): string
     {
         return $this->scopes;
+    }
+
+    public function setScopes(string $scopes): self
+    {
+        $this->scopes = $scopes;
+        return $this;
     }
 
     public function setClientName(string $client_name): self
@@ -151,20 +151,14 @@ class Client extends Entity implements ClientEntityInterface
         return $this->client_name;
     }
 
-    public function setWebsite(?string $website): self
-    {
-        $this->website = $website;
-        return $this;
-    }
-
     public function getWebsite(): ?string
     {
         return $this->website;
     }
 
-    public function setCreated(DateTimeInterface $created): self
+    public function setWebsite(?string $website): self
     {
-        $this->created = $created;
+        $this->website = $website;
         return $this;
     }
 
@@ -173,9 +167,9 @@ class Client extends Entity implements ClientEntityInterface
         return $this->created;
     }
 
-    public function setModified(DateTimeInterface $modified): self
+    public function setCreated(DateTimeInterface $created): self
     {
-        $this->modified = $modified;
+        $this->created = $created;
         return $this;
     }
 
@@ -184,6 +178,11 @@ class Client extends Entity implements ClientEntityInterface
         return $this->modified;
     }
 
+    public function setModified(DateTimeInterface $modified): self
+    {
+        $this->modified = $modified;
+        return $this;
+    }
     // @codeCoverageIgnoreEnd
     // }}} Autocode
 

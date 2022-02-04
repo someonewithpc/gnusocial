@@ -38,6 +38,8 @@ use App\Core\DB\DB;
 use function App\Core\I18n\_m;
 use App\Core\Log;
 use App\Util\Exception\ClientException;
+use App\Util\Exception\ServerException;
+use Exception;
 use Plugin\OAuth2\Entity;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -50,6 +52,11 @@ use Symfony\Component\HttpFoundation\Request;
  */
 class Client extends Controller
 {
+    /**
+     * @throws ClientException
+     * @throws Exception
+     * @throws ServerException
+     */
     public function onPost(Request $request): JsonResponse
     {
         Log::debug('OAuth2 Apps: Received a POST request.');
@@ -60,8 +67,9 @@ class Client extends Controller
             throw new ClientException(_m('Invalid request'), code: 400);
         }
 
-        $identifier = hash('sha256', random_bytes(16)); // TODO maybe use password_hash and verify
-        $secret     = hash('sha256', random_bytes(64));
+        $identifier = hash('md5', random_bytes(16));
+        // Random string Length should be between 43 and 128, thus 57
+        $secret = hash('sha256', random_bytes(57));
 
         // TODO more validation
         $client = Entity\Client::create([

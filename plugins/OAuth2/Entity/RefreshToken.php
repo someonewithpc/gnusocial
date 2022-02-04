@@ -32,9 +32,11 @@ declare(strict_types = 1);
 namespace Plugin\OAuth2\Entity;
 
 use App\Core\Entity;
+use DateTimeImmutable;
 use DateTimeInterface;
 use League\OAuth2\Server\Entities\AccessTokenEntityInterface;
 use League\OAuth2\Server\Entities\RefreshTokenEntityInterface;
+use Plugin\OAuth2\Repository;
 
 class RefreshToken extends Entity implements RefreshTokenEntityInterface
 {
@@ -46,20 +48,14 @@ class RefreshToken extends Entity implements RefreshTokenEntityInterface
     private bool $revoked;
     private DateTimeInterface $created;
 
-    public function setId(string $id): self
-    {
-        $this->id = mb_substr($id, 0, 64);
-        return $this;
-    }
-
     public function getId(): string
     {
         return $this->id;
     }
 
-    public function setExpiry(DateTimeInterface $expiry): self
+    public function setId(string $id): self
     {
-        $this->expiry = $expiry;
+        $this->id = mb_substr($id, 0, 64);
         return $this;
     }
 
@@ -68,9 +64,9 @@ class RefreshToken extends Entity implements RefreshTokenEntityInterface
         return $this->expiry;
     }
 
-    public function setAccessTokenId(?string $access_token_id): self
+    public function setExpiry(DateTimeInterface $expiry): self
     {
-        $this->access_token_id = \is_null($access_token_id) ? null : mb_substr($access_token_id, 0, 64);
+        $this->expiry = $expiry;
         return $this;
     }
 
@@ -79,9 +75,9 @@ class RefreshToken extends Entity implements RefreshTokenEntityInterface
         return $this->access_token_id;
     }
 
-    public function setRevoked(bool $revoked): self
+    public function setAccessTokenId(?string $access_token_id): self
     {
-        $this->revoked = $revoked;
+        $this->access_token_id = \is_null($access_token_id) ? null : mb_substr($access_token_id, 0, 64);
         return $this;
     }
 
@@ -90,9 +86,9 @@ class RefreshToken extends Entity implements RefreshTokenEntityInterface
         return $this->revoked;
     }
 
-    public function setCreated(DateTimeInterface $created): self
+    public function setRevoked(bool $revoked): self
     {
-        $this->created = $created;
+        $this->revoked = $revoked;
         return $this;
     }
 
@@ -101,45 +97,21 @@ class RefreshToken extends Entity implements RefreshTokenEntityInterface
         return $this->created;
     }
 
+    public function setCreated(DateTimeInterface $created): self
+    {
+        $this->created = $created;
+        return $this;
+    }
+
     // @codeCoverageIgnoreEnd
     // }}} Autocode
 
     /**
-     * Get the token's identifier.
-     *
-     * @return string
+     * Get the access token that the refresh token was originally associated with.
      */
-    public function getIdentifier()
+    public function getAccessToken(): AccessTokenEntityInterface
     {
-        return $this->getId();
-    }
-
-    /**
-     * Set the token's identifier.
-     */
-    public function setIdentifier($identifier)
-    {
-        $this->setId($identifier);
-    }
-
-    /**
-     * Get the token's expiry date time.
-     *
-     * @return DateTimeImmutable
-     */
-    public function getExpiryDateTime()
-    {
-        return $this->getExpiry();
-    }
-
-    /**
-     * Set the date time when the token expires.
-     *
-     * @param DateTimeImmutable $dateTime
-     */
-    public function setExpiryDateTime(\DateTimeImmutable $dateTime)
-    {
-        $this->setExpiry($dateTime);
+        return (new Repository\AccessToken())->getAccessTokenEntity($this->getAccessTokenId());
     }
 
     /**
@@ -150,14 +122,27 @@ class RefreshToken extends Entity implements RefreshTokenEntityInterface
         $this->setAccessTokenId($accessToken->getIdentifier());
     }
 
-    /**
-     * Get the access token that the refresh token was originally associated with.
-     *
-     * @return AccessTokenEntityInterface
-     */
-    public function getAccessToken()
+    public function setIdentifier($identifier): self
     {
-        return (new Repository\AccessToken)->getAccessTokenEntity($this->getAccessTokenId());
+        return $this->setId($identifier);
+    }
+
+    public function getIdentifier(): string
+    {
+        return $this->getId();
+    }
+
+    /**
+     * Set the date time when the token expires.
+     */
+    public function setExpiryDateTime(DateTimeImmutable $dateTime)
+    {
+        $this->setExpiry($dateTime);
+    }
+
+    public function getExpiryDateTime(): DateTimeImmutable
+    {
+        return DateTimeImmutable::createFromInterface($this->getExpiry());
     }
 
     public static function schemaDef(): array

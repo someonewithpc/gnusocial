@@ -39,6 +39,7 @@ use App\Core\Router\RouteLoader;
 use App\Core\Router\Router;
 use App\Util\Common;
 use DateInterval;
+use Exception;
 use League\OAuth2\Server\AuthorizationServer;
 use League\OAuth2\Server\CryptKey;
 use League\OAuth2\Server\Grant\AuthCodeGrant;
@@ -54,16 +55,19 @@ use XML_XRD_Element_Link;
  */
 class OAuth2 extends Plugin
 {
-    public const OAUTH_REQUEST_TOKEN_REL = 'http://apinamespace.org/oauth/request_token';
-    public const OAUTH_ACCESS_TOKEN_REL  = 'http://apinamespace.org/oauth/access_token';
-    public const OAUTH_AUTHORIZE_REL     = 'http://apinamespace.org/oauth/authorize';
+    public const OAUTH_REQUEST_TOKEN_REL                     = 'http://apinamespace.org/oauth/request_token';
+    public const OAUTH_ACCESS_TOKEN_REL                      = 'http://apinamespace.org/oauth/access_token';
+    public const OAUTH_AUTHORIZE_REL                         = 'http://apinamespace.org/oauth/authorize';
+    public static ?AuthorizationServer $authorization_server = null;
 
     public function version(): string
     {
         return '3.0.0';
     }
 
-    public static ?AuthorizationServer $authorization_server = null;
+    /**
+     * @throws Exception
+     */
     public function onInitializePlugin()
     {
         self::$authorization_server = new AuthorizationServer(
@@ -102,9 +106,9 @@ class OAuth2 extends Plugin
 
     public function onEndHostMetaLinks(array &$links): bool
     {
-        $links[] = new XML_XRD_Element_link(self::OAUTH_REQUEST_TOKEN_REL, Router::url('oauth2_client', type: Router::ABSOLUTE_URL));
-        $links[] = new XML_XRD_Element_link(self::OAUTH_AUTHORIZE_REL, Router::url('oauth2_authorize', type: Router::ABSOLUTE_URL));
-        $links[] = new XML_XRD_Element_link(self::OAUTH_ACCESS_TOKEN_REL, Router::url('oauth2_token', type: Router::ABSOLUTE_URL));
+        $links[] = new XML_XRD_Element_Link(self::OAUTH_REQUEST_TOKEN_REL, Router::url('oauth2_client', type: Router::ABSOLUTE_URL));
+        $links[] = new XML_XRD_Element_Link(self::OAUTH_AUTHORIZE_REL, Router::url('oauth2_authorize', type: Router::ABSOLUTE_URL));
+        $links[] = new XML_XRD_Element_Link(self::OAUTH_ACCESS_TOKEN_REL, Router::url('oauth2_token', type: Router::ABSOLUTE_URL));
         return Event::next;
     }
 }

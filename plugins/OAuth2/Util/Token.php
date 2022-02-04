@@ -29,9 +29,10 @@ declare(strict_types = 1);
  * @license   https://www.gnu.org/licenses/agpl.html GNU AGPL v3 or later
  */
 
-namespace Plugin\OAuth2\Entity;
+namespace Plugin\OAuth2\Util;
 
 use App\Core\Entity;
+use DateTimeImmutable;
 use Functional as F;
 use League\OAuth2\Server\Entities\ClientEntityInterface;
 use League\OAuth2\Server\Entities\ScopeEntityInterface;
@@ -40,7 +41,7 @@ use Plugin\OAuth2\Repository;
 
 abstract class Token extends Entity implements TokenInterface
 {
-    public function getIdentifier()
+    public function getIdentifier(): string
     {
         return $this->getId();
     }
@@ -52,20 +53,16 @@ abstract class Token extends Entity implements TokenInterface
 
     /**
      * Get the token's expiry date time.
-     *
-     * @return DateTimeImmutable
      */
-    public function getExpiryDateTime()
+    public function getExpiryDateTime(): DateTimeImmutable
     {
         return $this->getExpiry();
     }
 
     /**
      * Set the date time when the token expires.
-     *
-     * @param DateTimeImmutable $dateTime
      */
-    public function setExpiryDateTime(\DateTimeImmutable $dateTime)
+    public function setExpiryDateTime(DateTimeImmutable $dateTime)
     {
         $this->setExpiry($dateTime);
     }
@@ -82,20 +79,16 @@ abstract class Token extends Entity implements TokenInterface
 
     /**
      * Get the token user's identifier.
-     *
-     * @return null|int|string
      */
-    public function getUserIdentifier()
+    public function getUserIdentifier(): int|string|null
     {
         return $this->getUserId();
     }
 
     /**
      * Get the client that the token was issued to.
-     *
-     * @return ClientEntityInterface
      */
-    public function getClient()
+    public function getClient(): ClientEntityInterface
     {
         return (new Repository\Client)->getClientEntity($this->getClientId());
     }
@@ -122,7 +115,7 @@ abstract class Token extends Entity implements TokenInterface
      *
      * @return ScopeEntityInterface[]
      */
-    public function getScopes()
+    public function getScopes(): array
     {
         return F\map(
             explode(' ', $this->getTokenScopes()),
@@ -135,13 +128,13 @@ abstract class Token extends Entity implements TokenInterface
         return [
             'name'   => $table_name,
             'fields' => [
-                'id'           => ['type' => 'char',     'length' => 64,        'not null' => true, 'description' => 'identifier for this token'],
-                'expiry'       => ['type' => 'datetime', 'not null' => true,    'description' => 'when this token expires'],
-                'user_id'      => ['type' => 'int',      'foreign key' => true, 'description' => 'Actor foreign key'],
-                'client_id'    => ['type' => 'char',     'length' => 64,        'not null' => true,    'foreign key' => true, 'description' => 'OAuth client foreign key'],
-                'token_scopes' => ['type' => 'text',     'not null' => true,    'description' => 'Space separated scopes'],
-                'revoked'      => ['type' => 'bool',     'not null' => true,    'foreign key' => true, 'description' => 'Whether this token is revoked'],
-                'created'      => ['type' => 'datetime', 'not null' => true,    'default' => 'CURRENT_TIMESTAMP', 'description' => 'date this record was created'],
+                'id'           => ['type' => 'char', 'length' => 64, 'not null' => true, 'description' => 'identifier for this token'],
+                'expiry'       => ['type' => 'datetime', 'not null' => true, 'description' => 'when this token expires'],
+                'user_id'      => ['type' => 'int', 'foreign key' => true, 'description' => 'Actor foreign key'],
+                'client_id'    => ['type' => 'char', 'length' => 64, 'not null' => true, 'foreign key' => true, 'description' => 'OAuth client foreign key'],
+                'token_scopes' => ['type' => 'text', 'not null' => true, 'description' => 'Space separated scopes'],
+                'revoked'      => ['type' => 'bool', 'not null' => true, 'foreign key' => true, 'description' => 'Whether this token is revoked'],
+                'created'      => ['type' => 'datetime', 'not null' => true, 'default' => 'CURRENT_TIMESTAMP', 'description' => 'date this record was created'],
             ],
             'primary key' => ['id'],
         ];

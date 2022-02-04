@@ -41,6 +41,10 @@ use Plugin\OAuth2\Entity;
 
 class AccessToken implements AccessTokenRepositoryInterface
 {
+    /**
+     * @throws \App\Util\Exception\DuplicateFoundException
+     * @throws \App\Util\Exception\NotFoundException
+     */
     public function getAccessTokenEntity(string $identifier): Entity\AccessToken
     {
         return DB::findOneBy(Entity\AccessToken::class, ['id' => $identifier]);
@@ -56,12 +60,12 @@ class AccessToken implements AccessTokenRepositoryInterface
         // Some logic here to revoke the access token
     }
 
-    public function isAccessTokenRevoked($tokenId)
+    public function isAccessTokenRevoked($tokenId): bool
     {
         return false; // Access token hasn't been revoked
     }
 
-    public function getNewToken(ClientEntityInterface $clientEntity, array $scopes, $userIdentifier = null)
+    public function getNewToken(ClientEntityInterface $clientEntity, array $scopes, $userIdentifier = null): Entity\AccessToken
     {
         $accessToken = new Entity\AccessToken();
         $accessToken->setClient($clientEntity);

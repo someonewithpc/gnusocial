@@ -40,12 +40,12 @@ use Plugin\OAuth2\Entity;
 
 class Client implements ClientRepositoryInterface
 {
-    public function getClientEntity($clientIdentifier)
-    {
-        return DB::findOneBy(Entity\Client::class, ['id' => $clientIdentifier]);
-    }
-
-    public function validateClient($clientIdentifier, $clientSecret, $grantType)
+    /**
+     * @param string      $clientIdentifier
+     * @param null|string $clientSecret
+     * @param null|string $grantType
+     */
+    public function validateClient($clientIdentifier, $clientSecret, $grantType): bool
     {
         try {
             /** @var Entity\Client $client */
@@ -57,5 +57,14 @@ class Client implements ClientRepositoryInterface
             return false;
         }
         return true;
+    }
+
+    /**
+     * @throws \App\Util\Exception\DuplicateFoundException
+     * @throws NotFoundException
+     */
+    public function getClientEntity($clientIdentifier)
+    {
+        return DB::findOneBy(Entity\Client::class, ['id' => $clientIdentifier]);
     }
 }

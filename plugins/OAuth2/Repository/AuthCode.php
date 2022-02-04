@@ -50,12 +50,12 @@ class AuthCode implements AuthCodeRepositoryInterface
         // Some logic to revoke the auth code in a database
     }
 
-    public function isAuthCodeRevoked($codeId)
+    public function isAuthCodeRevoked($codeId): bool
     {
         return false; // The auth code has not been revoked
     }
 
-    public function getNewAuthCode()
+    public function getNewAuthCode(): Entity\AuthCode
     {
         return new Entity\AuthCode();
     }

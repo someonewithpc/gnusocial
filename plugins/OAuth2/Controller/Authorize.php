@@ -78,7 +78,8 @@ class Authorize extends Controller
                     public function __construct(private int $id)
                     {
                     }
-                    public function getIdentifier()
+
+                    public function getIdentifier(): int
                     {
                         return $this->id;
                     }

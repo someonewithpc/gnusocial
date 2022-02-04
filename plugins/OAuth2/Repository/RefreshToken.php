@@ -40,9 +40,9 @@ use Plugin\OAuth2\Entity;
 
 class RefreshToken implements RefreshTokenRepositoryInterface
 {
-    public function persistNewRefreshToken(RefreshtokenEntityInterface $refreshtokenEntity)
+    public function persistNewRefreshToken(RefreshtokenEntityInterface $refreshTokenEntity)
     {
-        DB::persist($refreshtokenEntity);
+        DB::persist($refreshTokenEntity);
     }
 
     public function revokeRefreshToken($tokenId)
@@ -50,12 +50,12 @@ class RefreshToken implements RefreshTokenRepositoryInterface
         // Some logic to revoke the auth token in a database
     }
 
-    public function isRefreshtokenRevoked($tokenId)
+    public function isRefreshtokenRevoked($tokenId): bool
     {
         return false; // The auth token has not been revoked
     }
 
-    public function getNewRefreshToken()
+    public function getNewRefreshToken(): Entity\RefreshToken
     {
         return new Entity\RefreshToken();
     }

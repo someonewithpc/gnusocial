@@ -40,9 +40,9 @@ use League\OAuth2\Server\Repositories\ScopeRepositoryInterface;
 class Scope implements ScopeRepositoryInterface
 {
     /**
-     * @return ?ScopeEntityInterface
+     * @param string $identifier
      */
-    public function getScopeEntityByIdentifier($scopeIdentifier)
+    public function getScopeEntityByIdentifier($identifier): ?ScopeEntityInterface
     {
         $scopes = [
             'basic' => [
@@ -62,19 +62,21 @@ class Scope implements ScopeRepositoryInterface
             ],
         ];
 
-        if (\array_key_exists($scopeIdentifier, $scopes) === false) {
-            return;
+        if (\array_key_exists($identifier, $scopes) === false) {
+            return null;
         }
 
-        return new class($scopeIdentifier) implements ScopeEntityInterface {
+        return new class($identifier) implements ScopeEntityInterface {
             public function __construct(private string $identifier)
             {
             }
-            public function getIdentifier()
+
+            public function getIdentifier(): string
             {
                 return $this->identifier;
             }
-            public function jsonSerialize(): mixed
+
+            public function jsonSerialize(): string
             {
                 return $this->getIdentifier();
             }
@@ -86,7 +88,7 @@ class Scope implements ScopeRepositoryInterface
         $grantType,
         ClientEntityInterface $clientEntity,
         $userIdentifier = null,
-    ) {
+    ): array {
         return $scopes;
     }
 }

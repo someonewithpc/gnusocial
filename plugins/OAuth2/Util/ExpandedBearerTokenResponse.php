@@ -33,18 +33,19 @@ declare(strict_types = 1);
 namespace Plugin\OAuth2\Util;
 
 use App\Entity\Actor;
+use App\Util\Exception\BugFoundException;
 use League\OAuth2\Server\Entities\AccessTokenEntityInterface;
 use League\OAuth2\Server\ResponseTypes\BearerTokenResponse;
 
 class ExpandedBearerTokenResponse extends BearerTokenResponse
 {
     /**
-     * @return array
+     * @throws BugFoundException
      */
-    protected function getExtraParams(AccessTokenEntityInterface $access_token)
+    protected function getExtraParams(AccessTokenEntityInterface $accessToken): array
     {
         return [
-            'me' => Actor::getById($access_token->getUserIdentifier())->getUri(),
+            'me' => Actor::getById($accessToken->getUserIdentifier())->getUri(),
         ];
     }
 }

@@ -34,6 +34,7 @@ namespace Plugin\OAuth2\Entity;
 use DateTimeInterface;
 use League\OAuth2\Server\Entities\AuthCodeEntityInterface;
 use Plugin\OAuth2\Repository;
+use Plugin\OAuth2\Util\Token;
 
 class AuthCode extends Token implements AuthCodeEntityInterface
 {
@@ -47,20 +48,14 @@ class AuthCode extends Token implements AuthCodeEntityInterface
     private bool $revoked;
     private DateTimeInterface $created;
 
-    public function setId(string $id): self
-    {
-        $this->id = mb_substr($id, 0, 64);
-        return $this;
-    }
-
     public function getId(): string
     {
         return $this->id;
     }
 
-    public function setExpiry(DateTimeInterface $expiry): self
+    public function setId(string $id): self
     {
-        $this->expiry = $expiry;
+        $this->id = mb_substr($id, 0, 64);
         return $this;
     }
 
@@ -69,9 +64,9 @@ class AuthCode extends Token implements AuthCodeEntityInterface
         return $this->expiry;
     }
 
-    public function setUserId(?int $user_id): self
+    public function setExpiry(DateTimeInterface $expiry): self
     {
-        $this->user_id = $user_id;
+        $this->expiry = $expiry;
         return $this;
     }
 
@@ -80,20 +75,9 @@ class AuthCode extends Token implements AuthCodeEntityInterface
         return $this->user_id;
     }
 
-    public function setClientId(string $client_id): self
+    public function setUserId(?int $user_id): self
     {
-        $this->client_id = mb_substr($client_id, 0, 64);
-        return $this;
-    }
-
-    public function getClientId(): string
-    {
-        return $this->client_id;
-    }
-
-    public function setTokenScopes(string $token_scopes): self
-    {
-        $this->token_scopes = $token_scopes;
+        $this->user_id = $user_id;
         return $this;
     }
 
@@ -102,9 +86,9 @@ class AuthCode extends Token implements AuthCodeEntityInterface
         return $this->token_scopes;
     }
 
-    public function setRevoked(bool $revoked): self
+    public function setTokenScopes(string $token_scopes): self
     {
-        $this->revoked = $revoked;
+        $this->token_scopes = $token_scopes;
         return $this;
     }
 
@@ -113,9 +97,9 @@ class AuthCode extends Token implements AuthCodeEntityInterface
         return $this->revoked;
     }
 
-    public function setCreated(DateTimeInterface $created): self
+    public function setRevoked(bool $revoked): self
     {
-        $this->created = $created;
+        $this->revoked = $revoked;
         return $this;
     }
 
@@ -124,25 +108,38 @@ class AuthCode extends Token implements AuthCodeEntityInterface
         return $this->created;
     }
 
+    public function setCreated(DateTimeInterface $created): self
+    {
+        $this->created = $created;
+        return $this;
+    }
+
     // @codeCoverageIgnoreEnd
     // }}} Autocode
 
-    /**
-     * @return null|string
-     */
-    public function getRedirectUri()
+    public function getClientId(): string
     {
-        return (new Repository\Client)->getClientEntity($this->getClientId())->getRedirectUri();
+        return $this->client_id;
     }
 
-    /**
-     * @param string $uri
-     */
-    public function setRedirectUri($uri)
+    public function setClientId(string $client_id): self
+    {
+        $this->client_id = mb_substr($client_id, 0, 64);
+        return $this;
+    }
+
+    public function getRedirectUri(): ?string
     {
         /** @var Client $client */
         $client = (new Repository\Client)->getClientEntity($this->getClientId());
-        $client->setRedirectUris($uri);
+        return $client->getRedirectUris();
+    }
+
+    public function setRedirectUri($uri): Client
+    {
+        /** @var Client $client */
+        $client = (new Repository\Client)->getClientEntity($this->getClientId());
+        return $client->setRedirectUris($uri);
     }
 
     public static function schemaDef(): array
