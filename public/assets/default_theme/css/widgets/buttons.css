@@ -70,8 +70,13 @@ button, select, textarea {
     background: var(--gradient) !important;
 }
 
-button, input:not([type=checkbox],[type=radio]) {
+button, input {
     background: var(--gradient) !important;
+}
+
+input[type=radio],
+input[type=checkbox] {
+    background: initial;
 }
 
 select {
