@@ -14,7 +14,7 @@ class AttachmentCollectionEntry extends Entity
     private int $id;
     private int $note_id;
     private int $attachment_id;
-    private int $collection_id;
+    private int $attachment_collection_id;
 
     public function setId(int $id): self
     {
@@ -49,15 +49,15 @@ class AttachmentCollectionEntry extends Entity
         return $this->attachment_id;
     }
 
-    public function setCollectionId(int $collection_id): self
+    public function setAttachmentCollectionId(int $attachment_collection_id): self
     {
-        $this->collection_id = $collection_id;
+        $this->attachment_collection_id = $attachment_collection_id;
         return $this;
     }
 
-    public function getCollectionId(): int
+    public function getAttachmentCollectionId(): int
     {
-        return $this->collection_id;
+        return $this->attachment_collection_id;
     }
 
     // @codeCoverageIgnoreEnd
@@ -68,10 +68,10 @@ class AttachmentCollectionEntry extends Entity
         return [
             'name'   => 'attachment_collection_entry',
             'fields' => [
-                'id'            => ['type' => 'serial', 'not null' => true, 'description' => 'unique identifier'],
-                'note_id'       => ['type' => 'int', 'foreign key' => true, 'target' => 'Note.id', 'multiplicity' => 'one to one', 'not null' => true, 'description' => 'foreign key to note table'],
-                'attachment_id' => ['type' => 'int', 'foreign key' => true, 'target' => 'Attachment.id', 'multiplicity' => 'one to one', 'not null' => true, 'description' => 'foreign key to attachment table'],
-                'collection_id' => ['type' => 'int', 'foreign key' => true, 'target' => 'Collection.id', 'multiplicity' => 'one to one', 'not null' => true, 'description' => 'foreign key to collection table'],
+                'id'                       => ['type' => 'serial', 'not null' => true, 'description' => 'unique identifier'],
+                'note_id'                  => ['type' => 'int', 'foreign key' => true, 'target' => 'Note.id', 'multiplicity' => 'one to one', 'not null' => true, 'description' => 'foreign key to note table'],
+                'attachment_id'            => ['type' => 'int', 'foreign key' => true, 'target' => 'Attachment.id', 'multiplicity' => 'one to one', 'not null' => true, 'description' => 'foreign key to attachment table'],
+                'attachment_collection_id' => ['type' => 'int', 'foreign key' => true, 'target' => 'AttachmentCollection.id', 'multiplicity' => 'one to one', 'not null' => true, 'description' => 'foreign key to collection table'],
             ],
             'primary key' => ['id'],
         ];

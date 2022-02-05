@@ -60,9 +60,9 @@ class AttachmentCollections extends Plugin
         ]);
         DB::persist($col);
         DB::persist(AttachmentCollectionEntry::create([
-            'attachment_id' => $vars['vars']['attachment_id'],
-            'note_id'       => $vars['vars']['note_id'],
-            'collection_id' => $col->getId(),
+            'attachment_id'            => $vars['vars']['attachment_id'],
+            'note_id'                  => $vars['vars']['note_id'],
+            'attachment_collection_id' => $col->getId(),
         ]));
     }
     protected function removeItem(Actor $owner, array $vars, array $items, array $collections)
@@ -70,7 +70,7 @@ class AttachmentCollections extends Plugin
         return DB::dql(<<<'EOF'
             DELETE FROM \Plugin\AttachmentCollections\Entity\AttachmentCollectionEntry AS entry
             WHERE entry.attachment_id = :attach_id AND entry.note_id = :note_id
-            AND entry.collection_id IN (
+            AND entry.attachment_collection_id IN (
                 SELECT album.id FROM \Plugin\AttachmentCollections\Entity\AttachmentCollection AS album
                 WHERE album.actor_id = :user_id
                   AND album.id IN (:ids)
@@ -89,9 +89,9 @@ class AttachmentCollections extends Plugin
             // prevent user from putting something in a collection (s)he doesn't own:
             if (\in_array($id, $collections)) {
                 DB::persist(AttachmentCollectionEntry::create([
-                    'attachment_id' => $vars['vars']['attachment_id'],
-                    'note_id'       => $vars['vars']['note_id'],
-                    'collection_id' => $id,
+                    'attachment_id'            => $vars['vars']['attachment_id'],
+                    'note_id'                  => $vars['vars']['note_id'],
+                    'attachment_collection_id' => $id,
                 ]));
             }
         }
@@ -101,6 +101,7 @@ class AttachmentCollections extends Plugin
     {
         return $vars['path'] === 'note_attachment_show';
     }
+
     protected function getCollectionsBy(Actor $owner, ?array $vars = null, bool $ids_only = false): array
     {
         if (\is_null($vars)) {
@@ -108,9 +109,9 @@ class AttachmentCollections extends Plugin
         } else {
             $res = DB::dql(
                 <<<'EOF'
-                    SELECT entry.collection_id FROM \Plugin\AttachmentCollections\Entity\AttachmentCollectionEntry AS entry
+                    SELECT entry.attachment_collection_id FROM \Plugin\AttachmentCollections\Entity\AttachmentCollectionEntry AS entry
                     INNER JOIN \Plugin\AttachmentCollections\Entity\AttachmentCollection AS attachment_collection
-                    WITH attachment_collection.id = entry.collection_id
+                    WITH attachment_collection.id = entry.attachment_collection_id
                     WHERE entry.attachment_id = :attach_id AND entry.note_id = :note_id AND attachment_collection.actor_id = :id
                     EOF,
                 [
@@ -123,7 +124,7 @@ class AttachmentCollections extends Plugin
         if (!$ids_only) {
             return $res;
         }
-        return array_map(fn ($x) => $x['collection_id'], $res);
+        return array_map(fn ($x) => $x['attachment_collection_id'], $res);
     }
 
     public function onAddRoute(RouteLoader $r): bool

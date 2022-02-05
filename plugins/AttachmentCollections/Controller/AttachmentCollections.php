@@ -59,7 +59,7 @@ class AttachmentCollections extends MetaCollectionController
                     WITH entry.attachment_id = attach.id
                 LEFT JOIN \App\Entity\Note AS notice
                     WITH entry.note_id = notice.id
-                WHERE entry.collection_id = :cid
+                WHERE entry.attachment_collection_id = :cid
                 EOF,
             ['cid' => $collection_id],
         );
