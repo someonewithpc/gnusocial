@@ -217,7 +217,7 @@ class Conversation extends Component
      */
     public function onPrependPostingForm(Request $request, array &$elements): bool
     {
-        $elements[] = Formatting::twigRenderFile('cards/note/macro_note_minimal_wrapper.html.twig', ['note' => Note::getById((int) $request->query->get('reply_to_id'))]);
+        $elements[] = Formatting::twigRenderFile('cards/blocks/note_compact_wrapper.html.twig', ['note' => Note::getById((int) $request->query->get('reply_to_id'))]);
         return Event::next;
     }
 

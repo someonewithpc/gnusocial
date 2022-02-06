@@ -108,17 +108,13 @@ class AttachmentCollections extends Plugin
             $res = DB::findBy(AttachmentCollection::class, ['actor_id' => $owner->getId()]);
         } else {
             $res = DB::dql(
-                <<<'EOF'
-                    SELECT entry.attachment_collection_id FROM \Plugin\AttachmentCollections\Entity\AttachmentCollectionEntry AS entry
-                    INNER JOIN \Plugin\AttachmentCollections\Entity\AttachmentCollection AS attachment_collection
-                    WITH attachment_collection.id = entry.attachment_collection_id
-                    WHERE entry.attachment_id = :attach_id AND entry.note_id = :note_id AND attachment_collection.actor_id = :id
-                    EOF,
-                [
-                    'id'        => $owner->getId(),
-                    'note_id'   => $vars['vars']['note_id'],
-                    'attach_id' => $vars['vars']['attachment_id'],
-                ],
+                'select e.attachment_collection_id from attachment_collection_entry e '
+                . 'inner join attachment_collection as a '
+                . 'with a.id = e.attachment_collection_id '
+                . 'where e.attachment_id = :attachment_id '
+                . 'and e.note_id = :note_id '
+                . 'and a.actor_id = :actor_id',
+                ['actor_id' => $owner->getId(), 'note_id' => $vars['vars']['note_id'], 'attachment_id' => $vars['vars']['attachment_id']],
             );
         }
         if (!$ids_only) {

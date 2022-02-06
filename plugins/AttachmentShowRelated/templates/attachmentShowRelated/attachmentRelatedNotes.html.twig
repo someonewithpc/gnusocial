@@ -1,4 +1,4 @@
-{% import '/cards/note/view.html.twig' as noteView %}
+{% import '/cards/macros/note.html.twig' as noteView %}
 
 <section class="frame-section frame-section-padding">
     <div class="section-title">
@@ -8,6 +8,6 @@
     </div>
 
     {% for note in related_notes %}
-        {{ noteView.macro_note_minimal(note) }}
+        {{ noteView.note_compact(note) }}
     {% endfor %}
 </section>

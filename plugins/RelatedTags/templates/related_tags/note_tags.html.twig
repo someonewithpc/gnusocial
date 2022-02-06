@@ -3,7 +3,7 @@
     <h1>Related tags</h1>
 
     {% for nt in note_tags %}
-      {% include 'cards/tag/note_tag.html.twig' with { 'tag': nt } %}
+      {% include 'cards/blocks/tag_note.html.twig' with { 'tag': nt } %}
     {% endfor %}
   </div>
 {% endif %}

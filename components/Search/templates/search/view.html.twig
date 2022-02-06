@@ -110,7 +110,7 @@
         <h3>{% trans %}Actors found{% endtrans %}</h3>
         {% if actors is defined and actors is not empty %}
             {% for actor in actors %}
-                {% include 'cards/profile/view.html.twig' with {'actor': actor} %}
+                {% include 'cards/blocks/profile.html.twig' with {'actor': actor} %}
             {% endfor %}
         {% else %}
             <em>{% trans %}No Actors were found for the specified query...{% endtrans %}</em>

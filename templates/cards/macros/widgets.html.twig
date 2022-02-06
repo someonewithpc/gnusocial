@@ -1,0 +1,49 @@
+{% macro nav_ul_li_a(nav, items) %}
+    <nav class="navigation {{ nav['classes'] | default }}" title="{{ nav['title'] | trans }}">
+        <ul class="navigation-ul {{ ul['classes'] | default }}">
+            {% for item in items %}
+                <li class="navigation-ul-li">
+                    <a href="{{ path(item['route']) }}" class='{{ item['classes'] | default }}'>{{ item['name'] | trans }}</a>
+                </li>
+            {% endfor %}
+        </ul>
+    </nav>
+{% endmacro nav_ul_li_a %}
+
+{% macro nav_a(nav, items) %}
+    <nav class="navigation {{ nav['classes'] | default }}" title="{{ nav['title'] | trans }}" {% if nav['tabindex'] is defined %}tabindex={{ nav['tabindex'] }}{% endif %}>
+        {% for item in items %}
+            <a class='{{ item['classes'] | default }}' href='{{ path(item['route']) }}'>{{ item['name'] | trans }}</a>
+        {% endfor %}
+    </nav>
+{% endmacro nav_a %}
+
+{% macro section(title, blocks, classes) %}
+    <section class="{{ classes['section'] | default }}" title="{{ title | trans }}">
+        {% for widget in blocks['prepend'] %}
+            {{ widget | raw }}
+        {% endfor %}
+
+        {% for widget in blocks['main'] %}
+            {{ widget | raw }}
+        {% endfor %}
+
+        {% for widget in blocks['append'] %}
+            {{ widget | raw }}
+        {% endfor %}
+    </section>
+{% endmacro section %}
+
+{% macro details(blocks, classes, is_open = true) %}
+    <details class="section-details {{ classes['details'] | default }}" {% if is_open %}open="open"{% endif %} title="{{ 'Expand if you want to access more options.' | trans }}">
+        <summary class="details-summary {{ classes['summary'] | default }}">
+            {% for widget in blocks['summary'] %}
+                {{ widget | raw }}
+            {% endfor %}
+        </summary>
+
+        {% for widget in blocks['main'] %}
+            {{ widget | raw }}
+        {% endfor %}
+    </details>
+{% endmacro details %}

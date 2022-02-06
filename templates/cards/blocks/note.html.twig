@@ -10,7 +10,7 @@
                         <a href="{{ note.getUrl() }}">{{ 'Permalink' | trans }}</a>
                         <hr>
                         {% for current_action in get_extra_note_actions(note) %}
-                        <a class="{{ current_action["classes"] }}" href="{{ current_action["url"] }}">{{ current_action['title'] }}</a>
+                            <a class="{{ current_action["classes"] }}" href="{{ current_action["url"] }}">{{ current_action['title'] }}</a>
                         {% endfor %}
                     </menu>
                 </details>
@@ -29,7 +29,7 @@
             <span class="note-replies-start"
                   tabindex="0">{{ 'Replies to ' | trans }}{{ nickname }}{{ '\'s note' | trans }}</span>
             {% for conversation in replies %}
-                {{ _self.macro_note(conversation['note'], conversation['replies']) }}
+                {{ _self.note_vanilla(conversation['note'], conversation['replies']) }}
                 <hr tabindex="0" title="{{ 'End of reply' | trans }}">
             {% endfor %}
         </div>
@@ -42,7 +42,7 @@
             <section class="note-attachments" tabindex="0"
                      title="{{ 'Note attachments.' | trans }}">
                 {% for attachment in note.getAttachments() %}
-                    {% include '/cards/attachments/view.html.twig' with {'attachment': attachment, 'note': note, 'title': attachment.getBestTitle(note)} only %}
+                    {% include 'cards/blocks/attachment.html.twig' with {'attachment': attachment, 'note': note, 'title': attachment.getBestTitle(note)} only %}
                 {% endfor %}
             </section>
         {% endif %}
@@ -148,64 +148,3 @@
         </aside>
     {% endfor %}
 {% endblock note_complementary_info %}
-
-{% macro macro_note(note, replies) %}
-    {% set actor = note.getActor() %}
-    {% set nickname = actor.getNickname() %}
-    {% set fullname = actor.getFullname() %}
-    {% set actor_uri = actor.getUri() %}
-    {% set actor_url = actor.getUrl() %}
-    {% set mention = mention(actor) %}
-    {% set note_language = note.getNoteLanguageShortDisplay() %}
-
-    <article id="{{ 'note-anchor-' ~ note.getId() }}"
-             class="h-entry hentry note" lang={{ note.getLanguageLocale() }}>
-        {{ block('note_sidebar') }}
-        <div class="note-wrapper">
-            <header class="note-info">
-                {{ block('note_info') }}
-                {{ block('note_actions') }}
-            </header>
-
-            <section role="dialog" class="e-content entry-content note-content">
-                {{ block('note_text') }}
-                {{ block('note_attachments') }}
-                {{ block('note_links') }}
-            </section>
-
-            {{ block('note_replies') }}
-            {{ block('note_complementary_info') }}
-        </div>
-    </article>
-{% endmacro macro_note %}
-
-{% macro macro_note_minimal(note) %}
-    {% set actor = note.getActor() %}
-    {% set nickname = actor.getNickname() %}
-    {% set fullname = actor.getFullname() %}
-    {% set actor_uri = actor.getUri() %}
-    {% set actor_url = actor.getUrl() %}
-    {% set mention = mention(actor) %}
-
-    <article class="h-entry hentry note" lang={{ note.getLanguageLocale() }}>
-        {{ block('note_sidebar') }}
-        <div class="note-wrapper">
-            <header class="note-info">
-                <div class="note-info-start">
-                    {{ block('note_author') }}
-                </div>
-            </header>
-
-            <section role="dialog" class="e-content entry-content note-content">
-                <small class="note-conversation-info">
-                    <a href="{{ note.getConversationUrl() }}"
-                       class="note-conversation-url">{{ 'in conversation' | trans }}</a>
-                    <a href="{{ note.getUrl() }}"
-                       class="note-url">{{ note.getModified() | ago }}</a>
-                </small>
-                <hr>
-                {{ block('note_text') }}
-            </section>
-        </div>
-    </article>
-{% endmacro macro_note_minimal %}

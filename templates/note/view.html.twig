@@ -1,5 +1,5 @@
 {% extends 'stdgrid.html.twig' %}
-{% import '/cards/note/view.html.twig' as noteView %}
+{% import '/cards/macros/note.html.twig' as noteView %}
 
 {% block title %}{{ note.getActorNickname() ~ '\'s note' | trans }}{% endblock %}
 
@@ -13,7 +13,7 @@
     <main class="feed" tabindex="0" role="feed">
         <div class="h-feed hfeed notes">
             {% if note is defined and note is not empty %}
-                {{ noteView.macro_note(note, null) }}
+                {{ noteView.note_vanilla(note, null) }}
             {% else %}
                 <div id="empty-notes"><h1>{% trans %}No notes here.{% endtrans %}</h1></div>
             {% endif %}

@@ -1,5 +1,5 @@
 {% extends 'base.html.twig' %}
-{% import '/cards/note/view.html.twig' as noteView %}
+{% import '/cards/macros/note.html.twig' as noteView %}
 
 {% block stylesheets %}
     {{ parent() }}
@@ -10,9 +10,9 @@
     {% if note is defined or actor is defined %}
         <div class="frame-section-padding">
             {% if note is defined and note is not null %}
-                {{ noteView.macro_note(note, {}) }}
+                {{ noteView.note_vanilla(note, {}) }}
             {% elseif actor is defined and actor is not null  %}
-                {% include 'cards/profile/view.html.twig' with {'actor': actor} only %}
+                {% include 'cards/blocks/profile.html.twig' with {'actor': actor} only %}
             {% endif %}
         </div>
     {% endif %}

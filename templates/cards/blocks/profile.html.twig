@@ -63,7 +63,7 @@
 
             <nav class="profile-tags" title="{% trans %} %actor_nickname%'s actor tags{% endtrans %}">
                 {% for tag in actor_tags %}
-                    {% include 'cards/tag/actor_tag.html.twig' with { 'tag': tag, 'actor': actor } %}
+                    {% include 'cards/blocks/tag_actor.html.twig' with { 'tag': tag, 'actor': actor } %}
                 {% endfor %}
             </nav>
         </div>

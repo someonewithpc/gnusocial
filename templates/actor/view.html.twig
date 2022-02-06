@@ -1,10 +1,10 @@
-{% extends 'collection/notes.html.twig' %}
+{% extends '/collection/notes.html.twig' %}
 
 {% block title %}{% trans %}%nickname%'s profile{% endtrans %}{% endblock %}
 
 {% block body %}
     {% block profile_view %}
-        {% include 'cards/profile/view.html.twig' %}
+        {% include '/cards/blocks/profile.html.twig' %}
     {% endblock profile_view %}
 
     {{ parent() }}

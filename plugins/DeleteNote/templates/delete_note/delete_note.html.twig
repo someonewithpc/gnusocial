@@ -1,5 +1,5 @@
 {% extends 'stdgrid.html.twig' %}
-{% import "/cards/note/view.html.twig" as noteView %}
+{% import "/cards/macros/note.html.twig" as noteView %}
 
 {% block title %}{{ 'Delete ' | trans }}{{ 'note' | trans }}{% endblock %}
 
@@ -12,7 +12,7 @@
         {{ parent() }}
         <div class="page">
                 <div class="main">
-                        {{ noteView.macro_note_minimal(note) }}
+                        {{ noteView.note_compact(note) }}
                         {{ form(delete) }}
                 </div>
         </div>

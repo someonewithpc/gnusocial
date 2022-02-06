@@ -7,18 +7,18 @@
     <section class="panel-content accessibility-target">
         {% if app.user %}
             <section class='frame-section frame-section-padding' title="{{ 'Your profile information.' | trans }}">
-                {% block profile_view %}{% include 'cards/profile/view.html.twig' with { actor: current_actor } %}{% endblock profile_view %}
-                {{ block("profile_current_actor", "cards/navigation/view.html.twig") }}
+                {% block profile_view %}{% include 'cards/blocks/profile.html.twig' with { actor: current_actor } %}{% endblock profile_view %}
+                {{ block("profile_current_actor", "cards/blocks/navigation.html.twig") }}
             </section>
         {% else %}
             <section>
-                {{ block("profile_security", "cards/navigation/view.html.twig") }}
+                {{ block("profile_security", "cards/blocks/navigation.html.twig") }}
             </section>
         {% endif %}
 
-        {{ block("feeds", "cards/navigation/view.html.twig") }}
+        {{ block("feeds", "cards/blocks/navigation.html.twig") }}
 
-        {{ block("footer", "cards/navigation/view.html.twig") }}
+        {{ block("footer", "cards/blocks/navigation.html.twig") }}
     </section>
 </aside>
 {% endblock leftpanel %}

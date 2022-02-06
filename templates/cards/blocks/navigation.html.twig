@@ -1,0 +1,106 @@
+{% block feeds %}
+    {% from 'cards/macros/widgets.html.twig' import section, details %}
+
+    {% set prepend %}
+        <h2 class="section-title">Account</h2>
+    {% endset %}
+
+    {% set main %}
+        {% set classes = {'details': 'section-details-title', 'summary': 'details-summary-title'} %}
+
+        {% set summary %}
+            <span>{{ 'Feeds' | trans }}</span>
+            {% if app.user %}
+                {# User custom feeds #}
+                <a class="edit-feed-link" href="{{ path('edit_feeds') }}">{{ icon('edit', 'icon icon-edit-feed') | raw }}</a>
+            {% endif %}
+        {% endset %}
+
+        {% set expanded %}
+            <nav class="frame-section-padding" tabindex="0" title="{{ 'Navigate through each feed.' | trans }}">
+                {% if not app.user %} {# Default feeds #}
+                    <ul>
+                        <li>
+                            <a href="{{ path('feed_public') }}" class='hover-effect {{ active('feed_public') }}'>
+                                {{ 'Feed' | trans }}
+                            </a>
+                        </li>
+                    </ul>
+                {% else %}
+                    <ul>
+                        {% for link in get_feeds(current_actor) %}
+                            <li>
+                                <a href="{{ link.getUrl() }}" class='{{ active(link.getRoute()) }}'>{{ link.getTitle() }}</a>
+                            </li>
+                        {% endfor %}
+                        {% for link in handle_event('AddMainNavigationItem', {'nickname': current_actor.getNickname()}) %}
+                            <li>
+                                <a href="{{ link['path'] }}" class='{{ active(link['path_id']) }}'>
+                                    {{ link['title'] }}
+                                </a>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            </nav>
+        {% endset %}
+
+        {% set blocks = {'summary': { summary }, 'main': { expanded }} %}
+
+        {{ details(blocks, classes) }}
+    {% endset %}
+
+    {% set classes = {'section': 'frame-section'} %}
+    {% set title = 'Navigate through feeds' %}
+    {% set blocks = {'prepend': {}, 'main': { main }, 'append': {}} %}
+    {{ section(title, blocks, classes) }}
+{% endblock feeds %}
+
+{% block profile_current_actor %}
+<nav tabindex="0" class="profile-navigation" title="{{ 'Navigate through account related pages.' | trans }}">
+    <a title='{{ 'Access your account settings.' | trans }}' href="{{ path('settings') }}" class='{{ active('settings') }}'>
+        {% trans %}Settings{% endtrans %}
+    </a>
+
+    <a title='{{ 'Logout from your account.' | trans }}' href='{{ path('security_logout') }}'>
+        {% trans %}Logout{% endtrans %}
+    </a>
+</nav>
+{% endblock profile_current_actor %}
+
+{% block profile_security %}
+    {% from 'cards/macros/widgets.html.twig' import section, nav_a %}
+
+    {% set prepend %}
+        <h2 class="section-title">Account</h2>
+    {% endset %}
+
+    {% set main %}
+        {% set nav = {'classes': 'profile-navigation', 'title': 'Navigate through account related pages', 'tabindex': '0'} %}
+        {% set items = [
+            {'route': 'security_login', 'classes': active('security_login'), 'title': 'Login with your existing account', 'name': 'Login' },
+            {'route': 'security_register', 'classes': active('security_register'), 'title': 'Register a new account!', 'name': 'Register' }
+        ]%}
+        {{ nav_a(nav, items) }}
+    {% endset %}
+
+    {% set classes = {'section': 'frame-section frame-section-padding'} %}
+    {% set title = 'Profile information' %}
+    {% set blocks = {'prepend': { prepend }, 'main': { main }, 'append': {}} %}
+    {{ section(title, blocks, classes) }}
+{% endblock profile_security %}
+
+{% block footer %}
+    {% from 'cards/macros/widgets.html.twig' import nav_ul_li_a %}
+
+    {% set nav = {'classes': 'footer', 'title': 'Footer conatining instance FAQ, TOS, and additional info'} %}
+    {% set items = [
+        {'route': 'doc_faq', 'classes': active('doc_faq'), 'title': 'FAQ', 'name': 'FAQ'},
+        {'route': 'doc_tos', 'classes': active('doc_tos'), 'title': 'TOS', 'name': 'TOS'},
+        {'route': 'doc_privacy', 'classes': active('doc_privacy'), 'title': 'Privacy', 'name': 'Privacy'},
+        {'route': 'doc_source', 'classes': active('doc_source'), 'title': 'Source', 'name': 'Source'},
+        {'route': 'doc_version', 'classes': active('doc_version'), 'title': 'Version', 'name': 'Version'}
+    ]%}
+
+    {{ nav_ul_li_a(nav, items) }}
+{% endblock footer %}

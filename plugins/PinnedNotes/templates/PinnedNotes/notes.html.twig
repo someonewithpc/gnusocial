@@ -1,4 +1,4 @@
-{% import '/cards/note/view.html.twig' as noteView %}
+{% import '/cards/macros/note.html.twig' as noteView %}
 
 {# Backwards compatibility with hAtom 0.1 #}
 {% if pinnednotes is not empty %}
@@ -8,9 +8,9 @@
             {% for conversation in pinnednotes %}
                 {% block current_note %}
                     {% if conversation is instanceof('array') %}
-                        {{ noteView.macro_note(conversation['note'], conversation['replies']) }}
+                        {{ noteView.note_vanilla(conversation['note'], conversation['replies']) }}
                     {% else %}
-                        {{ noteView.macro_note(conversation) }}
+                        {{ noteView.note_vanilla(conversation) }}
                     {% endif %}
                     <hr tabindex="0" title="{{ 'End of note and replies.' | trans }}">
                 {% endblock current_note %}

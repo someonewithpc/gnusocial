@@ -1,5 +1,5 @@
 {% extends 'stdgrid.html.twig' %}
-{% import '/cards/note/view.html.twig' as noteView %}
+{% import '/cards/macros/note.html.twig' as noteView %}
 
 {% set nickname = nickname|escape %}
 {% block title %}{{ nickname }}{% endblock %}
@@ -13,7 +13,7 @@
 
     {% if actor is defined and actor is not null %}
         {% block profile_view %}
-            {% include 'cards/profile/view.html.twig' with { 'actor': actor } only %}
+            {% include 'cards/blocks/profile.html.twig' with { 'actor': actor } only %}
         {% endblock profile_view %}
 
         {% if notes is defined %}
@@ -46,9 +46,9 @@
                         {% for conversation in notes %}
                             {% block current_note %}
                                 {% if conversation is instanceof('array') %}
-                                    {{ noteView.macro_note(conversation['note'], conversation['replies']) }}
+                                    {{ noteView.note_vanilla(conversation['note'], conversation['replies']) }}
                                 {% else %}
-                                    {{ noteView.macro_note(conversation) }}
+                                    {{ noteView.note_vanilla(conversation) }}
                                 {% endif %}
                                 <hr tabindex="0" title="{{ 'End of note and replies.' | trans }}">
                             {% endblock current_note %}

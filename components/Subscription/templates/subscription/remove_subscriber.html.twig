@@ -2,7 +2,7 @@
 
 {% block body %}
     {% block profile_view %}
-        {% include 'cards/profile/view.html.twig' with { actor: object } %}
+        {% include 'cards/blocks/profile.html.twig' with { actor: object } %}
     {% endblock profile_view %}
     {{ form(form) }}
 {% endblock body %}

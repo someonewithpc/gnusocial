@@ -1,5 +1,5 @@
 {% extends 'base.html.twig' %}
-{% import '/cards/note/view.html.twig' as noteView %}
+{% import '/cards/macros/note.html.twig' as noteView %}
 
 {% block stylesheets %}
     {{ parent() }}
@@ -22,7 +22,7 @@
 
     {% for note in results %}
         {% block current_note %}
-            {{ noteView.macro_note(note) }}
+            {{ noteView.note_vanilla(note) }}
         {% endblock current_note %}
     {% endfor %}
 

@@ -54,7 +54,7 @@
         <h2>{% trans %}Results{% endtrans %}</h2>
         {% if actors is defined and actors is not empty %}
             {% for actor in actors %}
-                {% block profile_view %}{% include 'cards/profile/view.html.twig' %}{% endblock profile_view %}
+                {% block profile_view %}{% include 'cards/blocks/profile.html.twig' %}{% endblock profile_view %}
                 <hr>
             {% endfor %}
             <span class="frame-section-button-like">{% trans %}Page: %page%{% endtrans %}</span>

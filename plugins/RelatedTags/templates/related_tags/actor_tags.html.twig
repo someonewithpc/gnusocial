@@ -2,7 +2,7 @@
 <section class="frame-section frame-section-padding">
   <span class="section-title">Related tags</span>
   {% for at in actor_tags %}
-    {% include 'cards/tag/actor_tag.html.twig' with { 'tag': at, 'actor': null } %}
+    {% include 'cards/blocks/tag_actor.html.twig' with { 'tag': at, 'actor': null } %}
   {% endfor %}
 </section>
 {% endif %}

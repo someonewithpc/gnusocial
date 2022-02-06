@@ -80,7 +80,7 @@ class BlogCollections extends Plugin
     protected function shouldAddToRightPanel(Actor $user, $vars, Request $request): bool
     {
         // TODO: Implement shouldAddToRightPanel() method.
-        return $vars['path'] === 'note_view';
+        return false;
     }
 
     protected function getCollectionsBy(Actor $owner, ?array $vars = null, bool $ids_only = false): array
