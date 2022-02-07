@@ -80,10 +80,10 @@ class Oomox
                 $current_border          = $current_oomox_settings->getColourBorderLight() ?: '#d5d5d5';
                 $current_accent          = $current_oomox_settings->getColourAccentLight() ?: '#a22430';
             } else {
-                $current_foreground      = $current_oomox_settings->getColourForegroundDark() ?: '#f0f6f6';
-                $current_background_hard = $current_oomox_settings->getColourBackgroundHardDark() ?: '#141216';
-                $current_background_card = $current_oomox_settings->getColourBackgroundCardDark() ?: '#131217';
-                $current_border          = $current_oomox_settings->getColourBorderDark() ?: '#201f25';
+                $current_foreground      = $current_oomox_settings->getColourForegroundDark() ?: '#eff0f1';
+                $current_background_hard = $current_oomox_settings->getColourBackgroundHardDark() ?: '#0E0E0F';
+                $current_background_card = $current_oomox_settings->getColourBackgroundCardDark() ?: '#0E0E0F';
+                $current_border          = $current_oomox_settings->getColourBorderDark() ?: '#26262C';
                 $current_accent          = $current_oomox_settings->getColourAccentDark() ?: '#5ddbcf';
             }
         } else {

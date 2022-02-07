@@ -54,10 +54,6 @@ hr {
     top: var(--s);
 }
 
-.heading-no-margin {
-    margin-bottom: initial;
-}
-
 .page-header {
     align-items: center;
     background: var(--gradient) !important;

@@ -134,10 +134,6 @@
     align-items: center;
 }
 
-.feed-header .section-title {
-    font-size: 1.383rem;
-}
-
 .feed-header .feed-actions {
     margin-left: auto;
     text-transform: capitalize;

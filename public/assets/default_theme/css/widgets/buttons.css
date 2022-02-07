@@ -1,5 +1,5 @@
 label {
-    font-weight: 700;
+    font-weight: 900;
 }
 
 input + label {
@@ -23,7 +23,7 @@ input[type=file] {
     cursor: pointer;
     fill: var(--foreground);
     font-family: 'Open Sans', sans-serif !important;
-    font-weight: 700 !important;
+    font-weight: 900 !important;
     margin: 3px;
 }
 
@@ -49,7 +49,7 @@ button, label {
 }
 button {
     font-family: 'Poppins', sans-serif;
-    font-weight: 700 !important;
+    font-weight: 900 !important;
 }
 
 select::-ms-expand {

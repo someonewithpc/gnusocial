@@ -76,8 +76,6 @@
 }
 
 .details-subtitle-summary ~ [class|="form-row"] {
-    font-size: .937rem;
-    max-font-size: .937rem !important;
     padding: var(--s);
 }
 
@@ -165,7 +163,7 @@
     border-radius: var(--s);
     display: block;
     font-family: 'Poppins', sans-serif;
-    font-weight: 700;
+    font-weight: 900;
     padding: 6px 8px;
     width: max-content;
 }
@@ -177,7 +175,7 @@
 .frame-section-paging {
     display: block;
     font-family: 'Poppins', sans-serif;
-    font-weight: 700;
+    font-weight: 900;
     margin-left: auto;
     margin-top: var(--s);
     padding: 6px 12px;
@@ -216,7 +214,7 @@
     border: 1px solid var(--border);
     border-radius: var(--s);
     display: inline-block;
-    font-weight: 700;
+    font-weight: 900;
     margin-right: var(--s);
     margin-top: var(--s);
     padding: 4px 8px;
@@ -244,7 +242,8 @@
 }
 
 .profile-info-url-nickname {
-    font-size: var(--m);
+    font-size: 1.215rem;
+    font-weight: 900;
 }
 
 .profile-info-url-remote {
@@ -257,7 +256,6 @@
 
 .profile-stats {
     align-self: center;
-    font-size: .937rem;
     margin-left: auto;
     opacity: .66;
     text-align: right;
@@ -302,18 +300,25 @@
 .section-details-subtitle summary, .section-details-title summary {
     background: var(--gradient);
     border-radius: var(--s);
+    outline: 1px solid var(--border);
     display: inline-block;
     width: 100%;
 }
 
 .details-summary-title {
     line-height: initial;
-    font-weight: 700;
-    font-size: 1.067em;
-    padding: 6px 12px;
+    font-size: 1.215rem;
+    font-weight: 900;
+    padding: 6px 8px;
 }
 .details-summary-subtitle {
-    font-weight: 700;
+    font-size: 1em;
+    font-weight: bold;
+}
+
+.heading-no-margin {
+    font-size: 1.215rem;
+    font-weight: 900;
 }
 
 .details-summary-title:after {
@@ -358,10 +363,6 @@
     width: 100%;
 }
 
-.section-form .section-details-subtitle summary {
-    border: 1px solid var(--border);
-}
-
 .section-form-legend {
     font-weight: 700;
     margin-bottom: var(--s);
@@ -369,7 +370,6 @@
 }
 
 .section-title {
-    font-weight: 700;
     margin-bottom: unset;
 }
 

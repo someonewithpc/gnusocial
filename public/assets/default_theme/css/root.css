@@ -1,23 +1,23 @@
 :root {
-    --s: .6rem;
+    --s: 0.666rem;
     --unit: 1rem;
-    --m: 1.3rem;
-    --xl: 1.62rem;
-    --xxl: 3rem;
+    --m: 1.067rem;
+    --xl: 1.138rem;
+    --xxl: 3.2rem;
 }
 
 @media(prefers-color-scheme:dark) {
     :root {
-        --foreground: #f0f6f6;
-        --background-hard: #141216;
-        --background-card: #131217;
-        --border: #26242D;
+        --foreground: #eff0f1;
+        --background-hard: #0E0E0F;
+        --background-card: #0E0E0F;
+        --border: #26262C;
         --accent: #5ddbcf;
         --shadow: 0 5px 20px -10px rgba(255,255,255,0.1)!important;
         --shadow-inset-accent: inset 0 0 0 2px var(--accent);
         --background-checkerboard: repeating-conic-gradient(#ffffff66 0 90deg,#ffffff33 0 180deg) 0 0/40px 40px round;
-        --gradient: linear-gradient(10deg,var(--border) 0,transparent 90%)!important;
-        --gradient-backwards: linear-gradient(290deg,var(--border) 0,var(--background-card) 100%)!important;
+        --gradient: linear-gradient(10deg,var(--border) -33%,transparent 66%)!important;
+        --gradient-backwards: linear-gradient(-10deg,var(--border) -33%,transparent 66%)!important;
     }
 }
 
