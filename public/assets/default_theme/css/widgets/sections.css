@@ -291,8 +291,8 @@
 }
 
 .section-details-subtitle summary > *, .section-details-title summary > * {
-    display: inline-block;
-    vertical-align: baseline;
+    display: inline-flex;
+    vertical-align: middle;
 }
 
 .section-details-subtitle summary > :last-child, .section-details-title summary > :last-child {
@@ -318,16 +318,20 @@
 
 .details-summary-title:after {
     content: "\2193";
+    display: block;
+    position: relative;
     float: right;
 }
 .details-summary-subtitle:after {
     content: "\2191";
+    display: block;
+    position: relative;
     float: right;
 }
 
 .section-details-subtitle:not([open]) > .details-summary-subtitle:after {
     animation: fadeOut 200ms cubic-bezier(0, 0.55, 0.45, 1);
-    transform: rotate(180deg);
+    content: "\2193";
 }
 
 .section-details-subtitle[open] > .details-summary-subtitle:after {
@@ -342,7 +346,7 @@
 
 .section-details-title[open] > .details-summary-title:after {
     animation: fadeOut 200ms cubic-bezier(0, 0.55, 0.45, 1);
-    transform: rotate(180deg);
+    content: "\2191";
 }
 
 .section-form {
