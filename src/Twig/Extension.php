@@ -78,7 +78,7 @@ class Extension extends AbstractExtension
             new TwigFunction('mention', [Runtime::class, 'mention']),
             new TwigFunction('open_details', [Runtime::class, 'openDetails']),
             new TwigFunction('show_stylesheets', [Runtime::class, 'getShowStylesheets']),
-            new TwigFunction('get_right_panel_blocks', [Runtime::class, 'getRightPanelBlocks']),
+            new TwigFunction('add_right_panel_block', [Runtime::class, 'addRightPanelBlock']),
         ];
     }
 }

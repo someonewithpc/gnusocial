@@ -1,71 +1,97 @@
-{% block rightpanel %}
-<label class="panel-right-icon" for="toggle-panel-right" tabindex="-1">{{ icon('chevron-left', 'icon icon-right') | raw }}</label>
-<a id="anchor-right-panel" class="anchor-hidden" tabindex="0" title="{{ 'Press tab followed by a space to access right panel' | trans }}"></a>
-<input type="checkbox" id="toggle-panel-right" tabindex="0" title="{{ 'Open right panel' | trans }}" {% if app.request.get('_route') == 'conversation_reply_to' %}checked{% endif %}>
-
-<aside class="section-panel section-panel-right">
-    <section class="panel-content accessibility-target">
-        {% set prepend_right_panel = handle_event('PrependRightPanel', request) %}
-        {% for widget in prepend_right_panel %}
-            {{ widget | raw }}
-        {% endfor %}
-
-        {% set blocks = handle_event('AppendRightPostingBlock', request) %}
-        {% if blocks['post_form'] is defined %}
-            <section class="frame-section" title="{{ 'Create a new note.' | trans }}">
-                <details class="section-details-title" open="open" title="{{ 'Expand if you want to access more options.' | trans }}">
-                    <summary class="details-summary-title">
-                        <span>
-                            {% if app.request.get('_route') == 'conversation_reply_to' %}
-                                {{ "Reply to note" | trans }}
-                            {% else %}
-                                {{ "Create a note" | trans }}
-                            {% endif %}
-                        </span>
-                    </summary>
-
-                    {% if app.request.get('_route') == 'conversation_reply_to' %}
-                        <section class="frame-section-padding">
-                            {% set prepend_posting_form = handle_event('PrependPostingForm', request) %}
-                            {% for widget in prepend_posting_form %}
-                                {{ widget | raw }}
-                            {% endfor %}
-                        </section>
-                    {% endif %}
-
-                    <section class="section-form">
-                        {{ form_start(blocks['post_form']) }}
-                        {{ form_errors(blocks['post_form']) }}
-                        {% if blocks['post_form'].in is defined %}
-                            {{ form_row(blocks['post_form'].in) }}
-                        {% endif %}
-                        {{ form_row(blocks['post_form'].visibility) }}
-                        {{ form_row(blocks['post_form'].content_type) }}
-                        {{ form_row(blocks['post_form'].content) }}
-                        {{ form_row(blocks['post_form'].attachments) }}
-
-                        <details class="section-details-subtitle">
-                            <summary class="details-summary-subtitle">
-                                <strong>
-                                    {{ "Additional options" | trans }}
-                                </strong>
-                            </summary>
-                            <section class="section-form">
-                                {{ form_row(blocks['post_form'].language) }}
-                                {{ form_row(blocks['post_form'].tag_use_canonical) }}
-                            </section>
-                        </details>
-                        {{ form_rest(blocks['post_form']) }}
-                        {{ form_end(blocks['post_form']) }}
-                    </section>
-                </details>
-            </section>
+{% macro posting(form) %}
+    <section class="section-form">
+        {{ form_start(form) }}
+        {{ form_errors(form) }}
+        {% if form.in is defined %}
+            {{ form_row(form.in) }}
         {% endif %}
+        {{ form_row(form.visibility) }}
+        {{ form_row(form.content_type) }}
+        {{ form_row(form.content) }}
+        {{ form_row(form.attachments) }}
 
-        {% set extra_blocks = get_right_panel_blocks({'path': app.request.get('_route'), 'request': app.request, 'vars': right_panel_vars | default }) %}
-        {% for block in extra_blocks %}
-            {{ block | raw }}
-        {% endfor %}
+        <details class="section-details-subtitle">
+            <summary class="details-summary-subtitle">
+                <strong>
+                    {{ "Additional options" | trans }}
+                </strong>
+            </summary>
+            <section class="section-form">
+                {{ form_row(form.language) }}
+                {{ form_row(form.tag_use_canonical) }}
+            </section>
+        </details>
+        {{ form_rest(form) }}
+        {{ form_end(form) }}
     </section>
-</aside>
+{% endmacro %}
+
+{% macro posting_section_vanilla(widget) %}
+    <section class="frame-section" title="{{ 'Create a new note.' | trans }}">
+        <details class="section-details-title" open="open"
+                 title="{{ 'Expand if you want to access more options.' | trans }}">
+            <summary class="details-summary-title">
+                <span>
+                    {{ "Create a note" | trans }}
+                </span>
+            </summary>
+
+            {% import _self as forms %}
+            {{ forms.posting(widget) }}
+        </details>
+    </section>
+{% endmacro %}
+
+{% macro posting_section_reply(widget, extra) %}
+    <section class="frame-section" title="{{ 'Create a new note.' | trans }}">
+        <details class="section-details-title" open="open"
+                 title="{{ 'Expand if you want to access more options.' | trans }}">
+            <summary class="details-summary-title">
+                <span>
+                    {{ "Reply to note" | trans }}
+                </span>
+            </summary>
+
+            {% for block in extra %}
+                <section class="frame-section-padding">
+                    {{ block | raw }}
+                </section>
+            {% endfor %}
+
+            {% import _self as forms %}
+            {{ forms.posting(widget) }}
+        </details>
+    </section>
+{% endmacro %}
+
+{% block rightpanel %}
+    {% import _self as this %}
+    <label class="panel-right-icon" for="toggle-panel-right"
+           tabindex="-1">{{ icon('chevron-left', 'icon icon-right') | raw }}</label>
+    <a id="anchor-right-panel" class="anchor-hidden" tabindex="0"
+       title="{{ 'Press tab followed by a space to access right panel' | trans }}"></a>
+    <input type="checkbox" id="toggle-panel-right" tabindex="0" title="{{ 'Open right panel' | trans }}"
+           {% if app.request.get('_route') == 'conversation_reply_to' %}checked{% endif %}>
+
+    <aside class="section-panel section-panel-right">
+        {% set var_list = {'path': app.request.get('_route'), 'request': app.request, 'vars': right_panel_vars | default } %}
+        {% set blocks = add_right_panel_block('prepend', var_list) %}
+        {% set blocks = blocks|merge(add_right_panel_block('main', var_list)) %}
+        {% set blocks = blocks|merge(add_right_panel_block('append', var_list)) %}
+
+        <section class="panel-content accessibility-target">
+            {% for widget in blocks %}
+                {% if widget is iterable and widget.vars.id == 'post_note' %}
+                    {% if app.request.get('_route') == 'conversation_reply_to' %}
+                        {% set extra = handle_event('PrependPostingForm', request) %}
+                        {{ this.posting_section_reply(widget, extra) }}
+                    {% else %}
+                        {{ this.posting_section_vanilla(widget) }}
+                    {% endif %}
+                {% else %}
+                    {{ widget | raw }}
+                {% endif %}
+            {% endfor %}
+        </section>
+    </aside>
 {% endblock rightpanel %}

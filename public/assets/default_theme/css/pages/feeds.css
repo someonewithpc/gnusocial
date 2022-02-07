@@ -26,6 +26,28 @@
     mask-image: url(../../icons/delete.svg);
 }
 
+.icon-eye-opened {
+    background-color: var(--foreground);
+    -moz-mask-image: url(../../icons/eye-opened.svg);
+    -o-mask-image: url(../../icons/eye-opened.svg);
+    -webkit-mask-image: url(../../icons/eye-opened.svg);
+    mask-image: url(../../icons/eye-opened.svg);
+    display: inline-flex;
+    height: 1em;
+    width: 1em;
+}
+
+.icon-eye-closed {
+    background-color: var(--foreground);
+    -moz-mask-image: url(../../icons/eye-closed.svg);
+    -o-mask-image: url(../../icons/eye-closed.svg);
+    -webkit-mask-image: url(../../icons/eye-closed.svg);
+    mask-image: url(../../icons/eye-closed.svg);
+    display: inline-flex;
+    height: 1em;
+    width: 1em;
+}
+
 .embed {
     border: unset;
     display: flex;
@@ -68,11 +90,6 @@
 
 .feed-actions-details-dropdown {
     font-size: .937rem;
-}
-
-.feed-actions-details[open] > .feed-actions-details-dropdown a span {
-    float: right;
-    margin-left: 4px;
 }
 
 .feed-actions-details[open] > .feed-actions-details-dropdown, .note-actions-extra-details[open] > summary + * {

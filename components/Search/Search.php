@@ -120,7 +120,7 @@ class Search extends Component
      *
      * @throws RedirectException
      */
-    public function onPrependRightPanel(Request $request, array &$elements)
+    public function onPrependRightPanelBlock(Request $request, array &$elements): bool
     {
         $elements[] = Formatting::twigRenderFile('cards/search/view.html.twig', ['search' => self::searchForm($request)]);
         return Event::next;

@@ -70,7 +70,7 @@ class Posting extends Component
      * @throws RedirectException
      * @throws ServerException
      */
-    public function onAppendRightPostingBlock(Request $request, array &$res): bool
+    public function onAddMainRightPanelBlock(Request $request, array &$res): bool
     {
         if (\is_null($user = Common::user())) {
             return Event::next;
@@ -182,7 +182,6 @@ class Posting extends Component
                 throw new ClientException(_m('Invalid file size given'), previous: $e);
             }
         }
-
         $res['post_form'] = $form->createView();
 
         return Event::next;

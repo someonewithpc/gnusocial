@@ -88,10 +88,29 @@ class Runtime implements RuntimeExtensionInterface, EventSubscriberInterface
         return $extra_actions;
     }
 
-    public function getRightPanelBlocks($vars)
+    /**
+     * Provides an easy way to add template blocks to the right panel, features more granular control over
+     * appendage positioning, through the $location parameter.
+     *
+     * @param string $location where it should be added, available locations: 'prepend', 'main', 'append'
+     * @param array  $vars     contains additional context information to be used by plugins (ex. WebMonetization)
+     *
+     * @return array contains all blocks to be added to the right panel
+     */
+    public function addRightPanelBlock(string $location, array $vars): array
     {
         $blocks = [];
-        Event::handle('AppendRightPanelBlock', [$this->request, $vars, &$blocks]);
+        switch ($location) {
+            case 'prepend':
+                Event::handle('PrependRightPanelBlock', [$this->request, &$blocks]);
+                break;
+            case 'main':
+                Event::handle('AddMainRightPanelBlock', [$this->request, &$blocks]);
+                break;
+            case 'append':
+                Event::handle('AppendRightPanelBlock', [$this->request, $vars, &$blocks]);
+                break;
+        }
         return $blocks;
     }
 

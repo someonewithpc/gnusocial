@@ -2,7 +2,7 @@
     <li>
         <a href="{{ tab.url }}" title="{{ tab.active ? ('Hide ' ~ tab['icon']) : ('Show ' ~ tab['icon']) | trans }}">
             {{ tab['icon'] }}
-            <span>{{ icon(tab.active ? 'eye-opened' : 'eye-closed', 'icon') | raw }}</span>
+            <span class="icon {{ tab.active ? 'icon-eye-opened' : 'icon-eye-closed' }}"></span>
         </a>
     </li>
 {% endfor %}
