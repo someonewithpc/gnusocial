@@ -1,37 +1,37 @@
 .favourite-button-container {
-    -moz-mask-image: url(../../icons/heart.svg);
-    -o-mask-image: url(../../icons/heart.svg);
-    -webkit-mask-image: url(../../icons/heart.svg);
-    mask-image: url(../../icons/heart.svg);
+    -moz-mask-image: url(../icons/heart.svg);
+    -o-mask-image: url(../icons/heart.svg);
+    -webkit-mask-image: url(../icons/heart.svg);
+    mask-image: url(../icons/heart.svg);
 }
 
 .reply-button-container {
-    -moz-mask-image: url(../../icons/reply.svg);
-    -o-mask-image: url(../../icons/reply.svg);
-    -webkit-mask-image: url(../../icons/reply.svg);
-    mask-image: url(../../icons/reply.svg);
+    -moz-mask-image: url(../icons/reply.svg);
+    -o-mask-image: url(../icons/reply.svg);
+    -webkit-mask-image: url(../icons/reply.svg);
+    mask-image: url(../icons/reply.svg);
 }
 
 .repeat-button-container {
-    -moz-mask-image: url(../../icons/repeat.svg);
-    -o-mask-image: url(../../icons/repeat.svg);
-    -webkit-mask-image: url(../../icons/repeat.svg);
-    mask-image: url(../../icons/repeat.svg);
+    -moz-mask-image: url(../icons/repeat.svg);
+    -o-mask-image: url(../icons/repeat.svg);
+    -webkit-mask-image: url(../icons/repeat.svg);
+    mask-image: url(../icons/repeat.svg);
 }
 
 .delete-button-container {
-    -moz-mask-image: url(../../icons/delete.svg);
-    -o-mask-image: url(../../icons/delete.svg);
-    -webkit-mask-image: url(../../icons/delete.svg);
-    mask-image: url(../../icons/delete.svg);
+    -moz-mask-image: url(../icons/delete.svg);
+    -o-mask-image: url(../icons/delete.svg);
+    -webkit-mask-image: url(../icons/delete.svg);
+    mask-image: url(../icons/delete.svg);
 }
 
 .icon-eye-opened {
     background-color: var(--foreground);
-    -moz-mask-image: url(../../icons/eye-opened.svg);
-    -o-mask-image: url(../../icons/eye-opened.svg);
-    -webkit-mask-image: url(../../icons/eye-opened.svg);
-    mask-image: url(../../icons/eye-opened.svg);
+    -moz-mask-image: url(../icons/eye-opened.svg);
+    -o-mask-image: url(../icons/eye-opened.svg);
+    -webkit-mask-image: url(../icons/eye-opened.svg);
+    mask-image: url(../icons/eye-opened.svg);
     display: inline-flex;
     height: 1em;
     width: 1em;
@@ -39,10 +39,10 @@
 
 .icon-eye-closed {
     background-color: var(--foreground);
-    -moz-mask-image: url(../../icons/eye-closed.svg);
-    -o-mask-image: url(../../icons/eye-closed.svg);
-    -webkit-mask-image: url(../../icons/eye-closed.svg);
-    mask-image: url(../../icons/eye-closed.svg);
+    -moz-mask-image: url(../icons/eye-closed.svg);
+    -o-mask-image: url(../icons/eye-closed.svg);
+    -webkit-mask-image: url(../icons/eye-closed.svg);
+    mask-image: url(../icons/eye-closed.svg);
     display: inline-flex;
     height: 1em;
     width: 1em;
@@ -140,7 +140,7 @@
 }
 
 .h-entry {
-    background-color: var(--background-card) !important;
+    background-color: var(--background-card);
     border-radius: var(--s);
     display: flex;
 }

@@ -8,6 +8,12 @@ html {
     scroll-margin-top: var(--xxl);
 }
 
+html,
+html > * {
+    background-image: url('images/noise.png');
+    background-blend-mode: overlay;
+}
+
 hr {
     margin-top: var(--s);
     margin-bottom: var(--s);
@@ -137,7 +143,6 @@ hr {
 }
 
 .section-panel .panel-content {
-    background: var(--background-hard);
     display: block;
     height: calc(100vh - var(--xxl));
     overflow: auto;
@@ -173,7 +178,7 @@ hr {
         left: 0;
         width: 100vw;
         z-index: auto;
-        background: var(--background-hard);
+        background-color: var(--background-hard);
         box-shadow: var(--shadow);
     }
 }

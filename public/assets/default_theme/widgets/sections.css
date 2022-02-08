@@ -1,8 +1,8 @@
 .add-actor-button-container {
-    -moz-mask-image: url(../../icons/add-actor.svg);
-    -o-mask-image: url(../../icons/add-actor.svg);
-    -webkit-mask-image: url(../../icons/add-actor.svg);
-    mask-image: url(../../icons/add-actor.svg);
+    -moz-mask-image: url(../icons/add-actor.svg);
+    -o-mask-image: url(../icons/add-actor.svg);
+    -webkit-mask-image: url(../icons/add-actor.svg);
+    mask-image: url(../icons/add-actor.svg);
 }
 
 .alert, .alert-danger, .form-error, .form-row-widget-error {
@@ -143,8 +143,8 @@
 }
 
 .frame-section {
-    background-color: var(--background-card) !important;
-    border: 1px solid var(--border) !important;
+    background-color: var(--background-card);
+    border: 1px solid var(--border);
     border-radius: var(--s);
     box-shadow: var(--shadow);
     display: flex;
@@ -274,10 +274,10 @@
 }
 
 .remove-actor-button-container {
-    -moz-mask-image: url(../../icons/remove-actor.svg);
-    -o-mask-image: url(../../icons/remove-actor.svg);
-    -webkit-mask-image: url(../../icons/remove-actor.svg);
-    mask-image: url(../../icons/remove-actor.svg);
+    -moz-mask-image: url(../icons/remove-actor.svg);
+    -o-mask-image: url(../icons/remove-actor.svg);
+    -webkit-mask-image: url(../icons/remove-actor.svg);
+    mask-image: url(../icons/remove-actor.svg);
 }
 
 .section-details-subtitle .section-details-subtitle:not(:last-of-type) {
@@ -355,7 +355,7 @@
 }
 
 .section-form {
-    background-color: var(--background-hard);
+    background-color: var(--background-card);
     border-radius: var(--s);
     display: block;
     max-width: 100%;

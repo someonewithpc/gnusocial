@@ -20,7 +20,7 @@
 
         <link rel='stylesheet' type='text/css' href="{{ asset('assets/default_theme/fonts/opensans/opensans.css') }}">
         <link rel='stylesheet' type='text/css' href="{{ asset('assets/default_theme/fonts/poppins/poppins.css') }}">
-        <link rel='stylesheet' type='text/css' href="{{ asset('assets/default_theme/css/base.css') }}">
+        <link rel='stylesheet' type='text/css' href="{{ asset('assets/default_theme/base.css') }}">
 
         {% for stylesheet in show_stylesheets(app.request.get('_route')) %}
             <link rel='preload' type='text/css' as='style' href="{{ preload(asset(stylesheet), { as: 'style' }) }}">

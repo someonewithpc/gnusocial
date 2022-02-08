@@ -100,7 +100,7 @@ class Oomox extends Plugin
     public static function getEntity(LocalUser $user): ?Entity\Oomox
     {
         try {
-            return Cache::get(self::cacheKey($user), fn () => DB::findOneBy('oomox', ['actor_id' => $user->getId()]));
+            return Cache::get(self::cacheKey($user), static fn () => DB::findOneBy('oomox', ['actor_id' => $user->getId()]));
         } catch (NotFoundException $e) {
             return null;
         }
@@ -112,7 +112,7 @@ class Oomox extends Plugin
     public function onEndShowStyles(array &$styles, string $route): bool
     {
         $user = Common::user();
-        if (!\is_null($user) && !\is_null(Cache::get(self::cacheKey($user), fn () => self::getEntity($user)))) {
+        if ($user && Cache::get(self::cacheKey($user), static fn () => self::getEntity($user))) {
             $styles[] = Router::url('oomox_css');
         }
         return Event::next;

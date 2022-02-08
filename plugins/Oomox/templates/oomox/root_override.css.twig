@@ -8,17 +8,16 @@
 
 @media (prefers-color-scheme: dark) {
     :root {
-        --foreground: {{ oomox.getColourForegroundDark() | default('#f0f6f6') | raw }};
-        --background-hard: {{ oomox.getColourBackgroundHardDark() | default('#141216') | raw }};
-        --background-card: {{ oomox.getColourBackgroundCardDark() | default('#131217') | raw }};
-        --border: {{ oomox.getColourBorderDark() | default('#201f25') | raw }};
+        --foreground: {{ oomox.getColourForegroundDark() | default('#eff0f1') | raw }};
+        --background-hard: {{ oomox.getColourBackgroundHardDark() | default('#0E0E0F') | raw }};
+        --background-card: {{ oomox.getColourBackgroundCardDark() | default('#0E0E0F') | raw }};
+        --border: {{ oomox.getColourBorderDark() | default('#26262C') | raw }};
         --accent: {{ oomox.getColourAccentDark() | default('#5ddbcf') | raw }};
-        --shadow: 0px 25px 42px -10px rgba(0, 0, 0, 0.09) !important;
-
+        --shadow: 0 5px 20px -10px rgba(255,255,255,0.1)!important;
         --shadow-inset-accent: inset 0 0 0 2px var(--accent);
-        --background-checkerboard: repeating-conic-gradient(#ffffff66 0 90deg, #ffffff33 0 180deg) 0 0/40px 40px round;
-        --gradient: linear-gradient(10deg, var(--border) 0, transparent 90%) !important;
-        --gradient-backwards: linear-gradient(290deg, var(--border) 0, var(--background-card) 100%) !important;
+        --background-checkerboard: repeating-conic-gradient(#ffffff66 0 90deg,#ffffff33 0 180deg) 0 0/40px 40px round;
+        --gradient: linear-gradient(5deg,var(--border) -33%,transparent 66%)!important;
+        --gradient-backwards: linear-gradient(-5deg,var(--border) -33%,transparent 66%)!important;
     }
 }
 
@@ -27,13 +26,12 @@
         --foreground: {{ oomox.getColourForegroundLight() | default('#09090d') | raw }};
         --background-hard: {{ oomox.getColourBackgroundHardLight() | default('#ebebeb') | raw }};
         --background-card: {{ oomox.getColourBackgroundCardLight() | default('#f0f0f0') | raw }};
-        --border: {{ oomox.getColourBorderLight() | default('#d5d5d5') | raw }};
+        --border: {{ oomox.getColourBorderLight() | default('#C2C2C2') | raw }};
         --accent: {{ oomox.getColourAccentLight() | default('#a22430') | raw }};
-        --shadow: 0px 25px 42px -10px rgba(1, 1, 1, 0.09) !important;
-
+        --shadow: 0 25px 42px -10px rgba(0,0,0,0.1)!important;
         --shadow-inset-accent: inset 0 0 0 2px var(--accent);
-        --background-checkerboard: repeating-conic-gradient(#ffffff66 0 90deg, #ffffff33 0 180deg) 0 0/40px 40px round;
-        --gradient: linear-gradient(10deg, var(--background-hard) 0, transparent 60%) !important;
-        --gradient-backwards: linear-gradient(290deg, var(--background-hard) 0, var(--background-card) 100%) !important;
+        --background-checkerboard: repeating-conic-gradient(#ffffff66 0 90deg,#ffffff33 0 180deg) 0 0/40px 40px round;
+        --gradient: linear-gradient(10deg,var(--background-hard) 0,transparent 60%)!important;
+        --gradient-backwards: linear-gradient(290deg,var(--background-hard) 0,var(--background-card) 100%)!important;
     }
 }

@@ -77,7 +77,7 @@ class Oomox
                 $current_foreground      = $current_oomox_settings->getColourForegroundLight() ?: '#09090d';
                 $current_background_hard = $current_oomox_settings->getColourBackgroundHardLight() ?: '#ebebeb';
                 $current_background_card = $current_oomox_settings->getColourBackgroundCardLight() ?: '#f0f0f0';
-                $current_border          = $current_oomox_settings->getColourBorderLight() ?: '#d5d5d5';
+                $current_border          = $current_oomox_settings->getColourBorderLight() ?: '#C2C2C2';
                 $current_accent          = $current_oomox_settings->getColourAccentLight() ?: '#a22430';
             } else {
                 $current_foreground      = $current_oomox_settings->getColourForegroundDark() ?: '#eff0f1';
@@ -87,10 +87,10 @@ class Oomox
                 $current_accent          = $current_oomox_settings->getColourAccentDark() ?: '#5ddbcf';
             }
         } else {
-            $current_foreground      = $is_light ? '#09090d' : '#f0f6f6';
-            $current_background_hard = $is_light ? '#ebebeb' : '#141216';
-            $current_background_card = $is_light ? '#f0f0f0' : '#131217';
-            $current_border          = $is_light ? '#d5d5d5' : '#201f25';
+            $current_foreground      = $is_light ? '#09090d' : '#eff0f1';
+            $current_background_hard = $is_light ? '#ebebeb' : '#0E0E0F';
+            $current_background_card = $is_light ? '#f0f0f0' : '#0E0E0F';
+            $current_border          = $is_light ? '#C2C2C2' : '#26262C';
             $current_accent          = $is_light ? '#a22430' : '#5ddbcf';
         }
 
@@ -151,9 +151,7 @@ class Oomox
             /** @var SubmitButton $reset_button */
             $reset_button = $form_light->get('colour_reset_light');
             if ($reset_button->isClicked()) {
-                if (!\is_null($current_oomox_settings)) {
-                    $current_oomox_settings->resetTheme(true);
-                }
+                $current_oomox_settings?->resetTheme(true);
             } else {
                 $data                   = $form_light->getData();
                 $current_oomox_settings = EntityOomox::create(
@@ -168,9 +166,14 @@ class Oomox
                 );
             }
 
-            DB::merge($current_oomox_settings);
-            DB::flush();
-            Cache::delete(PluginOomox::cacheKey($user));
+            if ($current_oomox_settings) {
+                if ($reset_button->isClicked()) {
+                    DB::remove(EntityOomox::getByPK($actor_id));
+                } else {
+                    DB::merge($current_oomox_settings);
+                }
+                DB::flush();
+            }
             throw new RedirectException();
         }
 
@@ -212,8 +215,15 @@ class Oomox
                 );
             }
 
-            DB::merge($current_oomox_settings);
-            DB::flush();
+            if ($current_oomox_settings) {
+                if ($reset_button->isClicked()) {
+                    DB::remove(EntityOomox::getByPK($actor_id));
+                } else {
+                    DB::merge($current_oomox_settings);
+                }
+                DB::flush();
+            }
+
             Cache::delete(PluginOomox::cacheKey($user));
             throw new RedirectException();
         }

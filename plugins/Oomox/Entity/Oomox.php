@@ -206,13 +206,13 @@ class Oomox extends Entity
             $this->colour_background_hard_light = '#09090d';
             $this->colour_background_card_light = '#ebebeb';
             $this->colour_foreground_light      = '#f0f0f0';
-            $this->colour_border_light          = '#d5d5d5';
+            $this->colour_border_light          = '#C2C2C2';
             $this->colour_accent_light          = '#a22430';
         } else {
-            $this->colour_background_hard_dark = '#141216';
-            $this->colour_background_card_dark = '#131217';
-            $this->colour_foreground_dark      = '#f0f6f6';
-            $this->colour_border_dark          = '#201f25';
+            $this->colour_background_hard_dark = '#eff0f1';
+            $this->colour_background_card_dark = '#0E0E0F';
+            $this->colour_foreground_dark      = '#0E0E0F';
+            $this->colour_border_dark          = '#26262C';
             $this->colour_accent_dark          = '#5ddbcf';
         }
     }
