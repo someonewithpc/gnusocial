@@ -30,10 +30,11 @@
             <div class="note-replies-start" tabindex="0" title="{{ 'Replies to ' | trans }}{{ nickname }}{{ '\'s note' | trans }}"></div>
             <div class="u-in-reply-to replies">
                 {% for conversation in replies %}
+                    <hr tabindex="0" title="{{ 'Start of reply' | trans }}">
+                    <span class="note-replies-indicator">“</span>
                     {{ noteView.note_vanilla(conversation['note'], conversation['replies']) }}
                 {% endfor %}
             </div>
-            <hr tabindex="0" title="{{ 'End of reply' | trans }}">
         </section>
     {% endif %}
 {% endblock note_replies %}
