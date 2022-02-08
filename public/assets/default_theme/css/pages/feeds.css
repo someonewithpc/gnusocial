@@ -195,13 +195,15 @@
 
 .note-attachments {
     display: flex;
+    flex-wrap: wrap;
 }
 
 .note-attachments-unit {
     border-radius: var(--s);
     display: flex;
     max-width: max-content;
-    padding: var(--s);
+    height: min-content;
+    padding: 4px;
 }
 
 .note-attachments-unit > figure figcaption {
