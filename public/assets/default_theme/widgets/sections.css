@@ -300,9 +300,16 @@
 .section-details-subtitle summary, .section-details-title summary {
     background: var(--gradient);
     border-radius: var(--s);
-    outline: 1px solid var(--border);
     display: inline-block;
     width: 100%;
+}
+
+.section-details-title summary {
+    border-bottom: 1px solid var(--border);
+}
+
+.section-details-subtitle summary {
+    border: 1px solid var(--border);
 }
 
 .details-summary-title {
