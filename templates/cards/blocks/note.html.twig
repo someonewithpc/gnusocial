@@ -24,12 +24,14 @@
 {% endblock note_actions %}
 
 {% block note_replies %}
+    {% import '/cards/macros/note.html.twig' as noteView %}
+
     {% if replies is defined and replies is not empty %}
         <div class="u-in-reply-to replies">
             <span class="note-replies-start"
                   tabindex="0">{{ 'Replies to ' | trans }}{{ nickname }}{{ '\'s note' | trans }}</span>
             {% for conversation in replies %}
-                {{ _self.note_vanilla(conversation['note'], conversation['replies']) }}
+                {{ noteView.note_vanilla(conversation['note'], conversation['replies']) }}
                 <hr tabindex="0" title="{{ 'End of reply' | trans }}">
             {% endfor %}
         </div>
