@@ -409,4 +409,16 @@ embed header {
     .note-sidebar .avatar {
         min-width: var(--xl) !important;
     }
+
+    .note-replies .note-replies {
+        margin-left: 0.33em;
+    }
+
+    .note-replies-indicator {
+        content: '\201C';
+        font-size: 1em;
+        opacity: 0.66;
+        margin-right: 0.33em;
+        float: left;
+    }
 }

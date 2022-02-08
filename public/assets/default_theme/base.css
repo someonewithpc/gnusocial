@@ -148,6 +148,10 @@ hr {
     overflow: auto;
 }
 
+@media only screen and (max-width: 512px) {
+    html {font-size: 75%;} /*12px*/
+}
+
 @media only screen and (max-width: 1280px) {
     .page-header {
         width: 100%;
