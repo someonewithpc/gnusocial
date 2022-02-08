@@ -17,7 +17,7 @@
         <header class="feed-header">
             {% set current_path = app.request.get('_route') %}
             {% if page_title is defined %}
-                {% if current_path starts with 'feed_' %}
+                {% if current_path starts with 'feed_' or 'conversation' in current_path %}
                     <h1 class="section-title">{{ page_title | trans }}</h1>
                 {% endif %}
             {% else %}

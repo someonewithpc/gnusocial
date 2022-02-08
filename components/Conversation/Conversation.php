@@ -170,6 +170,10 @@ class Conversation extends Component
      */
     public function onAppendCardNote(array $vars, array &$result): bool
     {
+        if (str_contains($vars['request']->getPathInfo(), 'conversation')) {
+            return Event::next;
+        }
+
         // The current Note being rendered
         $note = $vars['note'];
 

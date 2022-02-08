@@ -126,7 +126,7 @@
 {% endblock note_info %}
 
 {% block note_complementary_info %}
-    {% for complementary_info in handle_event('AppendCardNote', {'note': note }) %}
+    {% for complementary_info in handle_event('AppendCardNote', { 'note': note, 'request': app.request }) %}
         <aside title="{{ 'Note\'s complementary information' | trans }}"
                class="note-complementary">
             {% set actor_count = complementary_info['actors'] | length %}
