@@ -132,15 +132,25 @@
             {% set actor_count = complementary_info['actors'] | length %}
             {% set counter = 0 %}
             {% for complementary_info_actor in complementary_info['actors'] %}
-                {% if complementary_info_actor is defined %}
-                    <a href="{{ complementary_info_actor.getUrl() }}">{{ complementary_info_actor.getNickname() }}{% if actor_count > 1 and counter < actor_count - 2 %}{{ ', ' | trans }}{% endif %}</a>
-                    {% if counter == actor_count - 2 %}
-                        {{ ' and ' | trans }}
+                {% if app.user is not null %}
+                    {% if complementary_info_actor is defined and complementary_info_actor.getNickname() != app.user.nickname %}
+                        <a href="{{ complementary_info_actor.getUrl() }}">{{ complementary_info_actor.getNickname() }}{% if actor_count > 1 and counter < actor_count - 2 %}{{ ', ' | trans }}{% endif %}</a>
+                        {% if counter == actor_count - 2 %}
+                            {{ ' and ' | trans }}
+                        {% endif %}
+                        {% set counter = counter + 1 %}
+                    {% endif %}
+                {% else %}
+                    {% if complementary_info_actor is defined %}
+                        <a href="{{ complementary_info_actor.getUrl() }}">{{ complementary_info_actor.getNickname() }}{% if actor_count > 1 and counter < actor_count - 2 %}{{ ', ' | trans }}{% endif %}</a>
+                        {% if counter == actor_count - 2 %}
+                            {{ ' and ' | trans }}
+                        {% endif %}
+                        {% set counter = counter + 1 %}
                     {% endif %}
                 {% endif %}
-                {% set counter = counter + 1 %}
             {% endfor %}
-            {% if complementary_info['action'] is defined and not null %}
+            {% if complementary_info['action'] is defined and not null and counter > 0 %}
                 {% if counter > 1 %}
                     {{ ' have ' | trans }}
                 {% else %}
