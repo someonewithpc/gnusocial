@@ -1,6 +1,6 @@
 {% block note_actions %}
     {% if app.user or note_actions_hide is defined %}
-        <menu class="note-actions note-info-end">
+        <menu class="note-actions">
             <li class="note-actions-extra">
                 <details class="note-actions-extra-details">
                     <summary>
@@ -15,7 +15,6 @@
                     </menu>
                 </details>
             </li>
-            <span class="note-actions-separator"></span>
             {% for current_action in get_note_actions(note) %}
                 <li><a title="{{ current_action["title"] | trans }}" class="{{ current_action["classes"] }}" href="{{ current_action["url"] }}"></a></li>
             {% endfor %}
@@ -27,14 +26,16 @@
     {% import '/cards/macros/note.html.twig' as noteView %}
 
     {% if replies is defined and replies is not empty %}
-        <div class="u-in-reply-to replies">
-            <span class="note-replies-start"
-                  tabindex="0">{{ 'Replies to ' | trans }}{{ nickname }}{{ '\'s note' | trans }}</span>
-            {% for conversation in replies %}
-                {{ noteView.note_vanilla(conversation['note'], conversation['replies']) }}
-                <hr tabindex="0" title="{{ 'End of reply' | trans }}">
-            {% endfor %}
-        </div>
+        <section class="note-replies">
+            <div class="note-replies-start"
+                  tabindex="0">{{ 'Replies to ' | trans }}{{ nickname }}{{ '\'s note' | trans }}</div>
+            <div class="u-in-reply-to replies">
+                {% for conversation in replies %}
+                    {{ noteView.note_vanilla(conversation['note'], conversation['replies']) }}
+                    <hr tabindex="0" title="{{ 'End of reply' | trans }}">
+                {% endfor %}
+            </div>
+        </section>
     {% endif %}
 {% endblock note_replies %}
 

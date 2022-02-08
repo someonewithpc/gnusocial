@@ -10,10 +10,10 @@
     <article id="{{ 'note-anchor-' ~ note.getId() }}"
              class="h-entry hentry note" lang={{ note.getLanguageLocale() }}>
         {{ block('note_sidebar', 'cards/blocks/note.html.twig') }}
+
         <div class="note-wrapper">
             <header class="note-info">
                 {{ block('note_info', 'cards/blocks/note.html.twig') }}
-                {{ block('note_actions', 'cards/blocks/note.html.twig') }}
             </header>
 
             <section role="dialog" class="e-content entry-content note-content">
@@ -21,11 +21,12 @@
                 {{ block('note_attachments', 'cards/blocks/note.html.twig') }}
                 {{ block('note_links', 'cards/blocks/note.html.twig') }}
             </section>
-
-            {{ block('note_replies', 'cards/blocks/note.html.twig') }}
             {{ block('note_complementary_info', 'cards/blocks/note.html.twig') }}
+            {{ block('note_actions', 'cards/blocks/note.html.twig') }}
         </div>
     </article>
+
+    {{ block('note_replies', 'cards/blocks/note.html.twig') }}
 {% endmacro note_vanilla %}
 
 {% macro note_compact(note) %}

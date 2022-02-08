@@ -51,7 +51,7 @@
                         {% else %}
                             {{ noteView.note_vanilla(conversation) }}
                         {% endif %}
-                        <hr tabindex="0" title="{{ 'End of note and replies.' | trans }}">
+                        <hr class="hr-replies-end" tabindex="0" title="{{ 'End of note and replies.' | trans }}">
                     {% endblock current_note %}
                 {% endfor %}
             </section>
