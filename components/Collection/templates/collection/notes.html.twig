@@ -14,11 +14,11 @@
     {% endfor %}
 
     {% if notes is defined %}
-        <header class="feed-header">
+        <header class="feed-header" title="{{ 'Current page main header' | trans }}">
             {% set current_path = app.request.get('_route') %}
             {% if page_title is defined %}
                 {% if current_path starts with 'feed_' or 'conversation' in current_path %}
-                    <h1 class="section-title">{{ page_title | trans }}</h1>
+                    <h1 class="section-title" role="heading">{{ page_title | trans }}</h1>
                 {% endif %}
             {% else %}
                 {% if current_path starts with 'search' %}
@@ -27,12 +27,12 @@
                     <h1 class="section-title">{{ 'Notes' | trans }}</h1>
                 {% endif %}
             {% endif %}
-            <nav class="feed-actions">
-                <details class="feed-actions-details">
+            <nav class="feed-actions" title="{{ 'Actions that change how the feed behaves' | trans }}">
+                <details class="feed-actions-details" role="group">
                     <summary>
                         {{ icon('filter', 'icon icon-feed-actions') | raw }} {# button-container #}
                     </summary>
-                    <menu class="feed-actions-details-dropdown">
+                    <menu class="feed-actions-details-dropdown" role="toolbar">
                         {% for block in handle_event('AddFeedActions', app.request, notes is defined and notes is not empty) %}
                             {{ block | raw }}
                         {% endfor %}
@@ -43,15 +43,15 @@
 
         {% if notes is not empty %}
             {# Backwards compatibility with hAtom 0.1 #}
-            <section class="feed h-feed hfeed notes" tabindex="0" role="feed">
+            <section class="feed h-feed hfeed notes" role="feed" aria-busy="false" title="{{ 'Feed content' | trans }}">
                 {% for conversation in notes %}
                     {% block current_note %}
                         {% if conversation is instanceof('array') %}
-                            {{ noteView.note_vanilla(conversation['note'], conversation['replies']) }}
+                            {{ noteView.note_vanilla(conversation['note'], conversation['replies'], {'depth': 0}) }}
                         {% else %}
                             {{ noteView.note_vanilla(conversation) }}
                         {% endif %}
-                        <hr class="hr-replies-end" tabindex="0" title="{{ 'End of note and replies.' | trans }}">
+                        <hr class="hr-replies-end" role="separator" aria-label="{{ 'Marks the end of previous conversation\'s initial note' | trans }}">
                     {% endblock current_note %}
                 {% endfor %}
             </section>

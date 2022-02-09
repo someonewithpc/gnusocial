@@ -100,14 +100,14 @@
     </header>
 {% endblock header %}
 
-<main class="page-content-wrapper">
-    <a role="navigation" rel="help" id="anchor-main-content" class="anchor-hidden"
-       title="{{ 'Press tab to access main content.' | trans }}"></a>
-    <section class='page-content accessibility-target'>
+<a role="navigation" rel="help" id="anchor-main-content" class="anchor-hidden"
+   title="{{ 'Anchor to main content' | trans }}"></a>
+<main class="page-content-wrapper" title="{{ 'Page main content' | trans }}">
+    <div class='page-content accessibility-target' role="presentation">
         {% block nav %}{% endblock %}
         {% block body %}{% endblock %}
         {% block javascripts %}{% endblock javascripts %}
-    </section>
+    </div>
 </main>
 </body>
 </html>

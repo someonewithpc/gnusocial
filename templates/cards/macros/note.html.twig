@@ -1,4 +1,4 @@
-{% macro note_vanilla(note, replies) %}
+{% macro note_vanilla(note, replies, extra) %}
     {% set actor = note.getActor() %}
     {% set nickname = actor.getNickname() %}
     {% set fullname = actor.getFullname() %}
@@ -7,16 +7,24 @@
     {% set mention = mention(actor) %}
     {% set note_language = note.getNoteLanguageShortDisplay() %}
 
-    <article id="{{ 'note-anchor-' ~ note.getId() }}"
-             class="h-entry hentry note" lang={{ note.getLanguageLocale() }}>
+    <article
+        id="{{ 'note-anchor-' ~ note.getId() }}"
+        class="h-entry hentry note"
+        lang="{{ note.getLanguageLocale() }}"
+        title="{{'A note by actor' | trans}} {{ nickname }}"
+        role="article"
+        tabindex="0">
         {{ block('note_sidebar', 'cards/blocks/note.html.twig') }}
 
         <div class="note-wrapper">
-            <header class="note-info">
-                {{ block('note_info', 'cards/blocks/note.html.twig') }}
-            </header>
+            {{ block('note_info', 'cards/blocks/note.html.twig') }}
 
-            <section role="dialog" class="e-content entry-content note-content">
+            <section class="e-content entry-content note-content" title="{{ 'Note\'s main content' | trans }}">
+                {% if extra.parent is defined  %}
+                    <em class="note-replies-parent" title="{{'Reply with depth' | trans}} {{ extra.depth }}" tabindex="0">
+                        {{'in reply to' | trans}} {{ extra.parent | raw }}
+                    </em>
+                {% endif %}
                 {{ block('note_text', 'cards/blocks/note.html.twig') }}
                 {{ block('note_attachments', 'cards/blocks/note.html.twig') }}
                 {{ block('note_links', 'cards/blocks/note.html.twig') }}
@@ -25,7 +33,9 @@
         {{ block('note_complementary', 'cards/blocks/note.html.twig') }}
     </article>
 
-    {{ block('note_replies', 'cards/blocks/note.html.twig') }}
+    {% if replies is defined %}
+        {{ block('note_replies', 'cards/blocks/note.html.twig') }}
+    {% endif %}
 {% endmacro note_vanilla %}
 
 {% macro note_compact(note) %}

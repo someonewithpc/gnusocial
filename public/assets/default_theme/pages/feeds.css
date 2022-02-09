@@ -161,16 +161,22 @@
 }
 
 .note-replies-indicator {
-    content: '\201C';
     font-size: 32px;
     opacity: 0.66;
     margin-right: 8px;
     float: left;
 }
 
-.note-replies-start {
-    margin-top: var(--s);
-    margin-bottom: var(--s);
+.note-replies-indicator::before {
+    content: '\201C';
+    font-size: 1em;
+    opacity: 0.66;
+    margin-right: 0.33em;
+}
+
+.note-replies-parent {
+    opacity: 0.66;
+    font-size: 0.937rem;
 }
 
 .h-entry a:focus {
@@ -239,32 +245,24 @@ embed header {
     border-radius: 0 var(--s) 0 0;
     display: flex;
     line-height: initial;
-    padding: 4px var(--s) 4px 0;
+    padding: 4px var(--s) 0 0;
 }
 
 .note-info {
     display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.note-info-start {
-    flex: 1;
-    width: 15px;
+    align-items: flex-start;
     white-space: nowrap;
     overflow: auto;
     touch-action: manipulation;
     text-overflow: ellipsis;
 }
 
-.note-info-start:focus,
-.note-info-start:hover {
-    text-align: left;
-    direction: rtl;
+.note-info .note-conversation-info,
+.note-info .note-author-uri {
+    margin-left: 4px;
 }
 
-.note-info-start small {
+.note-info small {
     opacity: 0.5;
 }
 
@@ -338,7 +336,7 @@ embed header {
 .note-content {
     border-radius: 0 0 var(--s) var(--s);
     display: block;
-    padding: 0 4px 8px 0;
+    padding: 0 0 8px 0;
     flex: 1;
 }
 
@@ -349,6 +347,7 @@ embed header {
 }
 
 .hr-replies-end {
+    margin-top: var(--xl);
     margin-bottom: var(--xl);
 }
 
@@ -414,11 +413,10 @@ embed header {
         margin-left: 0.33em;
     }
 
-    .note-replies-indicator {
+    .note-replies-indicator::before {
         content: '\201C';
         font-size: 1em;
         opacity: 0.66;
         margin-right: 0.33em;
-        float: left;
     }
 }

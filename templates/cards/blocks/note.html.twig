@@ -26,13 +26,18 @@
     {% import '/cards/macros/note.html.twig' as noteView %}
 
     {% if replies is defined and replies is not empty %}
-        <section class="note-replies">
-            <div class="note-replies-start" tabindex="0" title="{{ 'Replies to ' | trans }}{{ nickname }}{{ '\'s note' | trans }}"></div>
+        <section class="note-replies" title="{{ 'Replies to ' | trans }}{{ nickname }}{{ '\'s note' | trans }}">
+            <div class="note-replies-start"></div>
             <div class="u-in-reply-to replies">
                 {% for conversation in replies %}
-                    <hr tabindex="0" title="{{ 'Start of reply' | trans }}">
-                    <span class="note-replies-indicator">“</span>
-                    {{ noteView.note_vanilla(conversation['note'], conversation['replies']) }}
+                    {% if extra.depth is defined  %}
+                        {% set depth_increment = {'depth': extra.depth + 1} %}
+                        {% set parent = {'parent': block('note_author')} %}
+                        {% set extra = extra|merge(depth_increment) %}
+                        {% set extra = extra|merge(parent) %}
+                    {% endif %}
+                    <span class="note-replies-indicator" role="presentation"></span>
+                    {{ noteView.note_vanilla(conversation['note'], conversation['replies'], extra) }}
                 {% endfor %}
             </div>
         </section>
@@ -43,7 +48,7 @@
     {% if hide_attachments is not defined %}
         {% if note.getAttachments() is not empty %}
             <section class="note-attachments" tabindex="0"
-                     title="{{ 'Note attachments.' | trans }}">
+                     title="{{ 'Attachments for this note' | trans }}">
                 {% for attachment in note.getAttachments() %}
                     {% include 'cards/blocks/attachment.html.twig' with {'attachment': attachment, 'note': note, 'title': attachment.getBestTitle(note)} only %}
                 {% endfor %}
@@ -66,7 +71,7 @@
 
 {% block note_text %}
     <div class="note-text" tabindex="0"
-         title="{{ 'Note text content.' | trans }}">
+         title="{{ 'Main note content' | trans }}">
         {% set paragraph_array = note.getRenderedSplit() %}
         {% if 'conversation' not in app.request.get('_route') and paragraph_array | length > 3 %}
             <p>{{ paragraph_array[0] | raw }}</p>
@@ -88,23 +93,18 @@
 
 {% block note_author %}
     {# Microformat's h-card properties indicates a face icon is a "u-logo" #}
-    <a href="{{ actor_url }}" class="note-author-url u-url" tabindex="0"
-       title="{{ 'Begin a note by the user: ' | trans }} {{ nickname }}">
-        {% if fullname is not null %}
-            {{ fullname }}
-        {% else %}
-            {{ nickname }}
-        {% endif %}
+    <a href="{{ actor_url }}" class="note-author-url u-url" role="doc-credit"
+       title="{{ nickname }}{{ '\'s profile' | trans }}">
+        {% if fullname is not null %}{{ fullname }}{% else %}{{ nickname }}{% endif %}
     </a>
 
-    <small class="note-author-uri">
-        <a href="{{ actor_uri }}"
-           class="u-url">{{ mention }}</a>
+    <small class="note-author-uri" title="{{ 'Author related permalinks' | trans }}">
+        <a href="{{ actor_uri }}" class="u-url" title="{{ nickname }} {{ '\'s permalink' | trans }}">{{ mention }}</a>
     </small>
 {% endblock note_author %}
 
 {% block note_sidebar %}
-    <aside class="note-sidebar">
+    <aside class="note-sidebar" title="{{ nickname }} {{ 'avatar' | trans }}">
         {% set actor_avatar_dimensions = actor.getAvatarDimensions() %}
         <img class="u-logo avatar" src="{{ note.getActorAvatarUrl() }}"
              alt="{{ nickname }}'s avatar"
@@ -114,25 +114,30 @@
 {% endblock note_sidebar %}
 
 {% block note_info %}
-    <span class="note-info-start">
+    <header class="note-info" title="{{ 'Information about note\'s author' | trans }}">
         {{ block('note_author') }}
-        <small class="note-conversation-info">
+        <small class="note-conversation-info" title="{{ 'Conversation related permalinks' | trans }}">
             <a href="{{ note.getConversationUrl() }}"
+               title="{{ 'Conversation\'s permalink' | trans }}"
                class="note-conversation-url">{{ 'in conversation' | trans }}</a>
             <a href="{{ note.getUrl() }}"
+               title="{{ 'Note\'s permalink' | trans }}"
                class="note-url">{{ note.getModified() | ago }}</a>
         </small>
-    </span>
+    </header>
 {% endblock note_info %}
 
 {% block note_complementary %}
-    <aside title="{{ 'Note\'s complementary information' | trans }}" class="note-complementary">
+    <aside
+        title="{{ 'Additional note context information and actions' | trans }}"
+        class="note-complementary"
+        role="complementary">
         <div class="note-complementary-info">
             {% for complementary_info in handle_event('AppendCardNote', { 'note': note, 'request': app.request }) %}
                 {% set actor_count = complementary_info['actors'] | length %}
                 {% set counter = 0 %}
                 {% for complementary_info_actor in complementary_info['actors'] %}
-                <span>
+                <span role="doc-acknowledgments">
                     {% if app.user is not null %}
                         {% if complementary_info_actor is defined and complementary_info_actor.getNickname() != app.user.nickname %}
                             <a href="{{ complementary_info_actor.getUrl() }}">{{ complementary_info_actor.getNickname() }}{% if actor_count > 1 and counter < actor_count - 2 %}{{ ', ' | trans }}{% endif %}</a>
