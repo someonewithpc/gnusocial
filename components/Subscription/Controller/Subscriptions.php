@@ -24,7 +24,9 @@ declare(strict_types = 1);
 namespace Component\Subscription\Controller;
 
 use function App\Core\I18n\_m;
-use Component\Collection\Util\ActorControllerTrait;
+use App\Entity\Actor;
+use App\Util\Exception\ClientException;
+use App\Util\Exception\ServerException;
 use Component\Collection\Util\Controller\CircleController;
 use Symfony\Component\HttpFoundation\Request;
 
@@ -33,29 +35,28 @@ use Symfony\Component\HttpFoundation\Request;
  */
 class Subscriptions extends CircleController
 {
-    use ActorControllerTrait;
-    public function subscriptionsByActorId(Request $request, int $id)
+    /**
+     * @throws ClientException
+     * @throws ServerException
+     */
+    public function subscriptionsByActorId(Request $request, int $id): array
     {
-        return $this->handleActorById(
-            $id,
-            fn ($actor) => [
-                'actor' => $actor,
-            ],
-        );
+        $actor = Actor::getById($id);
+        if (\is_null($actor)) {
+            throw new ClientException(_m('No such actor.'), 404);
+        }
+        return $this->subscriptionsByActor($request, $actor);
     }
 
-    public function subscriptionsByActorNickname(Request $request, string $nickname)
+    public function subscriptionsByActor(Request $request, Actor $actor)
     {
-        return $this->handleActorByNickname(
-            $nickname,
-            fn ($actor) => [
-                '_template'        => 'collection/actors.html.twig',
-                'title'            => _m('Subscriptions'),
-                'empty_message'    => _m('Haven\'t subscribed anyone.'),
-                'sort_form_fields' => [],
-                'page'             => $this->int('page') ?? 1,
-                'actors'           => $actor->getSubscribers(),
-            ],
-        );
+        return [
+            '_template'        => 'collection/actors.html.twig',
+            'title'            => _m('Subscriptions'),
+            'empty_message'    => _m('Haven\'t subscribed anyone.'),
+            'sort_form_fields' => [],
+            'page'             => $this->int('page') ?? 1,
+            'actors'           => $actor->getSubscribers(),
+        ];
     }
 }

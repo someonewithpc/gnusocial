@@ -33,8 +33,8 @@ class UserPanelTest extends GNUsocialTestCase
     use AssertThrows;
 
     /**
-     * @covers \App\Controller\UserPanel::allSettings
-     * @covers \App\Controller\UserPanel::personalInfo
+     * @covers \App\Controller\PersonSettings::allSettings
+     * @covers \App\Controller\PersonSettings::personalInfo
      */
     public function testPersonalInfo()
     {
@@ -66,8 +66,8 @@ class UserPanelTest extends GNUsocialTestCase
     }
 
     /**
-     * @covers \App\Controller\UserPanel::account
-     * @covers \App\Controller\UserPanel::allSettings
+     * @covers \App\Controller\PersonSettings::account
+     * @covers \App\Controller\PersonSettings::allSettings
      */
     public function testAccount()
     {
@@ -94,8 +94,8 @@ class UserPanelTest extends GNUsocialTestCase
     }
 
     /**
-     * @covers \App\Controller\UserPanel::account
-     * @covers \App\Controller\UserPanel::allSettings
+     * @covers \App\Controller\PersonSettings::account
+     * @covers \App\Controller\PersonSettings::allSettings
      */
     public function testAccountWrongPassword()
     {
@@ -115,8 +115,8 @@ class UserPanelTest extends GNUsocialTestCase
     }
 
     /**
-     * @covers \App\Controller\UserPanel::allSettings
-     * @covers \App\Controller\UserPanel::notifications
+     * @covers \App\Controller\PersonSettings::allSettings
+     * @covers \App\Controller\PersonSettings::notifications
      */
     public function testNotifications()
     {

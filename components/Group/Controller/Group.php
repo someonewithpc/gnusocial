@@ -29,6 +29,7 @@ use App\Core\DB\DB;
 use App\Core\Form;
 use function App\Core\I18n\_m;
 use App\Core\Log;
+use App\Core\Router\Router;
 use App\Entity\Actor;
 use App\Entity as E;
 use App\Util\Common;
@@ -44,7 +45,6 @@ use App\Util\Exception\NotFoundException;
 use App\Util\Exception\RedirectException;
 use App\Util\Exception\ServerException;
 use App\Util\Form\ActorForms;
-use App\Util\Nickname;
 use Component\Collection\Util\Controller\FeedController;
 use Component\Group\Entity\GroupMember;
 use Component\Group\Entity\LocalGroup;
@@ -60,7 +60,7 @@ class Group extends FeedController
     /**
      * @throws ServerException
      */
-    public function handleGroup(Request $request, Actor $group): array
+    public function groupView(Request $request, Actor $group): array
     {
         $actor          = Common::actor();
         $subscribe_form = null;
@@ -106,9 +106,23 @@ class Group extends FeedController
         ];
     }
 
+    /**
+     * @throws ClientException
+     * @throws ServerException
+     */
     public function groupViewId(Request $request, int $id): array
     {
-        return $this->handleGroup($request, Actor::getById($id));
+        $group = Actor::getById($id);
+        if (\is_null($group) || !$group->isGroup()) {
+            throw new ClientException(_m('No such group.'), 404);
+        }
+        if ($group->getIsLocal()) {
+            return [
+                '_redirect' => Router::url('group_actor_view_nickname', ['nickname' => $group->getNickname()]),
+                'actor'     => $group,
+            ];
+        }
+        return $this->groupView($request, $group);
     }
 
     /**
@@ -116,20 +130,16 @@ class Group extends FeedController
      *
      * @param string $nickname The group's nickname to be shown
      *
-     * @throws NicknameEmptyException
-     * @throws NicknameNotAllowedException
-     * @throws NicknameTakenException
-     * @throws NicknameTooLongException
+     * @throws ClientException
      * @throws ServerException
      */
     public function groupViewNickname(Request $request, string $nickname): array
     {
-        Nickname::validate($nickname, which: Nickname::CHECK_LOCAL_GROUP); // throws
         $group = LocalGroup::getActorByNickname($nickname);
         if (\is_null($group)) {
-            throw new NotFoundException(_m('Group not found.'));
+            throw new ClientException(_m('No such group.'), 404);
         }
-        return $this->handleGroup($request, $group);
+        return $this->groupView($request, $group);
     }
 
     /**
@@ -168,7 +178,7 @@ class Group extends FeedController
      */
     public function groupSettings(Request $request, int $id): array
     {
-        $local_group = DB::findOneBy(LocalGroup::class, ['group_id' => $id]);
+        $local_group = DB::findOneBy(LocalGroup::class, ['actor_id' => $id]);
         $group_actor = $local_group->getActor();
         $actor       = Common::actor();
         if (!\is_null($group_actor) && $actor->canAdmin($group_actor)) {
@@ -219,7 +229,7 @@ class Group extends FeedController
                 'roles'    => ActorLocalRoles::VISITOR, // Can send direct messages to other actors
             ]));
             DB::persist(LocalGroup::create([
-                'group_id' => $group->getId(),
+                'actor_id' => $group->getId(),
                 'type'     => $data['group_type'],
                 'nickname' => $nickname,
             ]));

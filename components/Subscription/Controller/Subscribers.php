@@ -32,7 +32,7 @@ use App\Entity\Actor;
 use App\Util\Common;
 use App\Util\Exception\ClientException;
 use App\Util\Exception\RedirectException;
-use Component\Collection\Util\ActorControllerTrait;
+use App\Util\Exception\ServerException;
 use Component\Collection\Util\Controller\CircleController;
 use Component\Subscription\Subscription as SubscriptionComponent;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
@@ -43,30 +43,32 @@ use Symfony\Component\HttpFoundation\Request;
  */
 class Subscribers extends CircleController
 {
-    use ActorControllerTrait;
-    public function subscribersByActorId(Request $request, int $id)
+    /**
+     * @throws ServerException
+     */
+    public function subscribersByActor(Request $request, Actor $actor): array
     {
-        return $this->handleActorById(
-            $id,
-            fn ($actor) => [
-                'actor' => $actor,
-            ],
-        );
+        return [
+            '_template'        => 'collection/actors.html.twig',
+            'title'            => _m('Subscribers'),
+            'empty_message'    => _m('No subscribers.'),
+            'sort_form_fields' => [],
+            'page'             => $this->int('page') ?? 1,
+            'actors'           => $actor->getSubscribers(),
+        ];
     }
 
-    public function subscribersByActorNickname(Request $request, string $nickname)
+    /**
+     * @throws ClientException
+     * @throws ServerException
+     */
+    public function subscribersByActorId(Request $request, int $id): array
     {
-        return $this->handleActorByNickname(
-            $nickname,
-            fn ($actor) => [
-                '_template'        => 'collection/actors.html.twig',
-                'title'            => _m('Subscribers'),
-                'empty_message'    => _m('No subscribers.'),
-                'sort_form_fields' => [],
-                'page'             => $this->int('page') ?? 1,
-                'actors'           => $actor->getSubscribers(),
-            ],
-        );
+        $actor = Actor::getById($id);
+        if (\is_null($actor)) {
+            throw new ClientException(_m('No such actor.'), 404);
+        }
+        return $this->subscribersByActor($request, $actor);
     }
 
     /**

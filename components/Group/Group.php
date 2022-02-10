@@ -39,10 +39,10 @@ class Group extends Component
 {
     public function onAddRoute(RouteLoader $r): bool
     {
-        $r->connect(id: 'group_create', uri_path: '/group/new', target: [C\Group::class, 'groupCreate']);
         $r->connect(id: 'group_actor_view_id', uri_path: '/group/{id<\d+>}', target: [C\Group::class, 'groupViewId']);
-        $r->connect(id: 'group_settings', uri_path: '/group/{id<\d+>}/settings', target: [C\Group::class, 'groupSettings']);
         $r->connect(id: 'group_actor_view_nickname', uri_path: '/!{nickname<' . Nickname::DISPLAY_FMT . '>}', target: [C\Group::class, 'groupViewNickname']);
+        $r->connect(id: 'group_create', uri_path: '/group/new', target: [C\Group::class, 'groupCreate']);
+        $r->connect(id: 'group_settings', uri_path: '/group/{id<\d+>}/settings', target: [C\Group::class, 'groupSettings']);
         return Event::next;
     }
 
@@ -60,7 +60,7 @@ class Group extends Component
         return Event::next;
     }
 
-    public function onPopulateSettingsTabs(Request $request, string $section, array &$tabs)
+    public function onPopulateSettingsTabs(Request $request, string $section, array &$tabs): bool
     {
         if ($section === 'profile' && $request->get('_route') === 'group_settings') {
             $group_id = $request->get('id');
@@ -92,7 +92,7 @@ class Group extends Component
         return null;
     }
 
-    public function onPostingFillTargetChoices(Request $request, Actor $actor, array &$targets)
+    public function onPostingFillTargetChoices(Request $request, Actor $actor, array &$targets): bool
     {
         $group = $this->getGroupFromContext($request);
         if (!\is_null($group)) {
@@ -110,10 +110,8 @@ class Group extends Component
      * in the Posting's form.
      *
      * @param null|Actor $context_actor Actor group, if current route is part of an existing Group set of routes
-     *
-     * @return bool
      */
-    public function onPostingGetContextActor(Request $request, Actor $actor, ?Actor &$context_actor)
+    public function onPostingGetContextActor(Request $request, Actor $actor, ?Actor &$context_actor): bool
     {
         $ctx = $this->getGroupFromContext($request);
         if (!\is_null($ctx)) {

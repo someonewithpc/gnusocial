@@ -69,7 +69,5 @@ abstract class Main
         foreach (['privacy', 'tos', 'version', 'source'] as $s) {
             $r->connect('doc_' . $s, '/doc/' . $s, C\TemplateController::class, ['template' => 'doc/' . $s . '.html.twig']);
         }
-
-        $r->connect('settings', '/settings', [C\UserPanel::class, 'allSettings']);
     }
 }

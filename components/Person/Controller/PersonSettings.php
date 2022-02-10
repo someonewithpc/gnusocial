@@ -33,7 +33,7 @@ declare(strict_types = 1);
  * @license   https://www.gnu.org/licenses/agpl.html GNU AGPL v3 or later
  */
 
-namespace App\Controller;
+namespace Component\Person\Controller;
 
 // {{{ Imports
 
@@ -45,7 +45,13 @@ use function App\Core\I18n\_m;
 use App\Core\Log;
 use App\Util\Common;
 use App\Util\Exception\AuthenticationException;
+use App\Util\Exception\NicknameEmptyException;
+use App\Util\Exception\NicknameInvalidException;
+use App\Util\Exception\NicknameNotAllowedException;
+use App\Util\Exception\NicknameTakenException;
+use App\Util\Exception\NicknameTooLongException;
 use App\Util\Exception\NoLoggedInUser;
+use App\Util\Exception\RedirectException;
 use App\Util\Exception\ServerException;
 use App\Util\Form\ActorArrayTransformer;
 use App\Util\Form\ActorForms;
@@ -64,20 +70,22 @@ use Symfony\Component\HttpFoundation\Request;
 
 // }}} Imports
 
-class UserPanel extends Controller
+class PersonSettings extends Controller
 {
     /**
      * Return main settings page forms
      *
-     * @throws \App\Util\Exception\NicknameEmptyException
-     * @throws \App\Util\Exception\NicknameInvalidException
-     * @throws \App\Util\Exception\NicknameNotAllowedException
-     * @throws \App\Util\Exception\NicknameTakenException
-     * @throws \App\Util\Exception\NicknameTooLongException
-     * @throws \App\Util\Exception\RedirectException
+     * @throws \App\Util\Exception\ClientException
+     * @throws \App\Util\Exception\NicknameException
      * @throws \Doctrine\DBAL\Exception
      * @throws AuthenticationException
+     * @throws NicknameEmptyException
+     * @throws NicknameInvalidException
+     * @throws NicknameNotAllowedException
+     * @throws NicknameTakenException
+     * @throws NicknameTooLongException
      * @throws NoLoggedInUser
+     * @throws RedirectException
      * @throws ServerException
      */
     public function allSettings(Request $request, LanguageController $language): array

@@ -76,7 +76,7 @@ class GroupJoinQueue extends Entity
             'description' => 'Holder for group join requests awaiting moderation.',
             'fields'      => [
                 'actor_id' => ['type' => 'int', 'foreign key' => true, 'target' => 'Actor.id', 'multiplicity' => 'many to one', 'name' => 'group_join_queue_actor_id_fkey', 'not null' => true, 'description' => 'remote or local actor making the request'],
-                'group_id' => ['type' => 'int', 'foreign key' => true, 'target' => 'Group.id',   'multiplicity' => 'many to one',   'name' => 'group_join_queue_group_id_fkey',   'not null' => true, 'description' => 'remote or local group to join, if any'],
+                'group_id' => ['type' => 'int', 'foreign key' => true, 'target' => 'Group.id', 'multiplicity' => 'many to one', 'name' => 'group_join_queue_group_id_fkey', 'not null' => true, 'description' => 'remote or local group to join, if any'],
             ],
             'primary key' => ['actor_id', 'group_id'],
             'indexes'     => [

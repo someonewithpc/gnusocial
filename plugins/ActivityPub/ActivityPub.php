@@ -185,8 +185,12 @@ class ActivityPub extends Plugin
             return Event::next;
         }
         switch ($route) {
-            case 'actor_view_id':
-            case 'actor_view_nickname':
+            case 'person_actor_view_id':
+            case 'person_actor_view_nickname':
+            case 'group_actor_view_id':
+            case 'group_actor_view_nickname':
+            case 'bot_actor_view_id':
+            case 'bot_actor_view_nickname':
                 $response = ActorResponse::handle($vars['actor']);
                 break;
             case 'note_view':

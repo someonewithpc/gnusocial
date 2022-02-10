@@ -21,10 +21,8 @@ declare(strict_types = 1);
 
 namespace Component\Group\Entity;
 
-use App\Core\Cache;
 use App\Core\DB\DB;
 use App\Core\Entity;
-
 use App\Entity\Actor;
 use App\Util\Exception\NicknameEmptyException;
 use App\Util\Exception\NicknameException;
@@ -53,21 +51,21 @@ class LocalGroup extends Entity
 {
     // {{{ Autocode
     // @codeCoverageIgnoreStart
-    private int $group_id;
+    private int $actor_id;
     private string $nickname;
     private string $type;
     private DateTimeInterface $created;
     private DateTimeInterface $modified;
 
-    public function setGroupId(int $group_id): self
+    public function setActorId(int $actor_id): self
     {
-        $this->group_id = $group_id;
+        $this->actor_id = $actor_id;
         return $this;
     }
 
-    public function getGroupId(): int
+    public function getActorId(): int
     {
-        return $this->group_id;
+        return $this->actor_id;
     }
 
     public function setNickname(string $nickname): self
@@ -119,19 +117,17 @@ class LocalGroup extends Entity
 
     public function getActor()
     {
-        return DB::find('actor', ['id' => $this->group_id]);
+        return DB::findOneBy('actor', ['id' => $this->actor_id]);
     }
 
     public static function getByNickname(string $nickname): ?self
     {
-        $res = DB::findBy(self::class, ['nickname' => $nickname]);
-        return $res === [] ? null : $res[0];
+        return DB::findOneBy(self::class, ['nickname' => $nickname]);
     }
 
     public static function getActorByNickname(string $nickname): ?Actor
     {
-        $res = DB::findBy(Actor::class, ['nickname' => $nickname, 'type' => Actor::GROUP]);
-        return $res === [] ? null : $res[0];
+        return DB::findOneBy(Actor::class, ['nickname' => $nickname, 'type' => Actor::GROUP]);
     }
 
     /**
@@ -163,13 +159,13 @@ class LocalGroup extends Entity
             'name'        => 'local_group',
             'description' => 'Record for a user group on the local site, with some additional info not in user_group',
             'fields'      => [
-                'group_id' => ['type' => 'int',      'foreign key' => true, 'target' => 'Group.id', 'multiplicity' => 'one to one', 'name' => 'local_group_group_id_fkey', 'not null' => true, 'description' => 'group represented'],
-                'nickname' => ['type' => 'varchar', 'not null' => true,  'length' => 64,        'description' => 'group represented'],
-                'type'     => ['type' => 'varchar', 'not null' => true,  'default' => 'group', 'length' => 64,        'description' => 'Group or Organisation'],
-                'created'  => ['type' => 'datetime', 'not null' => true,    'default' => 'CURRENT_TIMESTAMP', 'description' => 'date this record was created'],
-                'modified' => ['type' => 'datetime', 'not null' => true,    'default' => 'CURRENT_TIMESTAMP', 'description' => 'date this record was modified'],
+                'actor_id' => ['type' => 'int', 'foreign key' => true, 'target' => 'Group.id', 'multiplicity' => 'one to one', 'name' => 'local_group_group_id_fkey', 'not null' => true, 'description' => 'group represented'],
+                'nickname' => ['type' => 'varchar', 'not null' => true, 'length' => 64, 'description' => 'group represented'],
+                'type'     => ['type' => 'varchar', 'not null' => true, 'default' => 'group', 'length' => 64, 'description' => 'Group or Organisation'],
+                'created'  => ['type' => 'datetime', 'not null' => true, 'default' => 'CURRENT_TIMESTAMP', 'description' => 'date this record was created'],
+                'modified' => ['type' => 'datetime', 'not null' => true, 'default' => 'CURRENT_TIMESTAMP', 'description' => 'date this record was modified'],
             ],
-            'primary key' => ['group_id'],
+            'primary key' => ['actor_id'],
             'unique keys' => [
                 'local_group_nickname_key' => ['nickname'],
             ],

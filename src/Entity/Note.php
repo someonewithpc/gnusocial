@@ -293,7 +293,6 @@ class Note extends Entity
 
     public static function getAllNotesByActor(Actor $actor): array
     {
-        // TODO: Enforce scoping on the notes before returning
         return DB::findBy('note', ['actor_id' => $actor->getId()], order_by: ['created' => 'DESC', 'id' => 'DESC']);
     }
 

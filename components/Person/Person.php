@@ -3,7 +3,6 @@
 declare(strict_types = 1);
 
 // {{{ License
-
 // This file is part of GNU social - https://www.gnu.org/software/social
 //
 // GNU social is free software: you can redistribute it and/or modify
@@ -18,28 +17,23 @@ declare(strict_types = 1);
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with GNU social.  If not, see <http://www.gnu.org/licenses/>.
-
 // }}}
 
-namespace App\Controller;
+namespace Component\Person;
 
-use App\Core\Router\Router;
-use App\Entity\Actor;
-use Component\Collection\Util\Controller\FeedController;
-use InvalidArgumentException;
-use Symfony\Component\HttpFoundation\RedirectResponse;
-use Symfony\Component\HttpFoundation\Request;
+use App\Core\Event;
+use App\Core\Modules\Component;
+use App\Core\Router\RouteLoader;
+use App\Util\Nickname;
+use Component\Person\Controller as C;
 
-class ActorFeed extends FeedController
+class Person extends Component
 {
-    public function actorViewId(Request $request, int $id): RedirectResponse
+    public function onAddRoute(RouteLoader $r): bool
     {
-        $route_id = match (Actor::getById($id)->getType()) {
-            Actor::PERSON => 'person_actor_view_id',
-            Actor::GROUP  => 'group_actor_view_id',
-            Actor::BOT    => 'bot_actor_view_id',
-            default       => throw new InvalidArgumentException(),
-        };
-        return new RedirectResponse(Router::url($route_id, ['id' => $id]), status: 302);
+        $r->connect(id: 'person_actor_view_id', uri_path: '/person/{id<\d+>}', target: [C\PersonFeed::class, 'personViewId']);
+        $r->connect(id: 'person_actor_view_nickname', uri_path: '/@{nickname<' . Nickname::DISPLAY_FMT . '>}', target: [C\PersonFeed::class, 'personViewNickname'], options: ['is_system_path' => false]);
+        $r->connect(id: 'person_actor_settings', uri_path: '/person/{id<\d+>}/settings', target: [C\PersonSettings::class, 'allSettings']);
+        return Event::next;
     }
 }

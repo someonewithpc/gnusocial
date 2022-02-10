@@ -366,20 +366,12 @@ class Actor extends Entity
 
     public function getSubscriptionsUrl(): string
     {
-        if ($this->getIsLocal()) {
-            return Router::url('actor_subscriptions_nickname', ['nickname' => $this->getNickname()]);
-        } else {
-            return Router::url('actor_subscriptions_id', ['id' => $this->getId()]);
-        }
+        return Router::url('actor_subscriptions_id', ['id' => $this->getId()]);
     }
 
     public function getSubscribersUrl(): string
     {
-        if ($this->getIsLocal()) {
-            return Router::url('actor_subscribers_nickname', ['nickname' => $this->getNickname()]);
-        } else {
-            return Router::url('actor_subscribers_id', ['id' => $this->getId()]);
-        }
+        return Router::url('actor_subscribers_id', ['id' => $this->getId()]);
     }
 
     /**
@@ -445,7 +437,7 @@ class Actor extends Entity
             $url = null;
             if (Event::handle('StartGetActorUrl', [$this, $type, &$url]) === Event::next) {
                 $url = match ($this->type) {
-                    self::PERSON, self::BOT => Router::url('actor_view_nickname', ['nickname' => mb_strtolower($this->getNickname())], $type),
+                    self::PERSON, self::BOT => Router::url('person_actor_view_nickname', ['nickname' => mb_strtolower($this->getNickname())], $type),
                     self::GROUP => Router::url('group_actor_view_nickname', ['nickname' => $this->getNickname()], $type),
                     default => throw new BugFoundException('Actor type added but `Actor::getUrl` was not updated'),
                 };

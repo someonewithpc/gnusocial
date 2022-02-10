@@ -37,7 +37,6 @@ use App\Util\Common;
 use App\Util\Exception\DuplicateFoundException;
 use App\Util\Exception\NotFoundException;
 use App\Util\Exception\ServerException;
-use App\Util\Nickname;
 use Component\Subscription\Controller\Subscribers as SubscribersController;
 use Component\Subscription\Controller\Subscriptions as SubscriptionsController;
 
@@ -50,9 +49,7 @@ class Subscription extends Component
         $r->connect(id: 'actor_subscribe_add', uri_path: '/actor/subscribe/{object_id<\d+>}', target: [SubscribersController::class, 'subscribersAdd']);
         $r->connect(id: 'actor_subscribe_remove', uri_path: '/actor/unsubscribe/{object_id<\d+>}', target: [SubscribersController::class, 'subscribersRemove']);
         $r->connect(id: 'actor_subscriptions_id', uri_path: '/actor/{id<\d+>}/subscriptions', target: [SubscriptionsController::class, 'subscriptionsByActorId']);
-        $r->connect(id: 'actor_subscriptions_nickname', uri_path: '/@{nickname<' . Nickname::DISPLAY_FMT . '>}/subscriptions', target: [SubscriptionsController::class, 'subscriptionsByActorNickname']);
         $r->connect(id: 'actor_subscribers_id', uri_path: '/actor/{id<\d+>}/subscribers', target: [SubscribersController::class, 'subscribersByActorId']);
-        $r->connect(id: 'actor_subscribers_nickname', uri_path: '/@{nickname<' . Nickname::DISPLAY_FMT . '>}/subscribers', target: [SubscribersController::class, 'subscribersByActorNickname']);
         return Event::next;
     }
 

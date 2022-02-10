@@ -45,6 +45,7 @@ use App\Util\Exception\ServerException;
 use App\Util\Formatting;
 use App\Util\TemporaryFile;
 use Component\Avatar\Avatar;
+use Component\Group\Entity\LocalGroup;
 use DateTime;
 use DateTimeInterface;
 use Exception;
@@ -198,7 +199,7 @@ class Actor extends Model
         $uri        = $object->getUri(Router::ABSOLUTE_URL);
         $attr       = [
             '@context'  => 'https://www.w3.org/ns/activitystreams',
-            'type'      => self::$_gs_actor_type_to_as2_actor_type[$object->getType()],
+            'type'      => ($object->getType() === GSActor::GROUP) ? (LocalGroup::getByPK(['actor_id' => $object->getId()])->getType() === 'organisation' ? 'Organization' : 'Group'): self::$_gs_actor_type_to_as2_actor_type[$object->getType()],
             'id'        => $uri,
             'inbox'     => Router::url('activitypub_actor_inbox', ['gsactor_id' => $object->getId()], Router::ABSOLUTE_URL),
             'outbox'    => Router::url('activitypub_actor_outbox', ['gsactor_id' => $object->getId()], Router::ABSOLUTE_URL),

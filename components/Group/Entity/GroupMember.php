@@ -123,12 +123,12 @@ class GroupMember extends Entity
         return [
             'name'   => 'group_member',
             'fields' => [
-                'group_id' => ['type' => 'int',       'foreign key' => true, 'target' => 'Actor.id', 'multiplicity' => 'one to one', 'name' => 'group_member_group_id_fkey', 'not null' => true,  'description' => 'foreign key to group table'],
-                'actor_id' => ['type' => 'int',       'foreign key' => true, 'target' => 'Actor.id', 'multiplicity' => 'one to one', 'name' => 'group_member_actor_id_fkey', 'not null' => true,  'description' => 'foreign key to actor table'],
-                'is_admin' => ['type' => 'bool',      'default' => false,    'description' => 'is this actor an admin?'],
-                'uri'      => ['type' => 'varchar',   'length' => 191,       'description' => 'universal identifier'],
-                'created'  => ['type' => 'datetime',  'not null' => true,    'default' => 'CURRENT_TIMESTAMP', 'description' => 'date this record was created'],
-                'modified' => ['type' => 'timestamp', 'not null' => true,    'default' => 'CURRENT_TIMESTAMP', 'description' => 'date this record was modified'],
+                'group_id' => ['type' => 'int', 'foreign key' => true, 'target' => 'Actor.id', 'multiplicity' => 'one to one', 'name' => 'group_member_group_id_fkey', 'not null' => true, 'description' => 'foreign key to group table'],
+                'actor_id' => ['type' => 'int', 'foreign key' => true, 'target' => 'Actor.id', 'multiplicity' => 'one to one', 'name' => 'group_member_actor_id_fkey', 'not null' => true, 'description' => 'foreign key to actor table'],
+                'is_admin' => ['type' => 'bool', 'default' => false, 'description' => 'is this actor an admin?'],
+                'uri'      => ['type' => 'varchar', 'length' => 191, 'description' => 'universal identifier'],
+                'created'  => ['type' => 'datetime', 'not null' => true, 'default' => 'CURRENT_TIMESTAMP', 'description' => 'date this record was created'],
+                'modified' => ['type' => 'timestamp', 'not null' => true, 'default' => 'CURRENT_TIMESTAMP', 'description' => 'date this record was modified'],
             ],
             'primary key' => ['group_id', 'actor_id'],
             'unique keys' => [

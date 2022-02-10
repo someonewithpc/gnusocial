@@ -58,7 +58,7 @@
 
 {% block profile_current_actor %}
 <nav tabindex="0" class="profile-navigation" title="{{ 'Navigate through account related pages.' | trans }}">
-    <a title='{{ 'Access your account settings.' | trans }}' href="{{ path('settings') }}" class='{{ active('settings') }}'>
+    <a title='{{ 'Access your account settings.' | trans }}' href="{{ path('person_actor_settings', {id: app.user.getId()}) }}" class='{{ active('settings') }}'>
         {% trans %}Settings{% endtrans %}
     </a>
 
