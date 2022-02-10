@@ -29,6 +29,7 @@ use App\Entity\Actor;
 use App\Util\Common;
 use App\Util\Exception\BugFoundException;
 use App\Util\Exception\ClientException;
+use App\Util\Exception\ServerException;
 use Component\Collection\Util\Controller\CircleController;
 use Symfony\Component\HttpFoundation\Request;
 
@@ -39,8 +40,12 @@ class Directory extends CircleController
     /**
      * Function responsible for displaying a list of actors of a given
      * $actor_type, sorted by the `order_by` GET parameter, if given
+     *
+     * @throws BugFoundException
+     * @throws ClientException
+     * @throws ServerException
      */
-    private function impl(Request $request, int $actor_type, string $title, string $empty_message): array
+    private function magic(Request $request, int $actor_type, string $title, string $empty_message): array
     {
         if ($actor_type !== Actor::PERSON && $actor_type !== Actor::GROUP) {
             throw new BugFoundException("Unimplemented for actor type: {$actor_type}");
@@ -99,7 +104,7 @@ class Directory extends CircleController
                     'limit'  => $limit,
                     'offset' => $offset,
                 ],
-                ['actr' => Actor::class],
+                ['actor' => Actor::class],
             );
         };
         // -------- *** --------
@@ -114,22 +119,16 @@ class Directory extends CircleController
         $query_fn = match ($order_by_field) {
             'nickname', 'created' => $actor_query_fn, // select only from actors
 
-            'modified'        => match ($actor_type) { // select by most/least recent activity
-                Actor::PERSON => $minmax_query_fn(table: 'activity', join_field: 'actor_id', aggregate_field: 'created'),
-                Actor::GROUP  => $minmax_query_fn(table: 'group_inbox', join_field: 'group_id', aggregate_field: 'created'),
-            },
+            // select by most/least recent activity
+            'modified' => $minmax_query_fn(table: 'activity', join_field: 'actor_id', aggregate_field: 'created'),
 
-            'activity'        => match ($actor_type) { // select by most/least activity amount
-                Actor::PERSON => $count_query_fn(table: 'activity', join_field: 'actor_id', aggregate_field: 'created'),
-                Actor::GROUP  => $count_query_fn(table: 'group_inbox', join_field: 'group_id', aggregate_field: 'created'),
-            },
+            // select by most/least activity amount
+            'activity' => $count_query_fn(table: 'activity', join_field: 'actor_id', aggregate_field: 'created'),
 
-            'subscribers'     => match ($actor_type) { // select by actors with most/least subscribers/members
-                Actor::PERSON => $count_query_fn(table: 'subscription', join_field: 'subscribed_id', aggregate_field: 'subscriber_id'),
-                Actor::GROUP  => $count_query_fn(table: 'group_member', join_field: 'group_id', aggregate_field: 'actor_id'),
-            },
+            // select by actors with most/least subscribers/members
+            'subscribers' => $count_query_fn(table: 'subscription', join_field: 'subscribed_id', aggregate_field: 'subscriber_id'),
 
-            default => throw new BugFoundException("Unkown order by found, but should have been validated: {$order_by_field}"),
+            default => throw new BugFoundException("Unknown order by found, but should have been validated: {$order_by_field}"),
         };
         // -------- *** --------
 
@@ -154,11 +153,11 @@ class Directory extends CircleController
 
     public function people(Request $request): array
     {
-        return $this->impl($request, Actor::PERSON, title: _m('People'), empty_message: _m('No people here'));
+        return $this->magic($request, Actor::PERSON, title: _m('People'), empty_message: _m('No people here'));
     }
 
     public function groups(Request $request): array
     {
-        return $this->impl($request, Actor::GROUP, title: _m('Groups'), empty_message: _m('No groups here'));
+        return $this->magic($request, Actor::GROUP, title: _m('Groups'), empty_message: _m('No groups here'));
     }
 }

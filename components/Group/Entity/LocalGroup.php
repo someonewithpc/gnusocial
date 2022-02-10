@@ -54,7 +54,8 @@ class LocalGroup extends Entity
     // {{{ Autocode
     // @codeCoverageIgnoreStart
     private int $group_id;
-    private ?string $nickname = null;
+    private string $nickname;
+    private string $type;
     private DateTimeInterface $created;
     private DateTimeInterface $modified;
 
@@ -69,15 +70,26 @@ class LocalGroup extends Entity
         return $this->group_id;
     }
 
-    public function setNickname(?string $nickname): self
+    public function setNickname(string $nickname): self
     {
-        $this->nickname = \is_null($nickname) ? null : mb_substr($nickname, 0, 64);
+        $this->nickname = mb_substr($nickname, 0, 64);
         return $this;
     }
 
-    public function getNickname(): ?string
+    public function getNickname(): string
     {
         return $this->nickname;
+    }
+
+    public function setType(string $type): self
+    {
+        $this->type = $type;
+        return $this;
+    }
+
+    public function getType(): string
+    {
+        return $this->type;
     }
 
     public function setCreated(DateTimeInterface $created): self
@@ -152,7 +164,8 @@ class LocalGroup extends Entity
             'description' => 'Record for a user group on the local site, with some additional info not in user_group',
             'fields'      => [
                 'group_id' => ['type' => 'int',      'foreign key' => true, 'target' => 'Group.id', 'multiplicity' => 'one to one', 'name' => 'local_group_group_id_fkey', 'not null' => true, 'description' => 'group represented'],
-                'nickname' => ['type' => 'varchar',  'length' => 64,        'description' => 'group represented'],
+                'nickname' => ['type' => 'varchar', 'not null' => true,  'length' => 64,        'description' => 'group represented'],
+                'type'     => ['type' => 'varchar', 'not null' => true,  'default' => 'group', 'length' => 64,        'description' => 'Group or Organisation'],
                 'created'  => ['type' => 'datetime', 'not null' => true,    'default' => 'CURRENT_TIMESTAMP', 'description' => 'date this record was created'],
                 'modified' => ['type' => 'datetime', 'not null' => true,    'default' => 'CURRENT_TIMESTAMP', 'description' => 'date this record was modified'],
             ],

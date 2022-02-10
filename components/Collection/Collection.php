@@ -127,8 +127,7 @@ class Collection extends Component
                         foreach (
                             [
                                 Actor::PERSON => ['person', 'people'],
-                                Actor::GROUP => ['group', 'groups'],
-                                Actor::ORGANISATION => ['org', 'orgs', 'organization', 'organizations', 'organisation', 'organisations'],
+                                Actor::GROUP => ['group', 'groups', 'org', 'orgs', 'organisation', 'organisations', 'organization', 'organizations'],
                                 Actor::BOT => ['bot', 'bots'],
                             ] as $type => $match) {
                             if (array_intersect(explode(',', $term[1]), $match) !== []) {

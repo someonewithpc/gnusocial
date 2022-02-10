@@ -62,15 +62,14 @@ use Plugin\ActivityPub\Util\Model;
 class Actor extends Model
 {
     private static array $_gs_actor_type_to_as2_actor_type = [
-        GSActor::PERSON       => 'Person',
-        GSActor::GROUP        => 'Group',
-        GSActor::ORGANISATION => 'Organization',
-        GSActor::BOT          => 'Application',
+        GSActor::PERSON => 'Person',
+        GSActor::GROUP  => 'Group',
+        GSActor::BOT    => 'Application',
     ];
     private static array $_as2_actor_type_to_gs_actor_type = [
         'Person'       => GSActor::PERSON,
         'Group'        => GSActor::GROUP,
-        'Organization' => GSActor::ORGANISATION,
+        'Organization' => GSActor::GROUP,
         'Application'  => GSActor::BOT,
         'Service'      => null,
     ];

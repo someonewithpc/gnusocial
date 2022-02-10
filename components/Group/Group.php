@@ -40,8 +40,9 @@ class Group extends Component
     public function onAddRoute(RouteLoader $r): bool
     {
         $r->connect(id: 'group_create', uri_path: '/group/new', target: [C\Group::class, 'groupCreate']);
-        $r->connect(id: 'group_actor_view_nickname', uri_path: '/!{nickname<' . Nickname::DISPLAY_FMT . '>}', target: [C\Group::class, 'groupViewNickname'], options: ['is_system_path' => false]);
-        $r->connect(id: 'group_settings', uri_path: '/!{nickname<' . Nickname::DISPLAY_FMT . '>}/settings', target: [C\Group::class, 'groupSettings'], options: ['is_system_path' => false]);
+        $r->connect(id: 'group_actor_view_id', uri_path: '/group/{id<\d+>}', target: [C\Group::class, 'groupViewId']);
+        $r->connect(id: 'group_settings', uri_path: '/group/{id<\d+>}/settings', target: [C\Group::class, 'groupSettings']);
+        $r->connect(id: 'group_actor_view_nickname', uri_path: '/!{nickname<' . Nickname::DISPLAY_FMT . '>}', target: [C\Group::class, 'groupViewNickname']);
         return Event::next;
     }
 
@@ -53,7 +54,7 @@ class Group extends Component
         $actor = Common::actor();
         $group = $vars['actor'];
         if (!\is_null($actor) && $group->isGroup() && $actor->canAdmin($group)) {
-            $url   = Router::url('group_settings', ['nickname' => $group->getNickname()]);
+            $url   = Router::url('group_settings', ['id' => $group->getId()]);
             $res[] = HTML::html(['a' => ['attrs' => ['href' => $url, 'title' => _m('Edit group settings'), 'class' => 'profile-extra-actions'], _m('Group settings')]]);
         }
         return Event::next;
@@ -62,8 +63,8 @@ class Group extends Component
     public function onPopulateSettingsTabs(Request $request, string $section, array &$tabs)
     {
         if ($section === 'profile' && $request->get('_route') === 'group_settings') {
-            $nickname = $request->get('nickname');
-            $group    = LocalGroup::getActorByNickname($nickname);
+            $group_id = $request->get('id');
+            $group    = Actor::getById($group_id);
             $tabs[]   = [
                 'title'      => 'Self tags',
                 'desc'       => 'Add or remove tags on this group',
@@ -95,7 +96,7 @@ class Group extends Component
     {
         $group = $this->getGroupFromContext($request);
         if (!\is_null($group)) {
-            $nick           = '!' . $group->getNickname();
+            $nick           = "!{$group->getNickname()}";
             $targets[$nick] = $group->getId();
         }
         return Event::next;

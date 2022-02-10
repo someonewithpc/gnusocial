@@ -29,15 +29,18 @@ use App\Core\DB\DB;
 use App\Core\Form;
 use function App\Core\I18n\_m;
 use App\Core\Log;
+use App\Entity\Actor;
 use App\Entity as E;
 use App\Util\Common;
 use App\Util\Exception\ClientException;
+use App\Util\Exception\DuplicateFoundException;
 use App\Util\Exception\NicknameEmptyException;
+use App\Util\Exception\NicknameException;
 use App\Util\Exception\NicknameInvalidException;
 use App\Util\Exception\NicknameNotAllowedException;
 use App\Util\Exception\NicknameTakenException;
 use App\Util\Exception\NicknameTooLongException;
-use App\Util\Exception\NoLoggedInUser;
+use App\Util\Exception\NotFoundException;
 use App\Util\Exception\RedirectException;
 use App\Util\Exception\ServerException;
 use App\Util\Form\ActorForms;
@@ -46,6 +49,7 @@ use Component\Collection\Util\Controller\FeedController;
 use Component\Group\Entity\GroupMember;
 use Component\Group\Entity\LocalGroup;
 use Component\Subscription\Entity\ActorSubscription;
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormInterface;
@@ -54,27 +58,14 @@ use Symfony\Component\HttpFoundation\Request;
 class Group extends FeedController
 {
     /**
-     * View a group feed by its nickname
-     *
-     * @param string $nickname The group's nickname to be shown
-     *
-     * @throws NicknameEmptyException
-     * @throws NicknameNotAllowedException
-     * @throws NicknameTakenException
-     * @throws NicknameTooLongException
      * @throws ServerException
-     *
-     * @return array
      */
-    public function groupViewNickname(Request $request, string $nickname)
+    public function handleGroup(Request $request, Actor $group): array
     {
-        Nickname::validate($nickname, which: Nickname::CHECK_LOCAL_GROUP); // throws
-        $group          = LocalGroup::getActorByNickname($nickname);
         $actor          = Common::actor();
         $subscribe_form = null;
 
-        if (!\is_null($group)
-            && !\is_null($actor)
+        if (!\is_null($actor)
             && \is_null(Cache::get(
                 ActorSubscription::cacheKeys($actor, $group)['subscribed'],
                 fn () => DB::findOneBy('actor_subscription', [
@@ -97,24 +88,48 @@ class Group extends FeedController
             }
         }
 
-        $notes = !\is_null($group) ? DB::dql(
-            <<<'EOF'
-                select n from note n
-                    join activity a with n.id = a.object_id
-                    join group_inbox gi with a.id = gi.activity_id
-                where a.object_type = 'note' and gi.group_id = :group_id
-                order by a.created desc, a.id desc
-                EOF,
-            ['group_id' => $group->getId()],
-        ) : [];
+        $notes = DB::dql(<<<'EOF'
+            SELECT n FROM \App\Entity\Note AS n
+            WHERE n.id IN (
+                SELECT act.object_id FROM \App\Entity\Activity AS act
+                    WHERE act.object_type = 'note' AND act.id IN
+                        (SELECT att.activity_id FROM \Component\Notification\Entity\Notification AS att WHERE att.target_id = :id)
+                )
+            EOF, ['id' => $group->getId()]);
 
         return [
             '_template'      => 'group/view.html.twig',
             'actor'          => $group,
-            'nickname'       => $group?->getNickname() ?? $nickname,
+            'nickname'       => $group->getNickname(),
             'notes'          => $notes,
             'subscribe_form' => $subscribe_form?->createView(),
         ];
+    }
+
+    public function groupViewId(Request $request, int $id): array
+    {
+        return $this->handleGroup($request, Actor::getById($id));
+    }
+
+    /**
+     * View a group feed by its nickname
+     *
+     * @param string $nickname The group's nickname to be shown
+     *
+     * @throws NicknameEmptyException
+     * @throws NicknameNotAllowedException
+     * @throws NicknameTakenException
+     * @throws NicknameTooLongException
+     * @throws ServerException
+     */
+    public function groupViewNickname(Request $request, string $nickname): array
+    {
+        Nickname::validate($nickname, which: Nickname::CHECK_LOCAL_GROUP); // throws
+        $group = LocalGroup::getActorByNickname($nickname);
+        if (\is_null($group)) {
+            throw new NotFoundException(_m('Group not found.'));
+        }
+        return $this->handleGroup($request, $group);
     }
 
     /**
@@ -122,10 +137,8 @@ class Group extends FeedController
      *
      * @throws RedirectException
      * @throws ServerException
-     *
-     * @return array
      */
-    public function groupCreate(Request $request)
+    public function groupCreate(Request $request): array
     {
         if (\is_null($actor = Common::actor())) {
             throw new RedirectException('security_login');
@@ -143,19 +156,19 @@ class Group extends FeedController
      * Settings page for the group with the provided nickname, checks if the current actor can administrate given group
      *
      * @throws ClientException
+     * @throws DuplicateFoundException
      * @throws NicknameEmptyException
+     * @throws NicknameException
      * @throws NicknameInvalidException
      * @throws NicknameNotAllowedException
      * @throws NicknameTakenException
      * @throws NicknameTooLongException
-     * @throws NoLoggedInUser
+     * @throws NotFoundException
      * @throws ServerException
-     *
-     * @return array
      */
-    public function groupSettings(Request $request, string $nickname)
+    public function groupSettings(Request $request, int $id): array
     {
-        $local_group = LocalGroup::getByNickname($nickname);
+        $local_group = DB::findOneBy(LocalGroup::class, ['group_id' => $id]);
         $group_actor = $local_group->getActor();
         $actor       = Common::actor();
         if (!\is_null($group_actor) && $actor->canAdmin($group_actor)) {
@@ -166,7 +179,7 @@ class Group extends FeedController
                 'open_details_query' => $this->string('open'),
             ];
         } else {
-            throw new ClientException(_m('You do not have permission to edit settings for the group "{group}"', ['{group}' => $nickname]), code: 404);
+            throw new ClientException(_m('You do not have permission to edit settings for the group "{group}"', ['{group}' => $id]), code: 404);
         }
     }
 
@@ -180,6 +193,10 @@ class Group extends FeedController
     {
         $create_form = Form::create([
             ['group_nickname', TextType::class, ['label' => _m('Group nickname')]],
+            ['group_type', ChoiceType::class, ['label' => _m('Type:'), 'multiple' => false, 'expanded' => false, 'choices' => [
+                _m('Group')        => 'group',
+                _m('Organisation') => 'organisation',
+            ]]],
             ['group_create', SubmitType::class, ['label' => _m('Create this group!')]],
         ]);
 
@@ -203,6 +220,7 @@ class Group extends FeedController
             ]));
             DB::persist(LocalGroup::create([
                 'group_id' => $group->getId(),
+                'type'     => $data['group_type'],
                 'nickname' => $nickname,
             ]));
             DB::persist(ActorSubscription::create([

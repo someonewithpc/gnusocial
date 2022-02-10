@@ -243,8 +243,7 @@ class Actor extends Entity
 
     public const PERSON = 1;
     public const GROUP = 2;
-    public const ORGANISATION = 3;
-    public const BOT = 4;
+    public const BOT = 3;
 
     public static function cacheKeys(int|self $actor_id, mixed $other = null): array
     {
@@ -421,7 +420,6 @@ class Actor extends Entity
         if (Event::handle('StartGetActorUri', [$this, $type, &$uri]) === Event::next) {
             switch ($this->type) {
             case self::PERSON:
-            case self::ORGANISATION:
             case self::BOT:
             case self::GROUP:
                 $uri = Router::url('actor_view_id', ['id' => $this->getId()], $type);
@@ -447,7 +445,7 @@ class Actor extends Entity
             $url = null;
             if (Event::handle('StartGetActorUrl', [$this, $type, &$url]) === Event::next) {
                 $url = match ($this->type) {
-                    self::PERSON, self::ORGANISATION, self::BOT => Router::url('actor_view_nickname', ['nickname' => mb_strtolower($this->getNickname())], $type),
+                    self::PERSON, self::BOT => Router::url('actor_view_nickname', ['nickname' => mb_strtolower($this->getNickname())], $type),
                     self::GROUP => Router::url('group_actor_view_nickname', ['nickname' => $this->getNickname()], $type),
                     default => throw new BugFoundException('Actor type added but `Actor::getUrl` was not updated'),
                 };
@@ -529,7 +527,6 @@ class Actor extends Entity
     /**
      * @method bool isPerson()
      * @method bool isGroup()
-     * @method bool isOrganization()
      * @method bool isBot()
      */
     public function __call(string $name, array $arguments): mixed
