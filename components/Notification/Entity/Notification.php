@@ -121,7 +121,7 @@ class Notification extends Entity
      */
     public static function getNotificationTargetIdsByActivity(int|Activity $activity_id): array
     {
-        $notifications = DB::findBy('notification', ['activity_id' => \is_int($activity_id) ? $activity_id : $activity_id->getId()]);
+        $notifications = DB::findBy(self::class, ['activity_id' => \is_int($activity_id) ? $activity_id : $activity_id->getId()]);
         $targets       = [];
         foreach ($notifications as $notification) {
             $targets[] = $notification->getTargetId();
@@ -131,7 +131,16 @@ class Notification extends Entity
 
     public function getNotificationTargetsByActivity(int|Activity $activity_id): array
     {
-        return DB::findBy('actor', ['id' => $this->getNotificationTargetIdsByActivity($activity_id)]);
+        return DB::findBy(Actor::class, ['id' => $this->getNotificationTargetIdsByActivity($activity_id)]);
+    }
+
+    public static function getAllActivitiesTargetedAtActor(Actor $actor): array
+    {
+        return DB::dql(<<<'EOF'
+            SELECT act FROM \App\Entity\Activity AS act
+                WHERE act.object_type = 'note' AND act.id IN
+                    (SELECT att.activity_id FROM \Component\Notification\Entity\Notification AS att WHERE att.target_id = :id)
+            EOF, ['id' => $actor->getId()]);
     }
 
     public static function schemaDef(): array

@@ -283,7 +283,7 @@ class Actor extends Entity
 
     public static function getById(int $id): ?self
     {
-        return Cache::get(self::cacheKeys($id)['id'], fn() => DB::find('actor', ['id' => $id]));
+        return Cache::get(self::cacheKeys($id)['id'], fn() => DB::findOneBy(self::class, ['id' => $id]));
     }
 
     public static function getNicknameById(int $id): string

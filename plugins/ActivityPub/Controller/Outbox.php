@@ -33,6 +33,8 @@ declare(strict_types = 1);
 namespace Plugin\ActivityPub\Controller;
 
 use App\Core\DB\DB;
+use App\Entity\Actor;
+use Component\Notification\Entity\Notification;
 use function App\Core\I18n\_m;
 use App\Core\Log;
 use App\Core\Router\Router;
@@ -55,24 +57,29 @@ class Outbox extends OrderedCollectionController
      */
     public function viewOutboxByActorId(Request $request, int $gsactor_id): array
     {
-        try {
-            $user = DB::findOneBy('local_user', ['id' => $gsactor_id]);
-        } catch (Exception $e) {
-            throw new ClientException(_m('No such actor.'), 404, $e);
+        $actor = Actor::getById($gsactor_id);
+        if (is_null($actor)) {
+            throw new ClientException(_m('No such actor.'), 404);
+        } elseif (!$actor->getIsLocal()) {
+            throw new ClientException(_m('We have no authority over a remote actor\'s outbox.'), 400);
         }
 
         $this->actor_id = $gsactor_id;
 
         Log::debug('ActivityPub Outbox: Received a GET request.');
 
-        $activities = DB::findBy(Activity::class, ['actor_id' => $user->getId()], order_by: ['created' => 'DESC']);
+        if ($actor->getType() !== Actor::GROUP) {
+            $activities = Activity::getAllActivitiesByActor($actor);
+        } else {
+            $activities = Notification::getAllActivitiesTargetedAtActor($actor);
+        }
 
         foreach ($activities as $act) {
             $this->ordered_items[] = Router::url('activity_view', ['id' => $act->getId()], ROUTER::ABSOLUTE_URL);
         }
 
         $this->route      = 'activitypub_actor_outbox';
-        $this->route_args = ['gsactor_id' => $user->getId(), 'page' => $this->int('page') ?? 0];
+        $this->route_args = ['gsactor_id' => $actor->getId(), 'page' => $this->int('page') ?? 0];
 
         return $this->handle($request);
     }

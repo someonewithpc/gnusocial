@@ -293,7 +293,7 @@ class Note extends Entity
 
     public static function getAllNotesByActor(Actor $actor): array
     {
-        return DB::findBy('note', ['actor_id' => $actor->getId()], order_by: ['created' => 'DESC', 'id' => 'DESC']);
+        return DB::findBy(self::class, ['actor_id' => $actor->getId()], order_by: ['created' => 'DESC', 'id' => 'DESC']);
     }
 
     public function getAttachments(): array

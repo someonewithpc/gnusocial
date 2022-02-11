@@ -187,6 +187,11 @@ class Activity extends Entity
         return array_unique($target_ids);
     }
 
+    public static function getAllActivitiesByActor(Actor $actor): array
+    {
+        return DB::findBy(self::class, ['actor_id' => $actor->getId()], order_by: ['created' => 'DESC', 'id' => 'DESC']);
+    }
+
     public static function schemaDef(): array
     {
         return [

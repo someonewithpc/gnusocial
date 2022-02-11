@@ -52,6 +52,8 @@ use Component\FreeNetwork\Entity\FreeNetworkActorProtocol;
 use Component\FreeNetwork\Util\Discovery;
 use Exception;
 use InvalidArgumentException;
+use Plugin\ActivityPub\Util\Response\ActivityResponse;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use const PHP_URL_HOST;
 use Plugin\ActivityPub\Controller\Inbox;
 use Plugin\ActivityPub\Controller\Outbox;
@@ -193,6 +195,9 @@ class ActivityPub extends Plugin
             case 'bot_actor_view_nickname':
                 $response = ActorResponse::handle($vars['actor']);
                 break;
+            case 'activity_view':
+                $response = ActivityResponse::handle($vars['activity']);
+                break;
             case 'note_view':
                 $response = NoteResponse::handle($vars['note']);
                 break;
@@ -203,6 +208,8 @@ class ActivityPub extends Plugin
                 if (Event::handle('ActivityPubActivityStreamsTwoResponse', [$route, $vars, &$response]) !== Event::stop) {
                     if (is_subclass_of($vars['controller'][0], OrderedCollection::class)) {
                         $response = new TypeResponse(OrderedCollectionController::fromControllerVars($vars)['type']);
+                    } else {
+                        $response = new JsonResponse(['error' => 'Unknown Object cannot be represented.']);
                     }
                 }
         }
