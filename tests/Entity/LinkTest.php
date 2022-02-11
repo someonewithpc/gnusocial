@@ -21,6 +21,7 @@ declare(strict_types = 1);
 
 namespace App\Tests\Entity;
 
+use App\Util\Common;
 use App\Util\GNUsocialTestCase;
 use Component\Link\Entity\Link;
 use InvalidArgumentException;
@@ -36,6 +37,6 @@ class LinkTest extends GNUsocialTestCase
         $link = Link::getOrCreate('https://gnu.org');
         static::assertNotNull($link->getUrl());
 
-        static::assertThrows(InvalidArgumentException::class, fn () => Link::getOrCreate('https://' . $_ENV['SOCIAL_DOMAIN']));
+        static::assertThrows(InvalidArgumentException::class, fn () => Link::getOrCreate('https://' . Common::config('site', 'server')));
     }
 }

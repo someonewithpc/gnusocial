@@ -79,6 +79,7 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 use SymfonyCasts\Bundle\ResetPassword\ResetPasswordHelperInterface;
 use SymfonyCasts\Bundle\VerifyEmail\VerifyEmailHelperInterface;
 use Twig\Environment;
+use Symfony\Component\Yaml;
 
 /**
  * @codeCoverageIgnore
@@ -228,8 +229,10 @@ class GNUsocial implements EventSubscriberInterface
         // Overriding doesn't work as we want, overrides the top-most key, do it manually
         $local_file = INSTALLDIR . '/social.local.yaml';
         if (!file_exists($local_file)) {
-            $node_name = $_ENV['SOCIAL_NODE_NAME'];
-            file_put_contents($local_file, "parameters:\n  locals:\n    gnusocial:\n      site:\n        name: {$node_name}\n");
+            $node_name = $_ENV['CONFIG_NODE_NAME'];
+            $domain = $_ENV['CONFIG_DOMAIN'];
+            $yaml = (new Yaml\Dumper(indentation: 2))->dump(['parameters' => ['locals' => ['gnusocial' => ['site' => ['server' => $domain, 'name' => $node_name]]]]], Yaml\Yaml::DUMP_OBJECT_AS_MAP);
+            file_put_contents($local_file, $yaml);
         }
 
         // Load .local

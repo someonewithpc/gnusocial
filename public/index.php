@@ -65,14 +65,14 @@ if ($trustedHosts = $_ENV['TRUSTED_HOSTS'] ?? $_SERVER['TRUSTED_HOSTS'] ?? false
 $kernel = new Kernel($_SERVER['APP_ENV'], (bool) $_SERVER['APP_DEBUG']);
 
 // Wrap the default Kernel with the CacheKernel one in 'prod' environment
-if ('prod' === $kernel->getEnvironment() || isset($_ENV['SOCIAL_USE_CACHE_KERNEL'])) {
+if ('prod' === $kernel->getEnvironment() || isset($_ENV['CONFIG_USE_CACHE_KERNEL'])) {
     $kernel = new CacheKernel($kernel);
 }
 
 $request = Request::createFromGlobals();
 $_ENV    = array_filter(
     $_ENV,
-    fn (string $key) => Formatting::startsWith($key, ['HTTP', 'APP']) && $key !== 'APP_SECRET',
+    fn (string $key) => Formatting::startsWith($key, ['HTTP', 'APP', 'CONFIG']) && $key !== 'APP_SECRET',
     \ARRAY_FILTER_USE_KEY,
 );
 $response = $kernel->handle($request);

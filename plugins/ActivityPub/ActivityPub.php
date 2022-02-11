@@ -446,7 +446,7 @@ class ActivityPub extends Plugin
             // This means $resource is a valid url
             $resource_parts = parse_url($resource);
             // TODO: Use URLMatcher
-            if ($resource_parts['host'] === $_ENV['SOCIAL_DOMAIN']) { // XXX: Common::config('site', 'server')) {
+            if ($resource_parts['host'] === Common::config('site', 'server')) {
                 $local_note = DB::findOneBy('note', ['url' => $resource], return_null: true);
                 if ($local_note instanceof Note) {
                     return $local_note;
@@ -493,7 +493,7 @@ class ActivityPub extends Plugin
             // This means $resource is a valid url
             $resource_parts = parse_url($resource);
             // TODO: Use URLMatcher
-            if ($resource_parts['host'] === $_ENV['SOCIAL_DOMAIN']) { // XXX: Common::config('site', 'server')) {
+            if ($resource_parts['host'] === Common::config('site', 'server')) {
                 $str = $resource_parts['path'];
                 // actor_view_nickname
                 $renick = '/\/@(' . Nickname::DISPLAY_FMT . ')\/?/m';

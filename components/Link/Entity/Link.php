@@ -126,7 +126,7 @@ class Link extends Entity
     {
         if (Common::isValidHttpUrl($url)) {
             // If the URL is a local one, do not create a Link to it
-            if (parse_url($url, \PHP_URL_HOST) === $_ENV['SOCIAL_DOMAIN']) {
+            if (parse_url($url, \PHP_URL_HOST) === Common::config('site', 'server')) {
                 Log::warning("It was attempted to create a Link to a local location {$url}.");
                 // Forbidden
                 throw new InvalidArgumentException(message: "A Link can't point to a local location ({$url}), it must be a remote one", code: 400);

@@ -152,7 +152,7 @@ class FreeNetwork extends Component
             $parts = explode('@', mb_substr(urldecode($resource), 5)); // 5 is strlen of 'acct:'
             if (\count($parts) === 2) {
                 [$nick, $domain] = $parts;
-                if ($domain !== $_ENV['SOCIAL_DOMAIN']) {
+                if ($domain !== Common::config('site', 'server')) {
                     throw new ServerException(_m('Remote profiles not supported via WebFinger yet.'));
                 }
 
@@ -169,7 +169,7 @@ class FreeNetwork extends Component
                     // This means $resource is a valid url
                     $resource_parts = parse_url($resource);
                     // TODO: Use URLMatcher
-                    if ($resource_parts['host'] === $_ENV['SOCIAL_DOMAIN']) { // XXX: Common::config('site', 'server')) {
+                    if ($resource_parts['host'] === Common::config('site', 'server')) {
                         $str = $resource_parts['path'];
                         // actor_view_nickname
                         $renick = '/\/@(' . Nickname::DISPLAY_FMT . ')\/?/m';
@@ -379,7 +379,7 @@ class FreeNetwork extends Component
             $actor = null;
 
             $resource_parts = explode($preMention, $target);
-            if ($resource_parts[1] === $_ENV['SOCIAL_DOMAIN']) { // XXX: Common::config('site', 'server')) {
+            if ($resource_parts[1] === Common::config('site', 'server')) {
                 $actor = LocalUser::getByPK(['nickname' => $resource_parts[0]])->getActor();
             } else {
                 Event::handle('FreeNetworkFindMentions', [$target, &$actor]);
@@ -408,7 +408,7 @@ class FreeNetwork extends Component
                 // This means $resource is a valid url
                 $resource_parts = parse_url($url);
                 // TODO: Use URLMatcher
-                if ($resource_parts['host'] === $_ENV['SOCIAL_DOMAIN']) { // XXX: Common::config('site', 'server')) {
+                if ($resource_parts['host'] === Common::config('site', 'server')) {
                     $str = $resource_parts['path'];
                     // actor_view_nickname
                     $renick = '/\/@(' . Nickname::DISPLAY_FMT . ')\/?/m';

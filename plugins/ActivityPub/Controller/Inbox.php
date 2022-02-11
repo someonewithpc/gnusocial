@@ -35,6 +35,7 @@ namespace Plugin\ActivityPub\Controller;
 use App\Core\Controller;
 use App\Core\DB\DB;
 use App\Core\Event;
+use App\Util\Common;
 use function App\Core\I18n\_m;
 use App\Core\Log;
 use App\Core\Router\Router;
@@ -90,7 +91,7 @@ class Inbox extends Controller
 
         try {
             $resource_parts = parse_url($type->get('actor'));
-            if ($resource_parts['host'] !== $_ENV['SOCIAL_DOMAIN']) { // XXX: Common::config('site', 'server')) {
+            if ($resource_parts['host'] !== Common::config('site', 'server')) {
                 $ap_actor = ActivitypubActor::fromUri($type->get('actor'));
                 $actor    = Actor::getById($ap_actor->getActorId());
                 DB::flush();
