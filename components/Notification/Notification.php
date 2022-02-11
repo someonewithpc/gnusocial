@@ -79,6 +79,11 @@ class Notification extends Component
                     continue;
                 }
                 if (Event::handle('NewNotificationShould', [$activity, $target]) === Event::next) {
+                    if ($sender->getId() === $target->getId()
+                        || $activity->getActorId() === $target->getId()) {
+                        // The target already knows about this, no need to bother with a notification
+                        continue;
+                    }
                     // TODO: use https://symfony.com/doc/current/notifier.html
                     // XXX: Unideal as in failures the rollback will leave behind a false notification,
                     // but most notifications (all) require flushing the objects first
