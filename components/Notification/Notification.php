@@ -23,6 +23,7 @@ namespace Component\Notification;
 
 use App\Core\DB\DB;
 use App\Core\Event;
+use App\Util\Exception\ServerException;
 use function App\Core\I18n\_m;
 use App\Core\Log;
 use App\Core\Modules\Component;
@@ -36,13 +37,24 @@ use Component\Notification\Controller\Feed;
 
 class Notification extends Component
 {
+    /**
+     * @param RouteLoader $m
+     * @return bool
+     */
     public function onAddRoute(RouteLoader $m): bool
     {
         $m->connect('feed_notifications', '/feed/notifications', [Feed::class, 'notifications']);
         return Event::next;
     }
 
-    public function onCreateDefaultFeeds(int $actor_id, LocalUser $user, int &$ordering)
+    /**
+     * @param int $actor_id
+     * @param LocalUser $user
+     * @param int $ordering
+     * @return bool
+     * @throws ServerException
+     */
+    public function onCreateDefaultFeeds(int $actor_id, LocalUser $user, int &$ordering): bool
     {
         DB::persist(\App\Entity\Feed::create([
             'actor_id' => $actor_id,
@@ -55,21 +67,33 @@ class Notification extends Component
     }
 
     /**
-     * Enqueues a notification for an Actor (user or group) which means
+     * Enqueues a notification for an Actor (such as person or group) which means
      * it shows up in their home feed and such.
+     * @param Actor $sender
+     * @param Activity $activity
+     * @param array $ids_already_known
+     * @param string|null $reason
+     * @return bool
      */
     public function onNewNotification(Actor $sender, Activity $activity, array $ids_already_known = [], ?string $reason = null): bool
     {
         $targets = $activity->getNotificationTargets(ids_already_known: $ids_already_known, sender_id: $sender->getId());
-        $this->notify($sender, $activity, $targets, $reason);
+        if (Event::handle('NewNotificationWithTargets', [$sender, $activity, $targets, $reason]) === Event::next) {
+            self::notify($sender, $activity, $targets, $reason);
+        }
 
         return Event::next;
     }
 
     /**
      * Bring given Activity to Targets's attention
+     * @param Actor $sender
+     * @param Activity $activity
+     * @param array $targets
+     * @param string|null $reason
+     * @return bool
      */
-    public function notify(Actor $sender, Activity $activity, array $targets, ?string $reason = null): bool
+    public static function notify(Actor $sender, Activity $activity, array $targets, ?string $reason = null): bool
     {
         $remote_targets = [];
         foreach ($targets as $target) {

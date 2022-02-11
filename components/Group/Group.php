@@ -22,6 +22,8 @@ declare(strict_types = 1);
 namespace Component\Group;
 
 use App\Core\Event;
+use App\Entity\Activity;
+use Component\Notification\Notification;
 use function App\Core\I18n\_m;
 use App\Core\Modules\Component;
 use App\Core\Router\RouteLoader;
@@ -43,6 +45,27 @@ class Group extends Component
         $r->connect(id: 'group_actor_view_nickname', uri_path: '/!{nickname<' . Nickname::DISPLAY_FMT . '>}', target: [C\Group::class, 'groupViewNickname']);
         $r->connect(id: 'group_create', uri_path: '/group/new', target: [C\Group::class, 'groupCreate']);
         $r->connect(id: 'group_settings', uri_path: '/group/{id<\d+>}/settings', target: [C\Group::class, 'groupSettings']);
+        return Event::next;
+    }
+
+    /**
+     * Enqueues a notification for an Actor (such as person or group) which means
+     * it shows up in their home feed and such.
+     * @param Actor $sender
+     * @param Activity $activity
+     * @param array $targets
+     * @param string|null $reason
+     * @return bool
+     */
+    public function onNewNotificationWithTargets(Actor $sender, Activity $activity, array $targets = [], ?string $reason = null): bool
+    {
+        foreach($targets as $target) {
+            if ($target->isGroup()) {
+                // The Group announces to its subscribers
+                Notification::notify($target, $activity, $target->getSubscribers(), $reason);
+            }
+        }
+
         return Event::next;
     }
 

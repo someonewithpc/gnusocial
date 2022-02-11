@@ -32,6 +32,7 @@ declare(strict_types = 1);
 
 namespace Plugin\ActivityPub;
 
+use ActivityPhp\Type;
 use App\Core\DB\DB;
 use App\Core\Event;
 use App\Core\HTTPClient;
@@ -269,7 +270,12 @@ class ActivityPub extends Plugin
         //$to_failed = [];
         foreach ($to_addr as $inbox => $dummy) {
             try {
-                $res = self::postman($sender, Model::toJson($activity), $inbox);
+                $data = Model::toJson($activity);
+                if ($sender->isGroup()) {
+                    // When the sender is a group, we have to wrap it in an Announce activity
+                    $data = Type::create('Announce', ['object' => $data])->toJson();
+                }
+                $res = self::postman($sender, $data, $inbox);
 
                 // accumulate errors for later use, if needed
                 $status_code = $res->getStatusCode();
