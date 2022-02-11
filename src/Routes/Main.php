@@ -58,9 +58,6 @@ abstract class Main
         $r->connect('panel', '/panel', [C\AdminPanel::class, 'site']);
         $r->connect('panel_site', '/panel/site', [C\AdminPanel::class, 'site']);
 
-        // TODO: don't do
-        $r->connect('actor_circle', '/', RedirectController::class, ['defaults' => ['route' => 'feed_public']]);
-
         // FAQ static pages
         foreach (['faq', 'contact', 'tags', 'groups', 'openid'] as $s) {
             $r->connect('doc_' . $s, '/doc/' . $s, C\TemplateController::class, ['template' => 'doc/faq/' . $s . '.html.twig']);
