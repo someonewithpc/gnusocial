@@ -98,17 +98,31 @@ class Posting extends Component
 
         $form_params = [];
         if (!empty($in_targets)) { // @phpstan-ignore-line
-            // Add "none" option to the top of choices
+            // Add "none" option to the first of choices
             $in_targets    = array_merge([_m('Public') => 'public'], $in_targets);
+            // Make the context actor the first In target option
+            if (!is_null($context_actor)) {
+                foreach ($in_targets as $it_nick => $it_id) {
+                    if ($it_id === $context_actor->getId()) {
+                        unset($in_targets[$it_nick]);
+                        $in_targets = array_merge([$it_nick => $it_id], $in_targets);
+                        break;
+                    }
+                }
+            }
             $form_params[] = ['in', ChoiceType::class, ['label' => _m('In:'), 'multiple' => false, 'expanded' => false, 'choices' => $in_targets]];
         }
 
-        // TODO: if in group page, add GROUP visibility to the choices.
-        $form_params[] = ['visibility', ChoiceType::class, ['label' => _m('Visibility:'), 'multiple' => false, 'expanded' => false, 'data' => 'public', 'choices' => [
+        $visibility_options = [
             _m('Public')    => VisibilityScope::EVERYWHERE->value,
             _m('Local')     => VisibilityScope::LOCAL->value,
             _m('Addressee') => VisibilityScope::ADDRESSEE->value,
-        ]]];
+        ];
+        if (!is_null($context_actor) && $context_actor->isGroup()) {
+            $visibility_options[_m('Group')] = VisibilityScope::GROUP->value;
+        }
+        $form_params[] = ['visibility', ChoiceType::class, ['label' => _m('Visibility:'), 'multiple' => false, 'expanded' => false, 'data' => 'public', 'choices' => $visibility_options]];
+
         $form_params[] = ['content', TextareaType::class, ['label' => _m('Content:'), 'data' => $initial_content, 'attr' => ['placeholder' => _m($placeholder)], 'constraints' => [new Length(['max' => Common::config('site', 'text_limit')])]]];
         $form_params[] = ['attachments', FileType::class, ['label' => _m('Attachments:'), 'multiple' => true, 'required' => false, 'invalid_message' => _m('Attachment not valid.')]];
         $form_params[] = FormFields::language($actor, $context_actor, label: _m('Note language'), help: _m('The selected language will be federated and added as a lang attribute, preferred language can be set up in settings'));
