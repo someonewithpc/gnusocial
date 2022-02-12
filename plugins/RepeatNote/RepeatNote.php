@@ -356,7 +356,7 @@ class RepeatNote extends NoteHandlerPlugin
      */
     private function activitypub_handler(Actor $actor, \ActivityPhp\Type\AbstractObject $type_activity, mixed $type_object, ?\Plugin\ActivityPub\Entity\ActivitypubActivity &$ap_act): bool
     {
-        if (!\in_array($type_activity->get('type'), ['Announce', 'Undo'])) {
+        if (!\in_array($type_activity->get('type'), ['Announce', 'Undo']) || !$actor->isPerson()) {
             return Event::next;
         }
         if ($type_activity->get('type') === 'Announce') { // Repeat

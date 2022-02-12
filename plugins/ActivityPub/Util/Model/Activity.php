@@ -63,8 +63,12 @@ class Activity extends Model
      * Create an Entity from an ActivityStreams 2.0 JSON string
      * This will persist new GSActivities, GSObjects, and APActivity
      *
+     * @param string|AbstractObject $json
+     * @param array $options
+     * @return ActivitypubActivity
      * @throws ClientExceptionInterface
      * @throws NoSuchActorException
+     * @throws NotImplementedException
      * @throws RedirectionExceptionInterface
      * @throws ServerExceptionInterface
      * @throws TransportExceptionInterface
@@ -74,9 +78,11 @@ class Activity extends Model
         $type_activity = \is_string($json) ? self::jsonToType($json) : $json;
 
         // Ditch known activities
-        $ap_act = ActivitypubActivity::getByPK(['activity_uri' => $type_activity->get('id')]);
-        if (!\is_null($ap_act)) {
-            return $ap_act;
+        if ($type_activity->has('id')) { // We can't dereference a transient activity
+            $ap_act = ActivitypubActivity::getByPK(['activity_uri' => $type_activity->get('id')]);
+            if (!\is_null($ap_act)) {
+                return $ap_act;
+            }
         }
 
         // Find Actor and Object
@@ -85,6 +91,7 @@ class Activity extends Model
         if (\is_string($type_object)) { // Retrieve it
             $type_object = ActivityPub::getObjectByUri($type_object, try_online: true);
         } else { // Encapsulated, if we have it locally, prefer it
+            // TODO: Test authority of activity over object
             $type_object = ActivityPub::getObjectByUri($type_object->get('id'), try_online: false) ?? $type_object;
         }
 
@@ -113,9 +120,9 @@ class Activity extends Model
             case 'Undo':
                 $object_type = $type_object instanceof AbstractObject ? match ($type_object->get('type')) {
                     'Note' => \App\Entity\Note::class,
-                    // no break
                     default => throw new NotImplementedException('Unsupported Undo of Object Activity.'),
                 } : $type_object::class;
+
                 switch ($object_type) {
                     case GSActivity::class:
                         switch ($type_object->getVerb()) {
@@ -125,6 +132,9 @@ class Activity extends Model
                         }
                         break;
                 }
+                break;
+            case 'Announce':
+                ActivityAnnounce::handle_core_activity($actor, $type_activity, $type_object, $ap_act);
                 break;
         }
         return $ap_act;
