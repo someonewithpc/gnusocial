@@ -49,5 +49,8 @@ class ActorLocalRoles extends Bitmap
     // System Administrator
     public const OPERATOR = 8;
 
+    // Private Group
+    public const PRIVATE_GROUP = 16;
+
     public const PREFIX = 'ROLE_';
 }

@@ -23,6 +23,7 @@ declare(strict_types = 1);
 
 namespace App\Entity;
 
+use App\Core\ActorLocalRoles;
 use App\Core\Cache;
 use App\Core\DB\DB;
 use App\Core\Entity;
@@ -398,15 +399,17 @@ class Note extends Entity
                 return false;
             case VisibilityScope::GROUP:
                 // Only for the group to see
-                return !\is_null($actor) && DB::dql(
+                return !\is_null($actor) && (
+                    !($actor->getRoles() & ActorLocalRoles::PRIVATE_GROUP) // Public Group
+                    || DB::dql( // It's a member of the private group
                     <<<'EOF'
-                            select m from group_member m
-                            join group_inbox i with m.group_id = i.group_id
-                            join note n with i.activity_id = n.id
-                            where n.id = :note_id and m.actor_id = :actor_id
-                            EOF,
+                        SELECT m FROM \Component\Group\Entity\GroupMember m
+                            JOIN \Component\Notification\Entity\Notification att WITH m.group_id = att.target_id
+                            JOIN \App\Entity\Activity a WITH att.activity_id = a.id
+                        WHERE a.object_id = :note_id AND m.actor_id = :actor_id
+                    EOF,
                     ['note_id' => $this->id, 'actor_id' => $actor->getId()],
-                ) !== [];
+                ) !== []);
             case VisibilityScope::COLLECTION:
             case VisibilityScope::MESSAGE:
                 // Only for the collection to see
@@ -417,13 +420,11 @@ class Note extends Entity
         return false;
     }
 
-    /**
-     * @return array of ids of Actors
-     */
-    private array $object_mentions_ids = [];
+    // @return array of ids of Actors
+    public array $_object_mentions_ids = [];
     public function setObjectMentionsIds(array $mentions): self
     {
-        $this->object_mentions_ids = $mentions;
+        $this->_object_mentions_ids = $mentions;
         return $this;
     }
 
@@ -432,7 +433,7 @@ class Note extends Entity
      */
     public function getNotificationTargetIds(array $ids_already_known = [], ?int $sender_id = null, bool $include_additional = true): array
     {
-        $target_ids = $this->object_mentions_ids ?? [];
+        $target_ids = $this->_object_mentions_ids ?? [];
         if ($target_ids === []) {
             $content = $this->getContent();
             if (!\array_key_exists('object', $ids_already_known)) {
