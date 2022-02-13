@@ -39,6 +39,8 @@ use App\Core\DB\DB;
 use App\Core\Event;
 use App\Core\GSFile;
 use App\Core\HTTPClient;
+use App\Util\HTML;
+use Plugin\ActivityPub\Util\Explorer;
 use function App\Core\I18n\_m;
 use App\Core\Log;
 use App\Core\Router\Router;
@@ -114,8 +116,10 @@ class Note extends Model
 
         $source    = $options['source'] ?? 'ActivityPub';
         $type_note = \is_string($json) ? self::jsonToType($json) : $json;
-        $actor     = null;
         $actor_id  = null;
+        $actor     = null;
+        $to = $type_note->has('to') ? (is_string($type_note->get('to')) ? [$type_note->get('to')] : $type_note->get('to')) : [];
+        $cc = $type_note->has('cc') ? (is_string($type_note->get('cc')) ? [$type_note->get('cc')] : $type_note->get('cc')) : [];
         if ($json instanceof AbstractObject
             && \array_key_exists('test_authority', $options)
             && $options['test_authority']
@@ -140,7 +144,7 @@ class Note extends Model
             'is_local'     => false,
             'created'      => new DateTime($type_note->get('published') ?? 'now'),
             'content'      => $type_note->get('content') ?? null,
-            'rendered'     => null,
+            'rendered'     => $type_note->has('content') ? HTML::sanitize($type_note->get('content')) : null,
             'content_type' => 'text/html',
             'language_id'  => $type_note->get('contentLang') ?? null,
             'url'          => $type_note->get('url') ?? $type_note->get('id'),
@@ -149,17 +153,6 @@ class Note extends Model
             'modified'     => new DateTime(),
             'source'       => $source,
         ];
-        if ($map['content'] !== null) {
-            $mentions = [];
-            Event::handle('RenderNoteContent', [
-                $map['content'],
-                $map['content_type'],
-                &$map['rendered'],
-                $actor,
-                $map['language_id'],
-                &$mentions,
-            ]);
-        }
 
         if (!\is_null($map['language_id'])) {
             $map['language_id'] = Language::getByLocale($map['language_id'])->getId();
@@ -168,10 +161,10 @@ class Note extends Model
         }
 
         // Scope
-        if (\in_array('https://www.w3.org/ns/activitystreams#Public', $type_note->get('to'))) {
+        if (\in_array('https://www.w3.org/ns/activitystreams#Public', $to)) {
             // Public: Visible for all, shown in public feeds
             $map['scope'] = VisibilityScope::EVERYWHERE;
-        } elseif (\in_array('https://www.w3.org/ns/activitystreams#Public', $type_note->get('cc'))) {
+        } elseif (\in_array('https://www.w3.org/ns/activitystreams#Public', $cc)) {
             // Unlisted: Visible for all but not shown in public feeds
             // It isn't the note that dictates what feed is shown in but the feed, it only dictates who can access it.
             $map['scope'] = VisibilityScope::EVERYWHERE;
@@ -186,20 +179,30 @@ class Note extends Model
         }
 
         $object_mentions_ids = [];
-        foreach ([$type_note->get('to'), $type_note->get('cc')] as $target) {
-            foreach ($target as $to) {
-                if ($to === 'https://www.w3.org/ns/activitystreams#Public') {
-                    continue;
+        foreach ($to as $target) {
+            if ($target === 'https://www.w3.org/ns/activitystreams#Public') {
+                continue;
+            }
+            try {
+                $actor = ActivityPub::getActorByUri($target);
+                $object_mentions_ids[$actor->getId()] = $target;
+                // If $to is a group, set note's scope as Group
+                if ($actor->isGroup()) {
+                    $map['scope'] = VisibilityScope::GROUP;
                 }
-                try {
-                    $actor = ActivityPub::getActorByUri($to);
-                    if ($actor->getIsLocal()) {
-                        $object_mentions_ids[] = $actor->getId();
-                    }
-                    // TODO: If group, set note's scope as Group
-                } catch (Exception $e) {
-                    Log::debug('ActivityPub->Model->Note->fromJson->getActorByUri', [$e]);
-                }
+            } catch (Exception $e) {
+                Log::debug('ActivityPub->Model->Note->fromJson->getActorByUri', [$e]);
+            }
+        }
+        foreach ($cc as $target) {
+            if ($target === 'https://www.w3.org/ns/activitystreams#Public') {
+                continue;
+            }
+            try {
+                $actor = ActivityPub::getActorByUri($target);
+                $object_mentions_ids[$actor->getId()] = $target;
+            } catch (Exception $e) {
+                Log::debug('ActivityPub->Model->Note->fromJson->getActorByUri', [$e]);
             }
         }
 
@@ -243,10 +246,20 @@ class Note extends Model
         foreach ($type_note->get('tag') as $ap_tag) {
             switch ($ap_tag->get('type')) {
                 case 'Mention':
+                case 'Group':
                     try {
                         $actor = ActivityPub::getActorByUri($ap_tag->get('href'));
-                        if ($actor->getIsLocal()) {
-                            $object_mentions_ids[] = $actor->getId();
+                        $object_mentions_ids[$actor->getId()] = $ap_tag->get('href');
+                    } catch (Exception $e) {
+                        Log::debug('ActivityPub->Model->Note->fromJson->getActorByUri', [$e]);
+                    }
+                    break;
+                case 'Collection':
+                    $explorer = new Explorer();
+                    try {
+                        $actors = $explorer->lookup($ap_tag->get('href'));
+                        foreach($actors as $actor) {
+                            $object_mentions_ids[$actor->getId()] = $ap_tag->get('href');
                         }
                     } catch (Exception $e) {
                         Log::debug('ActivityPub->Model->Note->fromJson->getActorByUri', [$e]);
@@ -270,9 +283,12 @@ class Note extends Model
                     break;
             }
         }
-        $obj->setObjectMentionsIds(array_unique($object_mentions_ids));
+
         // The content would be non-sanitized text/html
-        Event::handle('ProcessNoteContent', [$obj, $obj->getRendered(), $obj->getContentType(), $process_note_content_extra_args = ['TagProcessed' => true]]);
+        Event::handle('ProcessNoteContent', [$obj, $obj->getRendered(), $obj->getContentType(), $process_note_content_extra_args = ['TagProcessed' => true, 'ignoreLinks' => $object_mentions_ids]]);
+
+        $object_mentions_ids = array_keys($object_mentions_ids);
+        $obj->setObjectMentionsIds($object_mentions_ids);
 
         if ($processed_attachments !== []) {
             foreach ($processed_attachments as [$a, $fname]) {
@@ -338,7 +354,9 @@ class Note extends Model
                 $attr['to'] = []; // Will be filled later
                 $attr['cc'] = [];
                 break;
-            case VisibilityScope::GROUP: // Will have the group in the To
+            case VisibilityScope::GROUP:
+                // Will have the group in the To
+                // no break
             case VisibilityScope::COLLECTION:
                 // Since we don't support sending unlisted/followers-only
                 // notices, arriving here means we're instead answering to that type

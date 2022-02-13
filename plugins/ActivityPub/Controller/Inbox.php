@@ -166,7 +166,11 @@ class Inbox extends Controller
             $ap_actor->getActorId(),
             Discovery::normalize($actor->getNickname() . '@' . parse_url($ap_actor->getInboxUri(), PHP_URL_HOST)),
         );
-        Event::handle('NewNotification', [$actor, $ap_act->getActivity(), [], _m('{nickname} mentioned you.', ['{nickname}' => $actor->getNickname()])]);
+        $already_known_ids = [];
+        if (!empty($ap_act->_object_mention_ids)) {
+            $already_known_ids = $ap_act->_object_mention_ids;
+        }
+        Event::handle('NewNotification', [$actor, $ap_act->getActivity(), $already_known_ids, _m('{nickname} mentioned you.', ['{nickname}' => $actor->getNickname()])]);
         DB::flush();
 
         dd($ap_act, $act = $ap_act->getActivity(), $act->getActor(), $act->getObject());

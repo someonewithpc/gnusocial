@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 // {{{ License
 // This file is part of GNU social - https://www.gnu.org/software/social
@@ -32,16 +32,17 @@ declare(strict_types = 1);
 
 namespace Plugin\ActivityPub\Util\Model;
 
-use _PHPStan_76800bfb5\Nette\NotImplementedException;
 use ActivityPhp\Type\AbstractObject;
 use App\Core\DB\DB;
 use App\Entity\Activity as GSActivity;
+use App\Util\Exception\NotImplementedException;
 use DateTime;
+use InvalidArgumentException;
 use Plugin\ActivityPub\ActivityPub;
 use Plugin\ActivityPub\Entity\ActivitypubActivity;
 
 /**
- * This class handles translation between JSON and ActivityPub Activities
+ * This class handles translation between JSON and ActivityPub Creates
  *
  * @copyright 2021 Free Software Foundation, Inc http://www.fsf.org
  * @license   https://www.gnu.org/licenses/agpl.html GNU AGPL v3 or later
@@ -52,6 +53,20 @@ class ActivityCreate extends Activity
     {
         if ($type_object instanceof AbstractObject) {
             if ($type_object->get('type') === 'Note') {
+                $actual_to = array_flip(is_string($type_object->get('to')) ? [$type_object->get('to')] : $type_object->get('to'));
+                $actual_cc = array_flip(is_string($type_object->get('cc')) ? [$type_object->get('cc')] : $type_object->get('cc'));
+                foreach (is_string($type_activity->get('to')) ? [$type_activity->get('to')] : $type_activity->get('to') as $to) {
+                    if ($to !== 'https://www.w3.org/ns/activitystreams#Public') {
+                        $actual_to[$to] = true;
+                    }
+                }
+                foreach (is_string($type_activity->get('cc')) ? [$type_activity->get('cc')] : $type_activity->get('cc') as $cc) {
+                    if ($cc !== 'https://www.w3.org/ns/activitystreams#Public') {
+                        $actual_cc[$cc] = true;
+                    }
+                }
+                $type_object->set('to', array_keys($actual_to));
+                $type_object->set('cc', array_keys($actual_cc));
                 $note = Note::fromJson($type_object, ['test_authority' => true, 'actor_uri' => $type_activity->get('actor'), 'actor' => $actor, 'actor_id' => $actor->getId()]);
             } else {
                 throw new NotImplementedException('ActivityPub plugin can only handle Create with objects of type Note.');
@@ -59,26 +74,27 @@ class ActivityCreate extends Activity
         } elseif ($type_object instanceof \App\Entity\Note) {
             $note = $type_object;
         } else {
-            throw new \http\Exception\InvalidArgumentException('Create{:Object} should be either an AbstractObject or a Note.');
+            throw new InvalidArgumentException('Create{:Object} should be either an AbstractObject or a Note.');
         }
         // Store Activity
         $act = GSActivity::create([
-            'actor_id'    => $actor->getId(),
-            'verb'        => 'create',
+            'actor_id' => $actor->getId(),
+            'verb' => 'create',
             'object_type' => 'note',
-            'object_id'   => $note->getId(),
-            'created'     => new DateTime($type_activity->get('published') ?? 'now'),
-            'source'      => 'ActivityPub',
+            'object_id' => $note->getId(),
+            'created' => new DateTime($type_activity->get('published') ?? 'now'),
+            'source' => 'ActivityPub',
         ]);
         DB::persist($act);
         // Store ActivityPub Activity
         $ap_act = ActivitypubActivity::create([
-            'activity_id'  => $act->getId(),
+            'activity_id' => $act->getId(),
             'activity_uri' => $type_activity->get('id'),
-            'created'      => new DateTime($type_activity->get('published') ?? 'now'),
-            'modified'     => new DateTime(),
+            'created' => new DateTime($type_activity->get('published') ?? 'now'),
+            'modified' => new DateTime(),
         ]);
         DB::persist($ap_act);
+        $ap_act->setObjectMentionIds($note->_object_mentions_ids);
         return $ap_act;
     }
 }

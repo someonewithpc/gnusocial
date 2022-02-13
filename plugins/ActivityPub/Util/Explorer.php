@@ -94,7 +94,7 @@ class Explorer
      *
      * @return array of Actor objects
      */
-    public function lookup(string $url, bool $grab_online = true)
+    public function lookup(string $url, bool $grab_online = true): array
     {
         if (\in_array($url, ActivityPub::PUBLIC_TO)) {
             return [];

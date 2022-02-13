@@ -303,7 +303,7 @@ class DB
     }
 
     /**
-     * Intercept static function calls to allow refering to entities
+     * Intercept static function calls to allow referring to entities
      * without writing the namespace (which is deduced from the call
      * context)
      */

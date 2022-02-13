@@ -42,7 +42,7 @@ use InvalidArgumentException;
 use Plugin\ActivityPub\Entity\ActivitypubActivity;
 
 /**
- * This class handles translation between JSON and ActivityPub Activities
+ * This class handles translation between JSON and ActivityPub Follows
  *
  * @copyright 2021 Free Software Foundation, Inc http://www.fsf.org
  * @license   https://www.gnu.org/licenses/agpl.html GNU AGPL v3 or later

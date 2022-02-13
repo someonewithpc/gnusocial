@@ -38,14 +38,17 @@ class Link extends Component
     /**
      * Extract URLs from $content and create the appropriate Link and NoteToLink entities
      */
-    public function onProcessNoteContent(Note $note, string $content): bool
+    public function onProcessNoteContent(Note $note, string $content, string $content_type, array $process_note_content_extra_args = []): bool
     {
+        $ignore = $process_note_content_extra_args['ignoreLinks'] ?? [];
         if (Common::config('attachments', 'process_links')) {
             $matched_urls = [];
-            // TODO: This solution to ignore mentions when content is in html is far from ideal
-            preg_match_all($this->getURLRegex(), preg_replace('#<a href="(.*?)" class="u-url mention">#', '', $content), $matched_urls);
+            preg_match_all($this->getURLRegex(), $content, $matched_urls);
             $matched_urls = array_unique($matched_urls[1]);
             foreach ($matched_urls as $match) {
+                if (in_array($match, $ignore)) {
+                    continue;
+                }
                 try {
                     $link_id = Entity\Link::getOrCreate($match)->getId();
                     DB::persist(NoteToLink::create(['link_id' => $link_id, 'note_id' => $note->getId()]));

@@ -104,6 +104,26 @@ class ActivitypubActivity extends Entity
         return DB::findOneBy('activity', ['id' => $this->getActivityId()]);
     }
 
+    public array $_object_mention_ids = [];
+    public function setObjectMentionIds(array $mentions): self
+    {
+        $this->_object_mention_ids = $mentions;
+        return $this;
+    }
+
+    /**
+     * @see Entity->getNotificationTargetIds
+     */
+    public function getNotificationTargetIds(array $ids_already_known = [], ?int $sender_id = null, bool $include_additional = true): array
+    {
+        // Additional actors that should know about this
+        if (\array_key_exists('additional', $ids_already_known)) {
+            return $ids_already_known['additional'];
+        } else {
+            return $this->_object_mention_ids;
+        }
+    }
+
     public static function schemaDef(): array
     {
         return [

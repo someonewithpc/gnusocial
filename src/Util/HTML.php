@@ -36,6 +36,7 @@ use InvalidArgumentException;
 
 /**
  * @mixin SanitizerInterface
+ * @method static string sanitize(string $html)
  */
 abstract class HTML
 {
