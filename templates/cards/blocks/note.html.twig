@@ -94,12 +94,12 @@
 {% block note_author %}
     {# Microformat's h-card properties indicates a face icon is a "u-logo" #}
     <a href="{{ actor_url }}" class="note-author-url u-url" role="doc-credit"
-       title="{{ nickname }}{{ '\'s profile' | trans }}">
+       title="{% trans %} %nickname%'s profile {% endtrans %}">
         {% if fullname is not null %}{{ fullname }}{% else %}{{ nickname }}{% endif %}
     </a>
 
     <small class="note-author-uri" title="{{ 'Author related permalinks' | trans }}">
-        <a href="{{ actor_uri }}" class="u-url" title="{{ nickname }} {{ '\'s permalink' | trans }}">{{ mention }}</a>
+        <a href="{{ actor_uri }}" class="u-url" title="{% trans %} %nickname%'s permalink {% endtrans %}">{{ mention }}</a>
     </small>
 {% endblock note_author %}
 

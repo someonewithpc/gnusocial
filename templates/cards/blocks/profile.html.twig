@@ -1,3 +1,4 @@
+{% set actor_fullname = actor.getFullname() %}
 {% set actor_nickname = actor.getNickname() %}
 {% set actor_avatar = actor.getAvatarUrl() %}
 {% set actor_avatar_dimensions = actor.getAvatarDimensions() %}
@@ -19,14 +20,14 @@
                      width="{{ actor_avatar_dimensions['width'] }}"
                      height="{{ actor_avatar_dimensions['height'] }}">
                 <section>
-                    <a class="profile-info-url" href="{{ actor_uri }}">
+                    <a class="profile-info-url" href="{{ actor_url }}">
                         <strong class="profile-info-url-nickname"
-                                title="{% trans %} %actor_nickname%'s nickname {% endtrans %}">
-                            {{ actor_nickname }}
+                                title="{% trans %} %actor_nickname%'s profile {% endtrans %}">
+                            {% if actor_fullname is not null %}{{ actor_fullname }}{% else %}{{ actor_nickname }}{% endif %}
                         </strong>
                         {% if not actor_is_local %}
                             <span class="profile-info-url-remote">
-                                {{ mention }}
+                                <a href="{{ actor_uri }}" class="u-url" title="{% trans %} %actor_nickname%'s permalink {% endtrans %}">{{ mention }}</a>
                             </span>
                         {% endif %}
                     </a>
