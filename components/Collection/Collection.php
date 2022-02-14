@@ -104,7 +104,7 @@ class Collection extends Component
                             if (\in_array($type, ['actor', 'actors'])) {
                                 $type_consts = null;
                             } else {
-                                $type_consts[] = \constant(Actor::class . '::' . mb_strtoupper($type));
+                                $type_consts[] = \constant(Actor::class . '::' . mb_strtoupper($type === 'organisation' ? 'group' : $type));
                             }
                         }
                     }
