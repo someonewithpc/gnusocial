@@ -27,6 +27,7 @@ use App\Core\ActorLocalRoles;
 use App\Core\Cache;
 use App\Core\DB\DB;
 use App\Core\Form;
+use App\Util\Nickname;
 use function App\Core\I18n\_m;
 use App\Core\Log;
 use App\Core\Router\Router;
@@ -213,7 +214,12 @@ class Group extends FeedController
         $create_form->handleRequest($request);
         if ($create_form->isSubmitted() && $create_form->isValid()) {
             $data     = $create_form->getData();
-            $nickname = $data['group_nickname'];
+            $nickname = Nickname::normalize(
+                nickname: $data['group_nickname'],
+                check_already_used: true,
+                which: Nickname::CHECK_LOCAL_GROUP,
+                check_is_allowed: true
+            );
 
             Log::info(
                 _m(

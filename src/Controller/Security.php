@@ -133,7 +133,7 @@ class Security extends Controller
             $data['password'] = $form->get('password')->getData();
 
             // Already used is checked below
-            $nickname = Nickname::normalize($data['nickname'], check_already_used: false, which: Nickname::CHECK_LOCAL_USER, check_is_allowed: false);
+            $nickname = Nickname::normalize($data['nickname'], check_already_used: false, which: Nickname::CHECK_LOCAL_USER, check_is_allowed: true);
 
             try {
                 $found_user = DB::findOneBy('local_user', ['or' => ['nickname' => $nickname, 'outgoing_email' => $data['email']]]);
