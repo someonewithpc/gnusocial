@@ -23,6 +23,7 @@ declare(strict_types = 1);
 
 namespace App\Entity;
 
+use App\Core\ActorLocalRoles;
 use App\Core\Cache;
 use App\Core\DB\DB;
 use App\Core\Entity;
@@ -34,6 +35,7 @@ use App\Util\Exception\NotFoundException;
 use App\Util\Formatting;
 use App\Util\Nickname;
 use Component\Avatar\Avatar;
+use Component\Group\Entity\GroupMember;
 use Component\Language\Entity\ActorLanguage;
 use Component\Language\Entity\Language;
 use Component\Subscription\Entity\ActorSubscription;
@@ -489,7 +491,7 @@ class Actor extends Entity
     /**
      * Check whether $this has permission for performing actions on behalf of $other
      */
-    public function canAdmin(self $other): bool
+    public function canModerate(self $other): bool
     {
         if ($this->getIsLocal()) {
             switch ($other->getType()) {
@@ -500,7 +502,9 @@ class Actor extends Entity
                         self::cacheKeys($this->getId(), $other->getId())['can-admin'],
                         function () use ($other) {
                             try {
-                                return DB::findOneBy('group_member', ['group_id' => $other->getId(), 'actor_id' => $this->getId()])->getIsAdmin();
+                                $member_roles = DB::findOneBy(GroupMember::class, ['group_id' => $other->getId(), 'actor_id' => $this->getId()])->getRoles();
+                                // Either a moderator or the group owner
+                                return $member_roles & ActorLocalRoles::MODERATOR || $member_roles & ActorLocalRoles::OPERATOR;
                             } catch (NotFoundException) {
                                 return false;
                             }

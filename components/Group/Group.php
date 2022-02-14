@@ -76,7 +76,7 @@ class Group extends Component
     {
         $actor = Common::actor();
         $group = $vars['actor'];
-        if (!\is_null($actor) && $group->isGroup() && $actor->canAdmin($group)) {
+        if (!\is_null($actor) && $group->isGroup() && $actor->canModerate($group)) {
             $url   = Router::url('group_settings', ['id' => $group->getId()]);
             $res[] = HTML::html(['a' => ['attrs' => ['href' => $url, 'title' => _m('Edit group settings'), 'class' => 'profile-extra-actions'], _m('Group settings')]]);
         }

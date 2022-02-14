@@ -120,7 +120,7 @@ class Posting extends Component
             _m('Addressee') => VisibilityScope::ADDRESSEE->value,
         ];
         if (!is_null($context_actor) && $context_actor->isGroup()) {
-            if ($actor->canAdmin($context_actor)) {
+            if ($actor->canModerate($context_actor)) {
                 if ($context_actor->getRoles() & ActorLocalRoles::PRIVATE_GROUP) {
                     $visibility_options = array_merge([_m('Group') => VisibilityScope::GROUP->value], $visibility_options);
                 } else {

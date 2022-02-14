@@ -27,7 +27,7 @@ class SelfTagsSettings extends Controller
     public static function settingsSelfTags(Request $request, E\Actor $target, string $details_id)
     {
         $actor = Common::actor();
-        if (!$actor->canAdmin($target)) {
+        if (!$actor->canModerate($target)) {
             throw new ClientException(_m('You don\'t have enough permissions to edit {nickname}\'s settings', ['{nickname}' => $target->getNickname()]));
         }
 

@@ -44,7 +44,7 @@ class GroupMember extends Entity
     // @codeCoverageIgnoreStart
     private int $group_id;
     private int $actor_id;
-    private ?bool $is_admin = false;
+    private int $roles;
     private ?string $uri    = null;
     private DateTimeInterface $created;
     private DateTimeInterface $modified;
@@ -71,15 +71,15 @@ class GroupMember extends Entity
         return $this->actor_id;
     }
 
-    public function setIsAdmin(?bool $is_admin): self
+    public function setRoles(int $roles): self
     {
-        $this->is_admin = $is_admin;
+        $this->roles = $roles;
         return $this;
     }
 
-    public function getIsAdmin(): ?bool
+    public function getRoles(): int
     {
-        return $this->is_admin;
+        return $this->roles;
     }
 
     public function setUri(?string $uri): self
@@ -125,7 +125,7 @@ class GroupMember extends Entity
             'fields' => [
                 'group_id' => ['type' => 'int', 'foreign key' => true, 'target' => 'Actor.id', 'multiplicity' => 'one to one', 'name' => 'group_member_group_id_fkey', 'not null' => true, 'description' => 'foreign key to group table'],
                 'actor_id' => ['type' => 'int', 'foreign key' => true, 'target' => 'Actor.id', 'multiplicity' => 'one to one', 'name' => 'group_member_actor_id_fkey', 'not null' => true, 'description' => 'foreign key to actor table'],
-                'is_admin' => ['type' => 'bool', 'default' => false, 'description' => 'is this actor an admin?'],
+                'roles'    => ['type' => 'int', 'not null' => true, 'description' => 'Bitmap of permissions this actor has'],
                 'uri'      => ['type' => 'varchar', 'length' => 191, 'description' => 'universal identifier'],
                 'created'  => ['type' => 'datetime', 'not null' => true, 'default' => 'CURRENT_TIMESTAMP', 'description' => 'date this record was created'],
                 'modified' => ['type' => 'timestamp', 'not null' => true, 'default' => 'CURRENT_TIMESTAMP', 'description' => 'date this record was modified'],

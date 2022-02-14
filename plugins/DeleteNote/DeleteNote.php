@@ -88,7 +88,7 @@ class DeleteNote extends NoteHandlerPlugin
     private static function undertaker(Actor $actor, Note $note): Activity
     {
         // Check permissions
-        if (!$actor->canAdmin($note->getActor())) {
+        if (!$actor->canModerate($note->getActor())) {
             throw new ClientException(_m('You don\'t have permissions to delete this note.'), 401);
         }
 
@@ -167,7 +167,7 @@ class DeleteNote extends NoteHandlerPlugin
                 fn () => DB::findOneBy(Activity::class, ['verb' => 'delete', 'object_type' => 'note', 'object_id' => $note->getId()], return_null: true),
             ))
             // And has permissions
-            && $actor->canAdmin($note->getActor())) {
+            && $actor->canModerate($note->getActor())) {
             $delete_action_url = Router::url('delete_note_action', ['note_id' => $note->getId()]);
             $query_string      = $request->getQueryString();
             $delete_action_url .= '?from=' . mb_substr($query_string, 2);

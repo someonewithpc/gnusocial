@@ -182,7 +182,7 @@ class Group extends FeedController
         $local_group = DB::findOneBy(LocalGroup::class, ['actor_id' => $id]);
         $group_actor = $local_group->getActor();
         $actor       = Common::actor();
-        if (!\is_null($group_actor) && $actor->canAdmin($group_actor)) {
+        if (!\is_null($group_actor) && $actor->canModerate($group_actor)) {
             return [
                 '_template'          => 'group/settings.html.twig',
                 'group'              => $group_actor,
@@ -256,7 +256,8 @@ class Group extends FeedController
             DB::persist(GroupMember::create([
                 'group_id' => $group->getId(),
                 'actor_id' => $actor->getId(),
-                'is_admin' => true,
+                // Group Owner
+                'roles' => ActorLocalRoles::OPERATOR | ActorLocalRoles::MODERATOR | ActorLocalRoles::PARTICIPANT | ActorLocalRoles::VISITOR,
             ]));
             DB::flush();
             Cache::delete(E\Actor::cacheKeys($actor->getId())['subscribers']);
