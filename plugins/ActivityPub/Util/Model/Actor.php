@@ -83,18 +83,35 @@ class Actor extends Model
      */
     public static function fromJson(string|AbstractObject $json, array $options = []): ActivitypubActor
     {
-        $person = \is_string($json) ? self::jsonToType($json) : $json;
+        $object = \is_string($json) ? self::jsonToType($json) : $json;
+
+        switch ($object->get('type')) {
+            case 'Application':
+            case 'Person':
+                // TODO: Operator may prefer users to start with Visitor and then have them being manually promoted
+                $roles = ActorLocalRoles::PARTICIPANT | ActorLocalRoles::VISITOR; // Can view and participate
+                break;
+            case 'Group':
+            case 'Organisation':
+                $roles = ActorLocalRoles::VISITOR; // Can send direct messages to other actors
+                if ($object->get('private')) {
+                    $roles |= ActorLocalRoles::PRIVATE_GROUP;
+                }
+                break;
+            case 'Service':
+            default:
+                $roles = ActorLocalRoles::NONE;
+        }
 
         // Actor
         $actor_map = [
-            'nickname' => $person->get('preferredUsername'),
-            'fullname' => !empty($person->get('name')) ? $person->get('name') : null,
-            'created'  => new DateTime($person->get('published') ?? 'now'),
-            'bio'      => $person->get('summary'),
+            'nickname' => $object->get('preferredUsername'),
+            'fullname' => !empty($object->get('name')) ? $object->get('name') : null,
+            'created'  => new DateTime($object->get('published') ?? 'now'),
+            'bio'      => $object->get('summary'),
             'is_local' => false, // duh!
-            'type'     => self::$_as2_actor_type_to_gs_actor_type[$person->get('type')],
-            // TODO: Operator may prefer users to start with Visitor and then have them being manually promoted
-            'roles'    => ActorLocalRoles::PARTICIPANT | ActorLocalRoles::VISITOR, // Can view and participate
+            'type'     => self::$_as2_actor_type_to_gs_actor_type[$object->get('type')],
+            'roles'    => $roles,
             'modified' => new DateTime(),
         ];
 
@@ -111,11 +128,11 @@ class Actor extends Model
 
         // ActivityPub Actor
         $ap_actor = ActivitypubActor::create([
-            'inbox_uri'        => $person->get('inbox'),
-            'inbox_shared_uri' => ($person->has('endpoints') && isset($person->get('endpoints')['sharedInbox'])) ? $person->get('endpoints')['sharedInbox'] : null,
-            'uri'              => $person->get('id'),
+            'inbox_uri'        => $object->get('inbox'),
+            'inbox_shared_uri' => ($object->has('endpoints') && isset($object->get('endpoints')['sharedInbox'])) ? $object->get('endpoints')['sharedInbox'] : null,
+            'uri'              => $object->get('id'),
             'actor_id'         => $actor->getId(),
-            'url'              => $person->get('url') ?? null,
+            'url'              => $object->get('url') ?? null,
         ], $options['objects']['ActivitypubActor'] ?? null);
 
         if (!isset($options['objects']['ActivitypubActor'])) {
@@ -125,7 +142,7 @@ class Actor extends Model
         // Public Key
         $apRSA = ActivitypubRsa::create([
             'actor_id'   => $actor->getID(),
-            'public_key' => ($person->has('publicKey') && isset($person->get('publicKey')['publicKeyPem'])) ? $person->get('publicKey')['publicKeyPem'] : null,
+            'public_key' => ($object->has('publicKey') && isset($object->get('publicKey')['publicKeyPem'])) ? $object->get('publicKey')['publicKeyPem'] : null,
         ], $options['objects']['ActivitypubRsa'] ?? null);
 
         if (!isset($options['objects']['ActivitypubRsa'])) {
@@ -133,10 +150,10 @@ class Actor extends Model
         }
 
         // Avatar
-        if ($person->has('icon') && !empty($person->get('icon'))) {
+        if ($object->has('icon') && !empty($object->get('icon'))) {
             try {
                 // Retrieve media
-                $get_response = HTTPClient::get($person->get('icon')->get('url'));
+                $get_response = HTTPClient::get($object->get('icon')->get('url'));
                 $media        = $get_response->getContent();
                 $mimetype     = $get_response->getHeaders()['content-type'][0] ?? null;
                 unset($get_response);
@@ -153,12 +170,12 @@ class Actor extends Model
                         if (!\is_null($avatar = DB::findOneBy(\Component\Avatar\Entity\Avatar::class, ['actor_id' => $actor->getId()], return_null: true))) {
                             $avatar->delete();
                         }
-                        DB::wrapInTransaction(function () use ($attachment, $actor, $person) {
+                        DB::wrapInTransaction(function () use ($attachment, $actor, $object) {
                             DB::persist($attachment);
                             DB::persist(\Component\Avatar\Entity\Avatar::create([
                                 'actor_id'      => $actor->getId(),
                                 'attachment_id' => $attachment->getId(),
-                                'title'         => $person->get('icon')->get('name') ?? null,
+                                'title'         => $object->get('icon')->get('name') ?? null,
                             ]));
                         });
                         Event::handle('AvatarUpdate', [$actor->getId()]);
@@ -253,6 +270,12 @@ class Actor extends Model
             ];
         } catch (Exception) {
             // No icon for this actor
+        }
+
+        if ($object->isGroup()) {
+            if ($object->getRoles() & ActorLocalRoles::PRIVATE_GROUP) {
+                $attr['private'] = true;
+            }
         }
 
         $type = self::jsonToType($attr);

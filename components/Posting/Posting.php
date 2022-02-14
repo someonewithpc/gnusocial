@@ -23,6 +23,7 @@ declare(strict_types = 1);
 
 namespace Component\Posting;
 
+use App\Core\ActorLocalRoles;
 use App\Core\DB\DB;
 use App\Core\Event;
 use App\Core\Form;
@@ -119,9 +120,15 @@ class Posting extends Component
             _m('Addressee') => VisibilityScope::ADDRESSEE->value,
         ];
         if (!is_null($context_actor) && $context_actor->isGroup()) {
-            $visibility_options[_m('Group')] = VisibilityScope::GROUP->value;
+            if ($actor->canAdmin($context_actor)) {
+                if ($context_actor->getRoles() & ActorLocalRoles::PRIVATE_GROUP) {
+                    $visibility_options = array_merge([_m('Group') => VisibilityScope::GROUP->value], $visibility_options);
+                } else {
+                    $visibility_options[_m('Group')] = VisibilityScope::GROUP->value;
+                }
+            }
         }
-        $form_params[] = ['visibility', ChoiceType::class, ['label' => _m('Visibility:'), 'multiple' => false, 'expanded' => false, 'data' => 'public', 'choices' => $visibility_options]];
+        $form_params[] = ['visibility', ChoiceType::class, ['label' => _m('Visibility:'), 'multiple' => false, 'expanded' => false, 'choices' => $visibility_options]];
 
         $form_params[] = ['content', TextareaType::class, ['label' => _m('Content:'), 'data' => $initial_content, 'attr' => ['placeholder' => _m($placeholder)], 'constraints' => [new Length(['max' => Common::config('site', 'text_limit')])]]];
         $form_params[] = ['attachments', FileType::class, ['label' => _m('Attachments:'), 'multiple' => true, 'required' => false, 'invalid_message' => _m('Attachment not valid.')]];

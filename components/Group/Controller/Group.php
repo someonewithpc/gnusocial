@@ -208,6 +208,10 @@ class Group extends FeedController
                 _m('Group')        => 'group',
                 _m('Organisation') => 'organisation',
             ]]],
+            ['group_scope', ChoiceType::class, ['label' => _m('Is this a private group:'), 'multiple' => false, 'expanded' => false, 'choices' => [
+                _m('No')  => 'public',
+                _m('Yes') => 'private',
+            ]]],
             ['group_create', SubmitType::class, ['label' => _m('Create this group!')]],
         ]);
 
@@ -221,9 +225,15 @@ class Group extends FeedController
                 check_is_allowed: true
             );
 
+            $roles = ActorLocalRoles::VISITOR; // Can send direct messages to other actors
+
+            if ($data['group_scope'] === 'private') {
+                $roles |= ActorLocalRoles::PRIVATE_GROUP;
+            }
+
             Log::info(
                 _m(
-                    'Actor id:{actor_id} nick:{actor_nick} created the group {nickname}',
+                    'Actor id:{actor_id} nick:{actor_nick} created the '.($roles & ActorLocalRoles::PRIVATE_GROUP ? 'private' : 'public').' group {nickname}',
                     ['{actor_id}' => $actor->getId(), 'actor_nick' => $actor->getNickname(), 'nickname' => $nickname],
                 ),
             );
@@ -232,7 +242,7 @@ class Group extends FeedController
                 'nickname' => $nickname,
                 'type'     => E\Actor::GROUP,
                 'is_local' => true,
-                'roles'    => ActorLocalRoles::VISITOR, // Can send direct messages to other actors
+                'roles'    => $roles,
             ]));
             DB::persist(LocalGroup::create([
                 'actor_id' => $group->getId(),
