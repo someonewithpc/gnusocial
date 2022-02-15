@@ -406,6 +406,23 @@ embed header {
     flex: 1;
 }
 
+.posting-extra .h-entry {
+    padding-left: var(--s);
+    padding-right: var(--s);
+}
+
+.posting-extra .note-sidebar {
+    all: unset;
+}
+
+.posting-extra .note-sidebar .avatar {
+    all: unset;
+    max-width: 1em;
+    max-height: 1em;
+    min-width: 1em;
+    margin-right: 4px;
+}
+
 @media only screen and (max-width: 1280px) {
     .note-sidebar {
         max-width: min-content !important;

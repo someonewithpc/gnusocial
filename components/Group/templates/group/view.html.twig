@@ -19,11 +19,7 @@
         {% if notes is defined %}
             <article>
                 <header class="feed-header">
-                    {% if page_title is defined %}
-                        <h1 class="heading-no-margin">{{ page_title | trans }}</h1>
-                    {% else %}
-                        <h1 class="heading-no-margin">{{ 'Notes' | trans }}</h1>
-                    {% endif %}
+                    <h1 class="section-title">{{ 'Notes' | trans }}</h1>
                     <nav class="feed-actions">
                         <details class="feed-actions-details">
                             <summary>

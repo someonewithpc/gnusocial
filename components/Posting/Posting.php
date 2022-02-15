@@ -73,7 +73,7 @@ class Posting extends Component
      */
     public function onAddMainRightPanelBlock(Request $request, array &$res): bool
     {
-        if (\is_null($user = Common::user())) {
+        if (\is_null($user = Common::user()) || preg_match('(feed|conversation|group)', $request->get('_route')) === 0) {
             return Event::next;
         }
 
@@ -100,9 +100,9 @@ class Posting extends Component
         $form_params = [];
         if (!empty($in_targets)) { // @phpstan-ignore-line
             // Add "none" option to the first of choices
-            $in_targets    = array_merge([_m('Public') => 'public'], $in_targets);
+            $in_targets = array_merge([_m('Public') => 'public'], $in_targets);
             // Make the context actor the first In target option
-            if (!is_null($context_actor)) {
+            if (!\is_null($context_actor)) {
                 foreach ($in_targets as $it_nick => $it_id) {
                     if ($it_id === $context_actor->getId()) {
                         unset($in_targets[$it_nick]);
@@ -119,7 +119,7 @@ class Posting extends Component
             _m('Local')     => VisibilityScope::LOCAL->value,
             _m('Addressee') => VisibilityScope::ADDRESSEE->value,
         ];
-        if (!is_null($context_actor) && $context_actor->isGroup()) {
+        if (!\is_null($context_actor) && $context_actor->isGroup()) {
             if ($actor->canModerate($context_actor)) {
                 if ($context_actor->getRoles() & ActorLocalRoles::PRIVATE_GROUP) {
                     $visibility_options = array_merge([_m('Group') => VisibilityScope::GROUP->value], $visibility_options);

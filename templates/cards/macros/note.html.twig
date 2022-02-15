@@ -52,17 +52,16 @@
     <article
             tabindex="0"
             title="{{'A note by actor' | trans}} {{ nickname }}"
+            id="{{ 'note-compact-anchor-' ~ note.getId() }}"
             class="h-entry hentry note"
-            lang={{ note.getLanguageLocale() }}>
-        {{ block('note_sidebar', 'cards/blocks/note.html.twig') }}
+            lang="{{ note.getLanguageLocale() }}">
         <div class="note-wrapper">
             <header class="note-info">
-                <div class="note-info-start">
-                    {{ block('note_author', 'cards/blocks/note.html.twig') }}
-                </div>
+                {{ block('note_sidebar', 'cards/blocks/note.html.twig') }}
+                {{ block('note_author', 'cards/blocks/note.html.twig') }}
             </header>
 
-            <section role="dialog" class="e-content entry-content note-content">
+            <section class="e-content entry-content note-content" title="{{ 'Note\'s main content' | trans }}">
                 <small class="note-conversation-info">
                     <a href="{{ note.getConversationUrl() }}"
                        class="note-conversation-url">{{ 'in conversation' | trans }}</a>
