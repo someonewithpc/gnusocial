@@ -321,7 +321,12 @@ embed header {
     font-size: 0.937rem;
     background: var(--gradient-backwards);
     padding: 4px 8px;
-    border-radius: 0 0 var(--s) 0;
+    border-radius: var(--s) 0 var(--s) var(--s);
+}
+
+.note-complementary:empty,
+.note-complementary:-moz-only-whitespace {
+    display: none !important;
 }
 
 .note-complementary-info a {

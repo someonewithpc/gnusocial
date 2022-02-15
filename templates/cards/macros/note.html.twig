@@ -8,12 +8,11 @@
     {% set note_language = note.getNoteLanguageShortDisplay() %}
 
     <article
-        id="{{ 'note-anchor-' ~ note.getId() }}"
-        class="h-entry hentry note"
-        lang="{{ note.getLanguageLocale() }}"
-        title="{{'A note by actor' | trans}} {{ nickname }}"
-        role="article"
-        tabindex="0">
+            tabindex="0"
+            title="{{'A note by actor' | trans}} {{ nickname }}"
+            id="{{ 'note-anchor-' ~ note.getId() }}"
+            class="h-entry hentry note"
+            lang="{{ note.getLanguageLocale() }}">
         {{ block('note_sidebar', 'cards/blocks/note.html.twig') }}
 
         <div class="note-wrapper">
@@ -21,7 +20,11 @@
 
             <section class="e-content entry-content note-content" title="{{ 'Note\'s main content' | trans }}">
                 {% if extra.parent is defined  %}
-                    <em class="note-replies-parent" title="{{'Reply with depth' | trans}} {{ extra.depth }}" tabindex="0">
+                    <em
+                            tabindex="0"
+                            class="note-replies-parent"
+                            title="{{'This is a reply with depth: ' | trans}} {{ extra.depth }}"
+                            aria-flowto="note-anchor-">
                         {{'in reply to' | trans}} {{ extra.parent | raw }}
                     </em>
                 {% endif %}
@@ -46,7 +49,11 @@
     {% set actor_url = actor.getUrl() %}
     {% set mention = mention(actor) %}
 
-    <article class="h-entry hentry note" lang={{ note.getLanguageLocale() }}>
+    <article
+            tabindex="0"
+            title="{{'A note by actor' | trans}} {{ nickname }}"
+            class="h-entry hentry note"
+            lang={{ note.getLanguageLocale() }}>
         {{ block('note_sidebar', 'cards/blocks/note.html.twig') }}
         <div class="note-wrapper">
             <header class="note-info">

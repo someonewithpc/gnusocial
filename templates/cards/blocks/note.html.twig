@@ -93,8 +93,8 @@
 
 {% block note_author %}
     {# Microformat's h-card properties indicates a face icon is a "u-logo" #}
-    <a href="{{ actor_url }}" class="note-author-url u-url" role="doc-credit"
-       title="{% trans %} %nickname%'s profile {% endtrans %}">
+    <a href="{{ actor_url }}" class="note-author-url u-url"
+       title="{{ nickname }}{{ '\'s profile' | trans }}">
         {% if fullname is not null %}{{ fullname }}{% else %}{{ nickname }}{% endif %}
     </a>
 
@@ -128,16 +128,17 @@
 {% endblock note_info %}
 
 {% block note_complementary %}
+    {% set complementary_info_array = handle_event('AppendCardNote', { 'note': note, 'request': app.request }) %}
     <aside
         title="{{ 'Additional note context information and actions' | trans }}"
-        class="note-complementary"
-        role="complementary">
+        class="note-complementary">
+    {% if complementary_info_array is not empty %}
         <div class="note-complementary-info">
-            {% for complementary_info in handle_event('AppendCardNote', { 'note': note, 'request': app.request }) %}
+            {% for complementary_info in complementary_info_array %}
                 {% set actor_count = complementary_info['actors'] | length %}
                 {% set counter = 0 %}
                 {% for complementary_info_actor in complementary_info['actors'] %}
-                <span role="doc-acknowledgments">
+                <span>
                     {% if app.user is not null %}
                         {% if complementary_info_actor is defined and complementary_info_actor.getNickname() != app.user.nickname %}
                             <a href="{{ complementary_info_actor.getUrl() }}">{{ complementary_info_actor.getNickname() }}{% if actor_count > 1 and counter < actor_count - 2 %}{{ ', ' | trans }}{% endif %}</a>
@@ -167,6 +168,7 @@
                 </span>
             {% endfor %}
         </div>
+    {% endif %}
     {{ block('note_actions', 'cards/blocks/note.html.twig') }}
     </aside>
 {% endblock note_complementary %}
