@@ -1,0 +1,10 @@
+{% extends 'stdgrid.html.twig' %}
+{% block title %}{{ 'Create a blog post' | trans }}{% endblock %}
+
+{% block body %}
+    {{ parent() }}
+    <section class="frame-section frame-section-padding">
+        <h1>{{ 'Create a blog post' | trans }}</h1>
+        {{ form(blog_entry_form) }}
+    </section>
+{% endblock body %}
