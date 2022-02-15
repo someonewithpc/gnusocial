@@ -39,6 +39,14 @@ use Component\Conversation\Entity\Conversation;
 use Component\Language\Entity\Language;
 use function App\Core\I18n\_m;
 
+// The domain of this enum are Notes
+enum NoteType: int // having an int is just convenient
+{
+    case NOTE = 1;  // Is an element of microblogging, a direct message, or a reply to another note or page
+    case PAGE = 2;  // Larger content note, beginning of a thread, or an email message
+};
+
+
 /**
  * Entity for notices
  *
@@ -65,6 +73,8 @@ class Note extends Entity
     private int $scope = 1;  //VisibilityScope::EVERYWHERE->value;
     private ?string $url = null;
     private ?int $language_id = null;
+    private int $type = 1;  //NoteType::NOTE->value;
+    private ?string $title = null;
     private \DateTimeInterface $created;
     private \DateTimeInterface $modified;
 
@@ -200,6 +210,28 @@ class Note extends Entity
         return $this->language_id;
     }
 
+    public function setType(VisibilityScope|int $type): self
+    {
+        $this->type = is_int($type) ? $type : $type->value;
+        return $this;
+    }
+
+    public function getType(): NoteType
+    {
+        return NoteType::from($this->type);
+    }
+
+    public function setTitle(?string $title): self
+    {
+        $this->title = \is_null($title) ? null : \mb_substr($title, 0, 129);
+        return $this;
+    }
+
+    public function getTitle(): ?string
+    {
+        return $this->title;
+    }
+
     public function setCreated(\DateTimeInterface $created): self
     {
         $this->created = $created;
@@ -228,7 +260,7 @@ class Note extends Entity
     public static function cacheKeys(int $note_id)
     {
         return [
-            'note'        => "note-{$note_id}",
+            'note' => "note-{$note_id}",
             'attachments' => "note-attachments-{$note_id}",
             'attachments-title' => "note-attachments-with-title-{$note_id}",
             'links' => "note-links-{$note_id}",
@@ -543,6 +575,8 @@ class Note extends Entity
                 'scope'           => ['type' => 'int',       'not null' => true, 'default' => VisibilityScope::EVERYWHERE->value, 'description' => 'bit map for distribution scope; 1 = everywhere; 2 = this server only; 4 = addressees; 8 = groups; 16 = collection; 32 = messages'],
                 'url'             => ['type' => 'text',      'description' => 'Permalink to Note'],
                 'language_id'     => ['type' => 'int',       'foreign key' => true, 'target' => 'Language.id', 'multiplicity' => 'one to many', 'description' => 'The language for this note'],
+                'type'            => ['type' => 'int',       'not null' => true, 'default' => NoteType::NOTE->value, 'description' => 'bit map for note type; 1 = Note; 2 = Page'],
+                'title'           => ['type' => 'varchar',   'not null' => false, 'default' => null, 'length' => 129,      'description' => 'Title of a page or a note'],
                 'created'         => ['type' => 'datetime',  'not null' => true, 'default' => 'CURRENT_TIMESTAMP', 'description' => 'date this record was created'],
                 'modified'        => ['type' => 'timestamp', 'not null' => true, 'default' => 'CURRENT_TIMESTAMP', 'description' => 'date this record was modified'],
             ],
