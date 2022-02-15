@@ -410,7 +410,7 @@ class Note extends Entity
     /**
      * Whether this note is visible to the given actor
      */
-    public function isVisibleTo(null|Actor|LocalUser $actor): bool
+    public function isVisibleTo(null|Actor|LocalUser $actor, ?Actor $in = null): bool
     {
         // TODO: cache this
         switch ($this->getScope()) {
@@ -430,9 +430,12 @@ class Note extends Entity
                 }
                 return false;
             case VisibilityScope::GROUP:
+                if (is_null($in)) {
+                    return false; // If we don't have a context, don't risk leaking this note.
+                }
                 // Only for the group to see
                 return !\is_null($actor) && (
-                    !($actor->getRoles() & ActorLocalRoles::PRIVATE_GROUP) // Public Group
+                    !($in->getRoles() & ActorLocalRoles::PRIVATE_GROUP) // Public Group
                     || DB::dql( // It's a member of the private group
                     <<<'EOF'
                         SELECT m FROM \Component\Group\Entity\GroupMember m
@@ -440,7 +443,7 @@ class Note extends Entity
                             JOIN \App\Entity\Activity a WITH att.activity_id = a.id
                         WHERE a.object_id = :note_id AND m.actor_id = :actor_id
                     EOF,
-                    ['note_id' => $this->id, 'actor_id' => $actor->getId()],
+                    ['note_id' => $this->id, 'actor_id' => $in->getId()],
                 ) !== []);
             case VisibilityScope::COLLECTION:
             case VisibilityScope::MESSAGE:

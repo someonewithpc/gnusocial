@@ -50,7 +50,7 @@ abstract class FeedController extends OrderedCollection
         $actor = Common::actor();
         if (\array_key_exists('notes', $result)) {
             $notes = $result['notes'];
-            self::enforceScope($notes, $actor);
+            self::enforceScope($notes, $actor, $result['actor'] ?? null);
             Event::handle('FilterNoteList', [$actor, &$notes, $result['request']]);
             Event::handle('FormatNoteList', [$notes, &$result['notes'], &$result['request']]);
         }
@@ -58,8 +58,8 @@ abstract class FeedController extends OrderedCollection
         return $result;
     }
 
-    private static function enforceScope(array &$notes, ?Actor $actor): void
+    private static function enforceScope(array &$notes, ?Actor $actor, ?Actor $in = null): void
     {
-        $notes = F\select($notes, fn (Note $n) => $n->isVisibleTo($actor));
+        $notes = F\select($notes, fn (Note $n) => $n->isVisibleTo($actor, $in));
     }
 }
