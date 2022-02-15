@@ -121,7 +121,8 @@ class Conversation extends Component
             'conversation_reply_to',
             [
                 'reply_to_id' => $note->getId(),
-                'from'        => $from . '#note-anchor-' . $note->getId(),
+                'from'        => $from,
+                '_fragment'   => 'note-anchor-' . $note->getId(),
             ],
             Router::ABSOLUTE_PATH,
         );
@@ -267,7 +268,8 @@ class Conversation extends Component
             'conversation_mute',
             [
                 'conversation_id' => $note->getConversationId(),
-                'from'            => $from . '#note-anchor-' . $note->getId(),
+                'from'            => $from,
+                '_fragment'       => 'note-anchor-' . $note->getId(),
             ],
             Router::ABSOLUTE_PATH,
         );
