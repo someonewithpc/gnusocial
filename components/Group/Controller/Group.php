@@ -99,7 +99,7 @@ class Group extends Controller
             return [
                 '_template'          => 'group/settings.html.twig',
                 'group'              => $group_actor,
-                'personal_info_form' => ActorForms::personalInfo($request, $actor, $local_group)->createView(),
+                'personal_info_form' => ActorForms::personalInfo(request: $request, scope: $actor, target: $group_actor)->createView(),
                 'open_details_query' => $this->string('open'),
             ];
         } else {

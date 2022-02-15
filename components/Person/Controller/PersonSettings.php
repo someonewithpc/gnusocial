@@ -94,7 +94,7 @@ class PersonSettings extends Controller
         $user  = Common::ensureLoggedIn();
         $actor = $user->getActor();
 
-        $personal_form            = ActorForms::personalInfo($request, $actor, $user);
+        $personal_form            = ActorForms::personalInfo(request: $request, scope: $actor, target: $actor);
         $email_form               = self::email($request);
         $password_form            = self::password($request);
         $notifications_form_array = self::notifications($request);

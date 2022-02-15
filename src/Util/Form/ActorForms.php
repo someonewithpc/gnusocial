@@ -59,7 +59,10 @@ class ActorForms
     /**
      * Actor personal information panel
      *
-     * @throws \App\Util\Exception\NicknameException
+     * @param Request $request
+     * @param Actor $scope The perpetrator of the change
+     * @param Actor $target The victim of changes
+     * @return mixed
      * @throws ClientException
      * @throws NicknameEmptyException
      * @throws NicknameInvalidException
@@ -67,9 +70,15 @@ class ActorForms
      * @throws NicknameTakenException
      * @throws NicknameTooLongException
      * @throws ServerException
+     * @throws \App\Util\Exception\NicknameException
      */
-    public static function personalInfo(Request $request, Actor $target, LocalUser|LocalGroup $user): mixed
+    public static function personalInfo(Request $request, Actor $scope, Actor $target): mixed
     {
+        // Is $target in $scope's sight?
+        if (!$scope->canModerate($target)) {
+            throw new ClientException(_m('You do not have permissions to change :nickname\'s settings', [':nickname' => $target->getNickname()]));
+        }
+
         // Defining the various form fields
         $form_definition = [
             ['nickname', TextType::class, ['label' => _m('Nickname'), 'required' => true, 'help' => _m('1-64 lowercase letters or numbers, no punctuation or spaces.')]],
@@ -82,14 +91,26 @@ class ActorForms
         ];
 
         // Setting nickname normalised and setting actor cache
-        $extra_step = static function ($data, $extra_args) use ($user, $target) {
-            if (!strcmp($user->getNickname(), $data['nickname'])) {
-                $data['nickname'] = Nickname::normalize($data['nickname'], check_already_used: false, which: Nickname::CHECK_LOCAL_GROUP, check_is_allowed: true);
+        $before_step = static function ($data, $extra_args) use ($target) {
+            if ($target->getNickname() !== $data['nickname']) {
+                // We must only check if is both already used and allowed if the actor is local
+                $check_is_allowed = $target->getIsLocal();
+                if ($target->isGroup()) {
+                    $data['nickname'] = Nickname::normalize($data['nickname'], check_already_used: $check_is_allowed, which: Nickname::CHECK_LOCAL_GROUP, check_is_allowed: $check_is_allowed);
+                } else {
+                    $data['nickname'] = Nickname::normalize($data['nickname'], check_already_used: $check_is_allowed, which: Nickname::CHECK_LOCAL_USER, check_is_allowed: $check_is_allowed);
+                }
+
+                // We will set $target actor's nickname in the form::handle,
+                // but if it is local, we must update the local reference as well
+                if (!is_null($local = $target->getLocal())) {
+                    $local->setNickname($data['nickname']);
+                }
             }
-            if (!strcmp($target->getFullname(), $data['full_name'])) {
+            if ($target->getFullname() !== $data['full_name']) {
                 $data['full_name'] = trim($data['full_name']);
                 if (mb_strlen($data['full_name']) > 64) {
-                    throw new ClientException('Fullname cannot be more than 64 character long.');
+                    throw new ClientException(_m('Full name cannot be more than 64 character long.'));
                 }
             }
 
@@ -104,7 +125,7 @@ class ActorForms
             $request,
             target: $target,
             extra_args: [],
-            extra_step: $extra_step,
+            before_step: $before_step,
         );
     }
 }

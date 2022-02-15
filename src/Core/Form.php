@@ -136,12 +136,21 @@ abstract class Form
     }
 
     /**
-     * Handle the full life cycle of a form. Creates it with @see
+     * Handle the full life cycle of a form. Creates it with @param array $form_definition
+     * @param Request $request
+     * @param object|null $target
+     * @param array $extra_args If specified, is used as $target->set($data[$key], $extra_args[$key])
+     * @param callable|null $after_step
+     * @param array $create_args
+     * @param SymfForm|null $testing_only_form
+     * @return mixed
+     * @throws RedirectException
+     * @throws ServerException
+     * @see
      * self::create and inserts the submitted values into the database
      *
-     * @throws ServerException
      */
-    public static function handle(array $form_definition, Request $request, ?object $target, array $extra_args = [], ?callable $extra_step = null, array $create_args = [], ?SymfForm $testing_only_form = null): mixed
+    public static function handle(array $form_definition, Request $request, ?object $target, array $extra_args = [], ?callable $before_step = null, ?callable $after_step = null, array $create_args = [], ?SymfForm $testing_only_form = null): mixed
     {
         $form = $testing_only_form ?? self::create($form_definition, $target, ...$create_args);
 
@@ -162,6 +171,13 @@ abstract class Form
                 }
 
                 unset($data['translation_domain'], $data['save']);
+
+                if (isset($before_step)) {
+                    // @codeCoverageIgnoreStart
+                    $before_step($data, $extra_args);
+                    // @codeCoverageIgnoreEnd
+                }
+
                 foreach ($data as $key => $val) {
                     $method = 'set' . ucfirst(Formatting::snakeCaseToCamelCase($key));
                     if (method_exists($target, $method)) {
@@ -175,9 +191,9 @@ abstract class Form
                     }
                 }
 
-                if (isset($extra_step)) {
+                if (isset($after_step)) {
                     // @codeCoverageIgnoreStart
-                    $extra_step($data, $extra_args);
+                    $after_step($data, $extra_args);
                     // @codeCoverageIgnoreEnd
                 }
 

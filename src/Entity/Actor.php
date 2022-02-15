@@ -32,10 +32,12 @@ use App\Core\Router\Router;
 use App\Util\Exception\BugFoundException;
 use App\Util\Exception\NicknameException;
 use App\Util\Exception\NotFoundException;
+use App\Util\Exception\NotImplementedException;
 use App\Util\Formatting;
 use App\Util\Nickname;
 use Component\Avatar\Avatar;
 use Component\Group\Entity\GroupMember;
+use Component\Group\Entity\LocalGroup;
 use Component\Language\Entity\ActorLanguage;
 use Component\Language\Entity\Language;
 use Component\Subscription\Entity\ActorSubscription;
@@ -264,13 +266,24 @@ class Actor extends Entity
         ];
     }
 
-    public function getLocalUser(): ?LocalUser
+    /**
+     * Note: You will receive a Local from Database, it's a persisted instance
+     *
+     * @return LocalUser|LocalGroup  Returns the local, if actor is local, null otherwise
+     */
+    public function getLocal(): LocalUser|LocalGroup|null
     {
         if ($this->getIsLocal()) {
-            return DB::findOneBy('local_user', ['id' => $this->getId()]);
-        } else {
-            throw new NotFoundException('This is a remote actor.');
+            switch ($this->getType()) {
+                case Actor::PERSON:
+                    return DB::findOneBy(LocalUser::class, ['id' => $this->getId()]);
+                case Actor::GROUP:
+                    return DB::findOneBy(LocalGroup::class, ['actor_id' => $this->getId()]);
+                case Actor::BOT:
+                    throw new NotImplementedException('We don\'t exactly have a local application abstraction yet...');
+            }
         }
+        return null;
     }
 
     public function getAvatarUrl(string $size = 'medium')

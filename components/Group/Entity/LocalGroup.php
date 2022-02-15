@@ -117,7 +117,7 @@ class LocalGroup extends Entity
 
     public function getActor()
     {
-        return DB::findOneBy('actor', ['id' => $this->actor_id]);
+        return DB::findOneBy(Actor::class, ['id' => $this->actor_id]);
     }
 
     public static function getByNickname(string $nickname): ?self
