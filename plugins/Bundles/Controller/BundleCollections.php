@@ -21,14 +21,14 @@ declare(strict_types = 1);
 
 // }}}
 
-namespace Plugin\BlogCollections\Controller;
+namespace Plugin\Bundles\Controller;
 
 use App\Core\DB\DB;
 use App\Core\Router\Router;
 use Component\Collection\Util\Controller\MetaCollectionController;
-use Plugin\BlogCollections\Entity\BlogCollection;
+use Plugin\Bundles\Entity\BundleCollection;
 
-class BlogCollections extends MetaCollectionController
+class BundleCollections extends MetaCollectionController
 {
     public function getCollectionUrl(int $owner_id, string $owner_nickname, int $collection_id): string
     {
@@ -65,17 +65,17 @@ class BlogCollections extends MetaCollectionController
 
     public function getCollectionsByActorId(int $owner_id): array
     {
-        return DB::findBy(BlogCollection::class, ['actor_id' => $owner_id], order_by: ['id' => 'desc']);
+        return DB::findBy(BundleCollection::class, ['actor_id' => $owner_id], order_by: ['id' => 'desc']);
     }
 
     public function getCollectionBy(int $owner_id, int $collection_id)
     {
-        return DB::findOneBy(BlogCollection::class, ['id' => $collection_id]);
+        return DB::findOneBy(BundleCollection::class, ['id' => $collection_id]);
     }
 
     public function createCollection(int $owner_id, string $name)
     {
-        DB::persist(BlogCollection::create([
+        DB::persist(BundleCollection::create([
             'name'     => $name,
             'actor_id' => $owner_id,
         ]));

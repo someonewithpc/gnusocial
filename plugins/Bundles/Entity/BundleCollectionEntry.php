@@ -21,7 +21,7 @@ declare(strict_types = 1);
 
 // }}}
 
-namespace Plugin\BlogCollections\Entity;
+namespace Plugin\Bundles\Entity;
 
 use App\Core\Entity;
 
@@ -35,7 +35,7 @@ use App\Core\Entity;
  * @copyright 2022 Free Software Foundation, Inc http://www.fsf.org
  * @license   https://www.gnu.org/licenses/agpl.html GNU AGPL v3 or later
  */
-class BlogCollectionEntry extends Entity
+class BundleCollectionEntry extends Entity
 {
     // {{{ Autocode
     // @codeCoverageIgnoreStart

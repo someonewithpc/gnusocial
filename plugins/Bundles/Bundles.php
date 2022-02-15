@@ -20,28 +20,28 @@ declare(strict_types = 1);
 
 // }}}
 
-namespace Plugin\BlogCollections;
+namespace Plugin\Bundles;
 
 use App\Core\DB\DB;
 use App\Core\Modules\Plugin;
 use App\Entity\Actor;
 use Component\Collection\Util\MetaCollectionTrait;
-use Plugin\BlogCollections\Entity\BlogCollection;
-use Plugin\BlogCollections\Entity\BlogCollectionEntry;
+use Plugin\Bundles\Entity\BundleCollection;
+use Plugin\Bundles\Entity\BundleCollectionEntry;
 use Symfony\Component\HttpFoundation\Request;
 
-class BlogCollections extends Plugin
+class Bundles extends Plugin
 {
     use MetaCollectionTrait;
 
     protected function createCollection(Actor $owner, array $vars, string $name)
     {
-        $column = BlogCollection::create([
+        $column = BundleCollection::create([
             'name'     => $name,
             'actor_id' => $owner->getId(),
         ]);
         DB::persist($column);
-        DB::persist(BlogCollectionEntry::create(args: [
+        DB::persist(BundleCollectionEntry::create(args: [
             'note_id'            => $vars['vars']['note_id'],
             'blog_collection_id' => $column->getId(),
         ]));
@@ -69,7 +69,7 @@ class BlogCollections extends Plugin
         foreach ($items as $id) {
             // prevent user from putting something in a collection (s)he doesn't own:
             if (\in_array($id, $collections)) {
-                DB::persist(BlogCollectionEntry::create(args: [
+                DB::persist(BundleCollectionEntry::create(args: [
                     'note_id'            => $vars['vars']['note_id'],
                     'blog_collection_id' => $id,
                 ]));
@@ -86,7 +86,7 @@ class BlogCollections extends Plugin
     protected function getCollectionsBy(Actor $owner, ?array $vars = null, bool $ids_only = false): array
     {
         if (\is_null($vars)) {
-            $res = DB::findBy(BlogCollection::class, ['actor_id' => $owner->getId()]);
+            $res = DB::findBy(BundleCollection::class, ['actor_id' => $owner->getId()]);
         } else {
             $res = DB::dql(
                 <<<'EOF'
