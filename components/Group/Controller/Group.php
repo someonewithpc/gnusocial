@@ -25,13 +25,12 @@ namespace Component\Group\Controller;
 
 use App\Core\ActorLocalRoles;
 use App\Core\Cache;
+use App\Core\Controller;
 use App\Core\DB\DB;
 use App\Core\Form;
 use App\Util\Nickname;
 use function App\Core\I18n\_m;
 use App\Core\Log;
-use App\Core\Router\Router;
-use App\Entity\Actor;
 use App\Entity as E;
 use App\Util\Common;
 use App\Util\Exception\ClientException;
@@ -46,7 +45,6 @@ use App\Util\Exception\NotFoundException;
 use App\Util\Exception\RedirectException;
 use App\Util\Exception\ServerException;
 use App\Util\Form\ActorForms;
-use Component\Collection\Util\Controller\FeedController;
 use Component\Group\Entity\GroupMember;
 use Component\Group\Entity\LocalGroup;
 use Component\Subscription\Entity\ActorSubscription;
@@ -56,93 +54,8 @@ use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
 
-class Group extends FeedController
+class Group extends Controller
 {
-    /**
-     * @throws ServerException
-     */
-    public function groupView(Request $request, Actor $group): array
-    {
-        $actor          = Common::actor();
-        $subscribe_form = null;
-
-        if (!\is_null($actor)
-            && \is_null(Cache::get(
-                ActorSubscription::cacheKeys($actor, $group)['subscribed'],
-                fn () => DB::findOneBy('actor_subscription', [
-                    'subscriber_id' => $actor->getId(),
-                    'subscribed_id' => $group->getId(),
-                ], return_null: true),
-            ))
-        ) {
-            $subscribe_form = Form::create([['subscribe', SubmitType::class, ['label' => _m('Subscribe to this group')]]]);
-            $subscribe_form->handleRequest($request);
-            if ($subscribe_form->isSubmitted() && $subscribe_form->isValid()) {
-                DB::persist(ActorSubscription::create([
-                    'subscriber_id' => $actor->getId(),
-                    'subscribed_id' => $group->getId(),
-                ]));
-                DB::flush();
-                Cache::delete(E\Actor::cacheKeys($group->getId())['subscribers']);
-                Cache::delete(E\Actor::cacheKeys($actor->getId())['subscribed']);
-                Cache::delete(ActorSubscription::cacheKeys($actor, $group)['subscribed']);
-            }
-        }
-
-        $notes = DB::dql(<<<'EOF'
-            SELECT n FROM \App\Entity\Note AS n
-            WHERE n.id IN (
-                SELECT act.object_id FROM \App\Entity\Activity AS act
-                    WHERE act.object_type = 'note' AND act.id IN
-                        (SELECT att.activity_id FROM \Component\Notification\Entity\Notification AS att WHERE att.target_id = :id)
-                )
-            EOF, ['id' => $group->getId()]);
-
-        return [
-            '_template'      => 'group/view.html.twig',
-            'actor'          => $group,
-            'nickname'       => $group->getNickname(),
-            'notes'          => $notes,
-            'subscribe_form' => $subscribe_form?->createView(),
-        ];
-    }
-
-    /**
-     * @throws ClientException
-     * @throws ServerException
-     */
-    public function groupViewId(Request $request, int $id): array
-    {
-        $group = Actor::getById($id);
-        if (\is_null($group) || !$group->isGroup()) {
-            throw new ClientException(_m('No such group.'), 404);
-        }
-        if ($group->getIsLocal()) {
-            return [
-                '_redirect' => Router::url('group_actor_view_nickname', ['nickname' => $group->getNickname()]),
-                'actor'     => $group,
-            ];
-        }
-        return $this->groupView($request, $group);
-    }
-
-    /**
-     * View a group feed by its nickname
-     *
-     * @param string $nickname The group's nickname to be shown
-     *
-     * @throws ClientException
-     * @throws ServerException
-     */
-    public function groupViewNickname(Request $request, string $nickname): array
-    {
-        $group = LocalGroup::getActorByNickname($nickname);
-        if (\is_null($group)) {
-            throw new ClientException(_m('No such group.'), 404);
-        }
-        return $this->groupView($request, $group);
-    }
-
     /**
      * Page that allows an actor to create a new group
      *

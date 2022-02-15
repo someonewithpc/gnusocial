@@ -41,8 +41,8 @@ class Group extends Component
 {
     public function onAddRoute(RouteLoader $r): bool
     {
-        $r->connect(id: 'group_actor_view_id', uri_path: '/group/{id<\d+>}', target: [C\Group::class, 'groupViewId']);
-        $r->connect(id: 'group_actor_view_nickname', uri_path: '/!{nickname<' . Nickname::DISPLAY_FMT . '>}', target: [C\Group::class, 'groupViewNickname']);
+        $r->connect(id: 'group_actor_view_id', uri_path: '/group/{id<\d+>}', target: [C\GroupFeed::class, 'groupViewId']);
+        $r->connect(id: 'group_actor_view_nickname', uri_path: '/!{nickname<' . Nickname::DISPLAY_FMT . '>}', target: [C\GroupFeed::class, 'groupViewNickname']);
         $r->connect(id: 'group_create', uri_path: '/group/new', target: [C\Group::class, 'groupCreate']);
         $r->connect(id: 'group_settings', uri_path: '/group/{id<\d+>}/settings', target: [C\Group::class, 'groupSettings']);
         return Event::next;
@@ -76,9 +76,13 @@ class Group extends Component
     {
         $actor = Common::actor();
         $group = $vars['actor'];
-        if (!\is_null($actor) && $group->isGroup() && $actor->canModerate($group)) {
-            $url   = Router::url('group_settings', ['id' => $group->getId()]);
-            $res[] = HTML::html(['a' => ['attrs' => ['href' => $url, 'title' => _m('Edit group settings'), 'class' => 'profile-extra-actions'], _m('Group settings')]]);
+        if (!\is_null($actor) && $group->isGroup()) {
+            if ($actor->canModerate($group)) {
+                $url = Router::url('group_settings', ['id' => $group->getId()]);
+                $res[] = HTML::html(['a' => ['attrs' => ['href' => $url, 'title' => _m('Edit group settings'), 'class' => 'profile-extra-actions'], _m('Group settings')]]);
+            }
+            $res[] = HTML::html(['a' => ['attrs' => ['href' => Router::url('blog_post', ['in' => $group->getId()]), 'title' => _m('Make a new blog post'), 'class' => 'profile-extra-actions'], _m('Post in blog')]]);
+
         }
         return Event::next;
     }
