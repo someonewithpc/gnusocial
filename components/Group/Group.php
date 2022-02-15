@@ -90,7 +90,7 @@ class Group extends Component
     public function onPopulateSettingsTabs(Request $request, string $section, array &$tabs): bool
     {
         if ($section === 'profile' && $request->get('_route') === 'group_settings') {
-            $group_id = $request->get('id');
+            $group_id = (int)$request->get('id');
             $group    = Actor::getById($group_id);
             $tabs[]   = [
                 'title'      => 'Self tags',
