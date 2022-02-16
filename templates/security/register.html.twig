@@ -8,7 +8,9 @@
             {{ form_start(registration_form) }}
             {{ form_errors(registration_form) }}
             <fieldset class="container-block">
-                <legend class="section-form-legend">{{ "Register" | trans }}</legend>
+                <legend class="section-form-legend">
+                    <h1>{{ "Register" | trans }}</h1>
+                </legend>
 
                 {% for flashError in app.flashes('verify_email_error') %}
                     <label class="alert alert-danger" role="alert">{{ flashError }}</label>

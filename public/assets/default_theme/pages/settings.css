@@ -45,7 +45,7 @@
 }
 
 .section-settings-details summary:after {
-    content: "\2193";
+    content: "\1F817";
     float: right;
 }
 

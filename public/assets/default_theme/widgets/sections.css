@@ -293,9 +293,13 @@ section {
     padding: 2px 8px;
 }
 
+.section-details-subtitle summary,.section-details-title summary {
+    display: flex;
+    justify-content: flex-start;
+}
+
 .section-details-subtitle summary>*,.section-details-title summary>* {
-    display: inline-flex;
-    vertical-align: middle;
+    display: inline-block;
 }
 
 .section-details-subtitle summary>:last-child,.section-details-title summary>:last-child {
@@ -305,7 +309,7 @@ section {
 .section-details-subtitle summary,.section-details-title summary {
     background: var(--gradient);
     border-radius: var(--s);
-    display: inline-block;
+    display: block;
     width: 100%;
 }
 
@@ -331,14 +335,14 @@ section {
 }
 
 .details-summary-title:after {
-    content: "\2193";
+    content: "\1F817";
     display: block;
     position: relative;
     float: right;
 }
 
 .details-summary-subtitle:after {
-    content: "\2191";
+    content: "\1F815";
     display: block;
     position: relative;
     float: right;
@@ -346,7 +350,7 @@ section {
 
 .section-details-subtitle:not([open])>.details-summary-subtitle:after {
     animation: fadeOut 200ms cubic-bezier(0,0.55,0.45,1);
-    content: "\2193";
+    content: "\1F817";
 }
 
 .section-details-subtitle[open]>.details-summary-subtitle:after {
@@ -361,7 +365,7 @@ section {
 
 .section-details-title[open]>.details-summary-title:after {
     animation: fadeOut 200ms cubic-bezier(0,0.55,0.45,1);
-    content: "\2191";
+    content: "\1F815";
 }
 
 .section-form {
@@ -380,7 +384,7 @@ section {
 }
 
 .section-title {
-    margin: 0 0 1.38rem;
+    margin-top: 0;
 }
 
 .section-checkbox-flex {

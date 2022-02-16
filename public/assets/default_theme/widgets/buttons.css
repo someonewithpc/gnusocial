@@ -56,6 +56,10 @@ button {
     margin-left: auto !important;
 }
 
+button:not(:last-of-type) {
+    margin-bottom: var(--s);
+}
+
 .alert button {
     border-color: #ff6347 !important;
     cursor: pointer !important;
