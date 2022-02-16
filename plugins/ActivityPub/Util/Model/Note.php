@@ -337,6 +337,8 @@ class Note extends Model
             'published'      => $object->getCreated()->format(DateTimeInterface::RFC3339),
             'attributedTo'   => $object->getActor()->getUri(Router::ABSOLUTE_URL),
             'content'        => $object->getRendered(),
+            'mediaType'      => 'text/html',
+            'source'         => ['content' => $object->getContent(), 'mediaType' => $object->getContentType()],
             'attachment'     => [],
             'tag'            => [],
             'inReplyTo'      => \is_null($object->getReplyTo()) ? null : ActivityPub::getUriByObject(GSNote::getById($object->getReplyTo())),
