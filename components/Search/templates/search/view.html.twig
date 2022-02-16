@@ -1,63 +1,45 @@
 {% extends 'collection/notes.html.twig' %}
 
+{% block search_query_simple %}
+<section>
+    <h1 class="section-title">{% trans %}Search{% endtrans %}</h1>
 
-{% block body %}
-{% if error is defined %}
-    <label class="alert alert-danger">
-        {{ error.getMessage() }}
-    </label>
-{% endif %}
-
-<h1>{% trans %}Search{% endtrans %}</h1>
-
-<section class="frame-section frame-section-padding">
     {{ form_start(search_form) }}
     {{ form_errors(search_form) }}
-    <div class="section-title">
-        {{ form_row(search_form.search_query) }}
-    </div>
+    {{ form_row(search_form.search_query) }}
     {% if actor is not null %}
-        <details class="frame-section section-details-subtitle">
+        <details class="section-details-subtitle frame-section">
             <summary class="details-summary-subtitle">
-                <strong>{% trans %}Other options{% endtrans %}</strong>
+                <strong>
+                    {% trans %}Extra options{% endtrans %}
+                </strong>
             </summary>
-
             <div class="section-form">
-                <details class="section-details-subtitle">
-                    <summary class="details-summary-subtitle">
-                        <strong>
-                            {% trans %}Save query as a feed{% endtrans %}
-                        </strong>
-                    </summary>
-                    <div class="section-form">
-                        {{ form_row(search_form.title) }}
-                        {{ form_row(search_form.subscribe_to_search) }}
-                    </div>
-                    <hr>
-                </details>
+                {{ form_row(search_form.title) }}
+                {{ form_row(search_form.subscribe_to_search) }}
             </div>
         </details>
     {% endif %}
     {{ form_row(search_form.submit_search) }}
     {{ form_rest(search_form) }}
     {{ form_end(search_form)}}
+</section>
+{% endblock search_query_simple %}
 
-    <hr>
+{% block search_query_advanced %}
+    {{ form_start(search_builder_form) }}
+    <details class="section-details section-details-title frame-section">
+        <summary class="details-summary-title">
+            <span>{% trans %}Advanced search{% endtrans %}</span>
+        </summary>
 
-    <section class="frame-section">
-        <details class="section-details-subtitle">
-            <summary class="details-summary-subtitle">
-                <strong>{% trans %}Build a search query{% endtrans %}</strong>
-            </summary>
-
-            <div class="section-form">
-                {{ form_start(search_builder_form) }}
-                {# actor options, display if first checked, with checkbox trick #}
-                <details class="section-details-subtitle">
-                    <summary class="details-summary-subtitle">
-                        <strong>{% trans %}People search options{% endtrans %}</strong>
-                    </summary>
-                    <div class="section-form">
+        <section class="frame-section-padding">
+            <details class="section-details-subtitle frame-section">
+                <summary class="details-summary-subtitle">
+                    <strong>{% trans %}People search options{% endtrans %}</strong>
+                </summary>
+                <div class="section-form">
+                    <div class="section-checkbox-flex">
                         {{ form_row(search_builder_form.include_actors) }}
                         {{ form_row(search_builder_form.include_actors_people) }}
                         {{ form_row(search_builder_form.include_actors_groups) }}
@@ -65,61 +47,84 @@
                         {{ form_row(search_builder_form.include_actors_businesses) }}
                         {{ form_row(search_builder_form.include_actors_organizations) }}
                         {{ form_row(search_builder_form.include_actors_bots) }}
-                        {{ form_row(search_builder_form.actor_langs) }}
-                        {{ form_row(search_builder_form.actor_tags) }}
                     </div>
                     <hr>
-                </details>
+                    {{ form_row(search_builder_form.actor_tags) }}
+                    <hr>
+                    {{ form_row(search_builder_form.actor_langs) }}
+                </div>
+            </details>
 
-                <details class="section-details-subtitle">
-                    <summary class="details-summary-subtitle">
-                        <strong>{% trans %}Note search options{% endtrans %}</strong>
-                    </summary>
-                    <div class="section-form">
+            <details class="section-details-subtitle frame-section">
+                <summary class="details-summary-subtitle">
+                    <strong>{% trans %}Note search options{% endtrans %}</strong>
+                </summary>
+                <div class="section-form">
+                    <div class="section-checkbox-flex">
                         {{ form_row(search_builder_form.include_notes) }}
                         {{ form_row(search_builder_form.include_notes_text) }}
                         {{ form_row(search_builder_form.include_notes_media) }}
                         {{ form_row(search_builder_form.include_notes_polls) }}
                         {{ form_row(search_builder_form.include_notes_bookmarks) }}
-                        {{ form_row(search_builder_form.note_langs) }}
-                        {{ form_row(search_builder_form.note_tags) }}
-                        {{ form_row(search_builder_form.note_actor_langs) }}
-                        {{ form_row(search_builder_form.note_actor_tags) }}
                     </div>
                     <hr>
-                </details>
-                {{ form_rest(search_builder_form) }}
-                {{ form_end(search_builder_form) }}
-            </div>
-        </details>
+                    {{ form_row(search_builder_form.note_tags) }}
+                    <hr>
+                    {{ form_row(search_builder_form.note_langs) }}
+                    <hr>
+                    {{ form_row(search_builder_form.note_actor_tags) }}
+                    <hr>
+                    {{ form_row(search_builder_form.note_actor_langs) }}
+                </div>
+            </details>
+
+            {{ form_rest(search_builder_form) }}
+        </section>
+    </details>
+    {{ form_end(search_builder_form) }}
+{% endblock search_query_advanced %}
+
+{% block search %}
+    <section class="frame-section frame-section-padding">
+        {% if error is defined %}
+            <label class="alert alert-danger">
+                {{ error.getMessage() }}
+            </label>
+        {% endif %}
+        {{ block('search_query_simple') }}
+        <hr>
+        {{ block('search_query_advanced') }}
     </section>
-</section>
+{% endblock search %}
 
-<section class="frame-section frame-section-padding">
-    <h2>{% trans %}Results{% endtrans %}</h2>
-    <div class="frame-section frame-section-padding feed-empty">
-        {% if notes is defined and notes is not empty %}
-            {{ parent() }}
-        {% else %}
-            <h3>{% trans %}No notes found{% endtrans %}</h3>
-            <em>{% trans %}No notes were found for the specified query...{% endtrans %}</em>
-        {% endif %}
+{% block body %}
+    {{ block('search') }}
+    <div class="frame-section frame-section-padding">
+        <h1 class="section-title">{% trans %}Results{% endtrans %}</h1>
+
+        <section>
+            {% if notes is defined and notes is not empty %}
+                {{ parent() }}
+            {% else %}
+                <h3>{% trans %}No notes found{% endtrans %}</h3>
+                <em>{% trans %}No notes were found for the specified query...{% endtrans %}</em>
+            {% endif %}
+        </section>
+        <hr>
+        <section>
+            <h3>{% trans %}Actors found{% endtrans %}</h3>
+            {% if actors is defined and actors is not empty %}
+                {% for actor in actors %}
+                    {% include 'cards/blocks/profile.html.twig' with {'actor': actor} %}
+                {% endfor %}
+            {% else %}
+                <em>{% trans %}No Actors were found for the specified query...{% endtrans %}</em>
+            {% endif %}
+        </section>
+
+        <div class="frame-section-button-like">
+            {{ "Page: " ~ page }}
+        </div>
     </div>
-
-    <div class="frame-section frame-section-padding feed-empty">
-        <h3>{% trans %}Actors found{% endtrans %}</h3>
-        {% if actors is defined and actors is not empty %}
-            {% for actor in actors %}
-                {% include 'cards/blocks/profile.html.twig' with {'actor': actor} %}
-            {% endfor %}
-        {% else %}
-            <em>{% trans %}No Actors were found for the specified query...{% endtrans %}</em>
-        {% endif %}
-    </div>
-</section>
-
-<div class="frame-section-button-like">
-    {{ "Page: " ~ page }}
-</div>
 {% endblock body %}
 

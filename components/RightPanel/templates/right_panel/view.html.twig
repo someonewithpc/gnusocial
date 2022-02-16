@@ -10,7 +10,7 @@
         {{ form_row(form.content) }}
         {{ form_row(form.attachments) }}
 
-        <details class="section-details-subtitle">
+        <details class="section-details-subtitle frame-section">
             <summary class="details-summary-subtitle">
                 <strong>
                     {{ "Additional options" | trans }}
@@ -53,7 +53,7 @@
             </summary>
 
             {% for block in extra %}
-                <section class="posting-extra frame-section-padding">
+                <section class="posting-extra">
                     {{ block | raw }}
                 </section>
             {% endfor %}

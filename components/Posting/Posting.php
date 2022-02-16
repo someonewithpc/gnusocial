@@ -75,7 +75,7 @@ class Posting extends Component
      */
     public function onAddMainRightPanelBlock(Request $request, array &$res): bool
     {
-        if (\is_null($user = Common::user()) || preg_match('(feed|conversation|group)', $request->get('_route')) === 0) {
+        if (\is_null($user = Common::user()) || preg_match('(feed|conversation|group|view)', $request->get('_route')) === 0) {
             return Event::next;
         }
 

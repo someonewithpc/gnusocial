@@ -1,15 +1,17 @@
 @import url(root.css);
+
 @import url(reset.css);
+
 @import url(widgets/buttons.css);
+
 @import url(widgets/sections.css);
 
 html {
-    font-family: 'Open Sans', sans-serif;
+    font-family: 'Open Sans',sans-serif;
     scroll-margin-top: var(--xxl);
 }
 
-html,
-html > * {
+html,html>* {
     background-image: url('images/noise.png');
     background-blend-mode: overlay;
 }
@@ -27,7 +29,7 @@ hr {
 }
 
 .active {
-    font: 600 1em Poppins, sans-serif;
+    font: 600 1em Poppins,sans-serif;
 }
 
 .anchor-hidden {
@@ -61,8 +63,9 @@ hr {
 }
 
 .page-header {
+    width: 100%;
     align-items: center;
-    background: var(--gradient) !important;
+    background: var(--background-hard);
     box-shadow: var(--shadow);
     display: flex;
     height: var(--xxl);
@@ -138,7 +141,7 @@ hr {
     right: 0;
 }
 
-.panel-left-icon, .panel-right-icon {
+.panel-left-icon,.panel-right-icon {
     display: inherit;
 }
 
@@ -148,11 +151,13 @@ hr {
     overflow: auto;
 }
 
-@media only screen and (max-width: 512px) {
-    html {font-size: 75%;} /*12px*/
+@media only screen and (max-width:512px) {
+    html {
+        font-size: 85%;
+    }
 }
 
-@media only screen and (max-width: 1280px) {
+@media only screen and (max-width:1280px) {
     .page-header {
         width: 100%;
     }
@@ -174,11 +179,11 @@ hr {
         top: -100%;
     }
 
-    #toggle-panel-left:not(:checked) ~ .section-panel-left, #toggle-panel-right:not(:checked) ~ .section-panel-right {
+    #toggle-panel-left:not(:checked) ~ .section-panel-left,#toggle-panel-right:not(:checked) ~ .section-panel-right {
         display: none;
     }
 
-    #toggle-panel-left:checked ~ .section-panel-left, #toggle-panel-right:checked ~ .section-panel-right {
+    #toggle-panel-left:checked ~ .section-panel-left,#toggle-panel-right:checked ~ .section-panel-right {
         left: 0;
         width: 100vw;
         z-index: auto;
@@ -187,12 +192,12 @@ hr {
     }
 }
 
-@media only screen and (min-width: 1281px) {
+@media only screen and (min-width:1281px) {
     .page-header {
         width: 100%;
     }
 
-    label[for|="toggle-panel"], input[id|="toggle-panel"] {
+    label[for|="toggle-panel"],input[id|="toggle-panel"] {
         display: none !important;
     }
 
@@ -204,20 +209,20 @@ hr {
         width: 66vw;
     }
 
-    a[id|="anchor"]:target + .accessibility-target {
+    a[id|="anchor"]:target+.accessibility-target {
         animation-duration: 600ms;
         animation-name: highlight;
         animation-timing-function: ease-in-out;
     }
 }
 
-@media only screen and (min-width: 1921px) {
+@media only screen and (min-width:1921px) {
     .page-header {
         align-self: center;
         width: 66vw;
     }
 
-    label[for|="toggle-panel"], input[id|="toggle-panel"] {
+    label[for|="toggle-panel"],input[id|="toggle-panel"] {
         display: none !important;
     }
 
@@ -243,6 +248,7 @@ hr {
         opacity: 0;
         transform: translateY(-10px);
     }
+
     100% {
         opacity: unset;
         transform: none;
@@ -254,6 +260,7 @@ hr {
         opacity: 0;
         transform: translateY(-10px);
     }
+
     0% {
         opacity: unset;
         transform: none;
@@ -265,25 +272,30 @@ hr {
         border-radius: var(--s);
         box-shadow: initial;
     }
+
     50% {
         border-radius: var(--s);
         box-shadow: inset 0 20px 40px #FFF;
         transition: box-shadow .3s ease-in-out;
         z-index: 666;
     }
+
     100% {
         border-radius: var(--s);
         box-shadow: initial;
     }
+
     0% {
         border-radius: var(--s);
         box-shadow: initial;
     }
+
     50% {
         border-radius: var(--s);
         box-shadow: inset 0 20px 40px #000;
         transition: box-shadow .3s ease-in-out;
     }
+
     100% {
         border-radius: var(--s);
         box-shadow: initial;

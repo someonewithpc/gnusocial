@@ -63,13 +63,22 @@ class Search extends Component
 
         if ($add_subscribe) {
             $form_definition[] = [
-                'title', TextType::class, ['label' => _m('Title'), 'required' => false, 'attr' => ['title' => _m('Title for this new feed in your left panel')]],
+                'title', TextType::class,
+                [
+                    'label'    => _m('Subscribe to search query'),
+                    'help'     => _m('By subscribing to a search query, a new feed link will be added to left panel\'s feed navigation menu'),
+                    'required' => false,
+                    'attr'     => [
+                        'title'       => _m('Title for this new feed in your left panel'),
+                        'placeholder' => _m('Input desired title...'),
+                    ],
+                ],
             ];
             $form_definition[] = [
                 'subscribe_to_search',
                 SubmitType::class,
                 [
-                    'label' => _m('Subscribe to this search'),
+                    'label' => _m('Subscribe'),
                     'attr'  => [
                         'title' => _m('Add this search as a feed in your feeds section of the left panel'),
                     ],
