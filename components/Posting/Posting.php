@@ -211,6 +211,44 @@ class Posting extends Component
     }
 
     /**
+     * @throws DuplicateFoundException
+     * @throws ClientException
+     * @throws ServerException
+     */
+    public static function storeLocalPage(
+        Actor $actor,
+        ?string $content,
+        string $content_type,
+        ?string $locale = null,
+        ?VisibilityScope $scope = null,
+        array $targets = [],
+        null|int|Note $reply_to = null,
+        array $attachments = [],
+        array $processed_attachments = [],
+        array $process_note_content_extra_args = [],
+        bool $notify = true,
+        ?string $rendered = null,
+        string $source = 'web',
+    ): Note {
+        $note = self::storeLocalNote(
+            actor: $actor,
+            content: $content,
+            content_type: $content_type,
+            locale: $locale,
+            scope: $scope,
+            targets: $targets,
+            reply_to: $reply_to,
+            attachments: $attachments,
+            processed_attachments: $processed_attachments,
+            process_note_content_extra_args: $process_note_content_extra_args,
+            notify: $notify,
+            rendered: $rendered,
+            source: $source
+        );
+        return $note->setType(NoteType::PAGE);
+    }
+
+    /**
      * Store the given note with $content and $attachments, created by
      * $actor_id, possibly as a reply to note $reply_to and with flag
      * $is_local. Sanitizes $content and $attachments

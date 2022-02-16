@@ -27,6 +27,7 @@ use App\Core\ActorLocalRoles;
 use App\Core\Controller;
 use App\Core\Event;
 use App\Core\Form;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use function App\Core\I18n\_m;
 use App\Core\Router\Router;
 use App\Core\VisibilityScope;
@@ -138,7 +139,7 @@ class Post extends Controller
                     $extra_args   = [];
                     Event::handle('AddExtraArgsToNoteContent', [$request, $actor, $data, &$extra_args, $form_params, $form]);
 
-                    Posting::storeLocalNote(
+                    $note = Posting::storeLocalPage(
                         actor: $actor,
                         content: $data['content'],
                         content_type: $content_type,
@@ -150,19 +151,7 @@ class Post extends Controller
                         process_note_content_extra_args: $extra_args,
                     );
 
-                    try {
-                        if ($request->query->has('from')) {
-                            $from = $request->query->get('from');
-                            if (str_contains($from, '#')) {
-                                [$from, $fragment] = explode('#', $from);
-                            }
-                            Router::match($from);
-                            throw new RedirectException(url: $from . (isset($fragment) ? '#' . $fragment : ''));
-                        }
-                    } catch (ResourceNotFoundException $e) {
-                        // continue
-                    }
-                    throw new RedirectException();
+                    return new RedirectResponse($note->getConversationUrl());
                 }
             } catch (FormSizeFileException $e) {
                 throw new ClientException(_m('Invalid file size given'), previous: $e);
