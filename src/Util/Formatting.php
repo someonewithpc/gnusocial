@@ -36,7 +36,6 @@ use App\Core\DB\DB;
 use App\Core\Event;
 use App\Core\Log;
 use App\Entity\Actor;
-use App\Entity\Note;
 use App\Util\Exception\NicknameException;
 use App\Util\Exception\ServerException;
 use Component\Circle\Circle;

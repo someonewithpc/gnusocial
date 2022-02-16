@@ -87,6 +87,15 @@
     padding: unset;
 }
 
+.feed-header > h1,
+.feed-header > h2,
+.feed-header > h3,
+.feed-header > h4,
+.feed-header > h5,
+.feed-header > h6 {
+    margin-bottom: unset;
+}
+
 .feed-actions-details summary,
 .note-actions-extra-details summary {
     display: block;

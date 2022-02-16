@@ -1,15 +1,15 @@
-{% set actor_fullname = actor.getFullname() %}
-{% set actor_nickname = actor.getNickname() %}
-{% set actor_avatar = actor.getAvatarUrl() %}
-{% set actor_avatar_dimensions = actor.getAvatarDimensions() %}
-{% set actor_tags = actor.getSelfTags() %}
-{% set actor_has_bio = actor.hasBio() %}
-{% set actor_uri = actor.getUri() %}
-{% set actor_url = actor.getUrl() %}
-{% set actor_is_local = actor.getIsLocal() %}
-{% set mention = mention(actor) %}
-
 {% block profile_view %}
+    {% set actor_fullname = actor.getFullname() %}
+    {% set actor_nickname = actor.getNickname() %}
+    {% set actor_avatar = actor.getAvatarUrl() %}
+    {% set actor_avatar_dimensions = actor.getAvatarDimensions() %}
+    {% set actor_tags = actor.getSelfTags() %}
+    {% set actor_has_bio = actor.hasBio() %}
+    {% set actor_uri = actor.getUri() %}
+    {% set actor_url = actor.getUrl() %}
+    {% set actor_is_local = actor.getIsLocal() %}
+    {% set mention = mention(actor) %}
+
     <section id='profile-{{ actor.id }}' class='profile'
              title="{% trans %} %actor_nickname%'s profile information{% endtrans %}">
         <header>
@@ -19,12 +19,20 @@
                      title="{% trans %} %actor_nickname%'s avatar{% endtrans %}"
                      width="{{ actor_avatar_dimensions['width'] }}"
                      height="{{ actor_avatar_dimensions['height'] }}">
-                <section>
+                <div>
                     <a class="profile-info-url" href="{{ actor_url }}">
-                        <strong class="profile-info-url-nickname"
-                                title="{% trans %} %actor_nickname%'s profile {% endtrans %}">
-                            {% if actor_fullname is not null %}{{ actor_fullname }}{% else %}{{ actor_nickname }}{% endif %}
-                        </strong>
+                        {% if profile_card_type is defined and profile_card_type starts with 'main' %}
+                            <h1 class="profile-info-url-nickname"
+                                    title="{% trans %} %actor_nickname%'s profile {% endtrans %}">
+                                {% if actor_fullname is not null %}{{ actor_fullname }}{% else %}{{ actor_nickname }}{% endif %}
+                            </h1>
+                        {% else %}
+                            <strong class="profile-info-url-nickname"
+                                    title="{% trans %} %actor_nickname%'s profile {% endtrans %}">
+                                {% if actor_fullname is not null %}{{ actor_fullname }}{% else %}{{ actor_nickname }}{% endif %}
+                            </strong>
+                        {% endif %}
+
                         {% if not actor_is_local %}
                             <span class="profile-info-url-remote">
                                 <a href="{{ actor_uri }}" class="u-url" title="{% trans %} %actor_nickname%'s permalink {% endtrans %}">{{ mention }}</a>
@@ -40,7 +48,7 @@
                             </li>
                         {% endfor %}
                     </ul>
-                </section>
+                </div>
             </div>
             <div class="profile-stats">
                 <span class="profile-stats-subscriptions"

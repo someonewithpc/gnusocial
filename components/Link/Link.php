@@ -46,7 +46,7 @@ class Link extends Component
             preg_match_all($this->getURLRegex(), $content, $matched_urls);
             $matched_urls = array_unique($matched_urls[1]);
             foreach ($matched_urls as $match) {
-                if (in_array($match, $ignore)) {
+                if (\in_array($match, $ignore)) {
                     continue;
                 }
                 try {

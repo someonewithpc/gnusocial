@@ -22,12 +22,11 @@ declare(strict_types = 1);
 namespace Component\Group;
 
 use App\Core\Event;
-use App\Entity\Activity;
-use Component\Notification\Notification;
 use function App\Core\I18n\_m;
 use App\Core\Modules\Component;
 use App\Core\Router\RouteLoader;
 use App\Core\Router\Router;
+use App\Entity\Activity;
 use App\Entity\Actor;
 use App\Util\Common;
 use App\Util\HTML;
@@ -35,6 +34,7 @@ use App\Util\Nickname;
 use Component\Circle\Controller\SelfTagsSettings;
 use Component\Group\Controller as C;
 use Component\Group\Entity\LocalGroup;
+use Component\Notification\Notification;
 use Symfony\Component\HttpFoundation\Request;
 
 class Group extends Component
@@ -51,15 +51,10 @@ class Group extends Component
     /**
      * Enqueues a notification for an Actor (such as person or group) which means
      * it shows up in their home feed and such.
-     * @param Actor $sender
-     * @param Activity $activity
-     * @param array $targets
-     * @param string|null $reason
-     * @return bool
      */
     public function onNewNotificationWithTargets(Actor $sender, Activity $activity, array $targets = [], ?string $reason = null): bool
     {
-        foreach($targets as $target) {
+        foreach ($targets as $target) {
             if ($target->isGroup()) {
                 // The Group announces to its subscribers
                 Notification::notify($target, $activity, $target->getSubscribers(), $reason);
@@ -78,11 +73,10 @@ class Group extends Component
         $group = $vars['actor'];
         if (!\is_null($actor) && $group->isGroup()) {
             if ($actor->canModerate($group)) {
-                $url = Router::url('group_settings', ['id' => $group->getId()]);
+                $url   = Router::url('group_settings', ['id' => $group->getId()]);
                 $res[] = HTML::html(['a' => ['attrs' => ['href' => $url, 'title' => _m('Edit group settings'), 'class' => 'profile-extra-actions'], _m('Group settings')]]);
             }
             $res[] = HTML::html(['a' => ['attrs' => ['href' => Router::url('blog_post', ['in' => $group->getId()]), 'title' => _m('Make a new blog post'), 'class' => 'profile-extra-actions'], _m('Post in blog')]]);
-
         }
         return Event::next;
     }
@@ -90,7 +84,7 @@ class Group extends Component
     public function onPopulateSettingsTabs(Request $request, string $section, array &$tabs): bool
     {
         if ($section === 'profile' && $request->get('_route') === 'group_settings') {
-            $group_id = (int)$request->get('id');
+            $group_id = (int) $request->get('id');
             $group    = Actor::getById($group_id);
             $tabs[]   = [
                 'title'      => 'Self tags',

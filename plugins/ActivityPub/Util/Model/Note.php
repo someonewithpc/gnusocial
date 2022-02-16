@@ -39,8 +39,6 @@ use App\Core\DB\DB;
 use App\Core\Event;
 use App\Core\GSFile;
 use App\Core\HTTPClient;
-use App\Util\HTML;
-use Plugin\ActivityPub\Util\Explorer;
 use function App\Core\I18n\_m;
 use App\Core\Log;
 use App\Core\Router\Router;
@@ -52,6 +50,7 @@ use App\Util\Exception\DuplicateFoundException;
 use App\Util\Exception\NoSuchActorException;
 use App\Util\Exception\ServerException;
 use App\Util\Formatting;
+use App\Util\HTML;
 use App\Util\TemporaryFile;
 use Component\Attachment\Entity\ActorToAttachment;
 use Component\Attachment\Entity\AttachmentToNote;
@@ -66,6 +65,7 @@ use Exception;
 use InvalidArgumentException;
 use Plugin\ActivityPub\ActivityPub;
 use Plugin\ActivityPub\Entity\ActivitypubObject;
+use Plugin\ActivityPub\Util\Explorer;
 use Plugin\ActivityPub\Util\Model;
 use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
@@ -118,8 +118,8 @@ class Note extends Model
         $type_note = \is_string($json) ? self::jsonToType($json) : $json;
         $actor_id  = null;
         $actor     = null;
-        $to = $type_note->has('to') ? (is_string($type_note->get('to')) ? [$type_note->get('to')] : $type_note->get('to')) : [];
-        $cc = $type_note->has('cc') ? (is_string($type_note->get('cc')) ? [$type_note->get('cc')] : $type_note->get('cc')) : [];
+        $to        = $type_note->has('to') ? (\is_string($type_note->get('to')) ? [$type_note->get('to')] : $type_note->get('to')) : [];
+        $cc        = $type_note->has('cc') ? (\is_string($type_note->get('cc')) ? [$type_note->get('cc')] : $type_note->get('cc')) : [];
         if ($json instanceof AbstractObject
             && \array_key_exists('test_authority', $options)
             && $options['test_authority']
@@ -184,7 +184,7 @@ class Note extends Model
                 continue;
             }
             try {
-                $actor = ActivityPub::getActorByUri($target);
+                $actor                                = ActivityPub::getActorByUri($target);
                 $object_mentions_ids[$actor->getId()] = $target;
                 // If $to is a group, set note's scope as Group
                 if ($actor->isGroup()) {
@@ -199,7 +199,7 @@ class Note extends Model
                 continue;
             }
             try {
-                $actor = ActivityPub::getActorByUri($target);
+                $actor                                = ActivityPub::getActorByUri($target);
                 $object_mentions_ids[$actor->getId()] = $target;
             } catch (Exception $e) {
                 Log::debug('ActivityPub->Model->Note->fromJson->getActorByUri', [$e]);
@@ -248,7 +248,7 @@ class Note extends Model
                 case 'Mention':
                 case 'Group':
                     try {
-                        $actor = ActivityPub::getActorByUri($ap_tag->get('href'));
+                        $actor                                = ActivityPub::getActorByUri($ap_tag->get('href'));
                         $object_mentions_ids[$actor->getId()] = $ap_tag->get('href');
                     } catch (Exception $e) {
                         Log::debug('ActivityPub->Model->Note->fromJson->getActorByUri', [$e]);
@@ -258,7 +258,7 @@ class Note extends Model
                     $explorer = new Explorer();
                     try {
                         $actors = $explorer->lookup($ap_tag->get('href'));
-                        foreach($actors as $actor) {
+                        foreach ($actors as $actor) {
                             $object_mentions_ids[$actor->getId()] = $ap_tag->get('href');
                         }
                     } catch (Exception $e) {
@@ -356,7 +356,6 @@ class Note extends Model
                 break;
             case VisibilityScope::GROUP:
                 // Will have the group in the To
-                // no break
             case VisibilityScope::COLLECTION:
                 // Since we don't support sending unlisted/followers-only
                 // notices, arriving here means we're instead answering to that type

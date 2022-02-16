@@ -74,12 +74,12 @@ use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\Security\Core\Security as SSecurity;
 use Symfony\Component\Security\Http\Util\TargetPathTrait;
+use Symfony\Component\Yaml;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use SymfonyCasts\Bundle\ResetPassword\ResetPasswordHelperInterface;
 use SymfonyCasts\Bundle\VerifyEmail\VerifyEmailHelperInterface;
 use Twig\Environment;
-use Symfony\Component\Yaml;
 
 /**
  * @codeCoverageIgnore
@@ -230,8 +230,8 @@ class GNUsocial implements EventSubscriberInterface
         $local_file = INSTALLDIR . '/social.local.yaml';
         if (!file_exists($local_file)) {
             $node_name = $_ENV['CONFIG_NODE_NAME'];
-            $domain = $_ENV['CONFIG_DOMAIN'];
-            $yaml = (new Yaml\Dumper(indentation: 2))->dump(['parameters' => ['locals' => ['gnusocial' => ['site' => ['server' => $domain, 'name' => $node_name]]]]], Yaml\Yaml::DUMP_OBJECT_AS_MAP);
+            $domain    = $_ENV['CONFIG_DOMAIN'];
+            $yaml      = (new Yaml\Dumper(indentation: 2))->dump(['parameters' => ['locals' => ['gnusocial' => ['site' => ['server' => $domain, 'name' => $node_name]]]]], Yaml\Yaml::DUMP_OBJECT_AS_MAP);
             file_put_contents($local_file, $yaml);
         }
 

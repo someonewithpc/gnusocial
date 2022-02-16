@@ -40,6 +40,7 @@ use App\Util\Exception\NoLoggedInUser;
 use App\Util\Exception\NoSuchNoteException;
 use App\Util\Exception\RedirectException;
 use App\Util\Exception\ServerException;
+use App\Util\HTML\Heading;
 use Component\Collection\Util\Controller\FeedController;
 use Component\Conversation\Entity\ConversationMute;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
@@ -58,11 +59,14 @@ class Conversation extends FeedController
      */
     public function showConversation(Request $request, int $conversation_id): array
     {
+        $page_title = _m('Conversation');
+
         return [
-            '_template'     => 'collection/notes.html.twig',
-            'notes'         => $this->query(query: "note-conversation:{$conversation_id}")['notes'] ?? [],
-            'should_format' => false,
-            'page_title'    => _m('Conversation'),
+            '_template'        => 'collection/notes.html.twig',
+            'notes'            => $this->query(query: "note-conversation:{$conversation_id}")['notes'] ?? [],
+            'should_format'    => false,
+            'page_title'       => $page_title,
+            'notes_feed_title' => (new Heading(1, [], $page_title)),
         ];
     }
 

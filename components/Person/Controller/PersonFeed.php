@@ -30,6 +30,7 @@ use App\Entity as E;
 use App\Entity\LocalUser;
 use App\Util\Exception\ClientException;
 use App\Util\Exception\ServerException;
+use App\Util\HTML\Heading;
 use Component\Collection\Util\Controller\FeedController;
 use Symfony\Component\HttpFoundation\Request;
 
@@ -75,10 +76,12 @@ class PersonFeed extends FeedController
     public function personView(Request $request, Actor $person): array
     {
         return [
-            '_template' => 'actor/view.html.twig',
-            'actor'     => $person,
-            'nickname'  => $person->getNickname(),
-            'notes'     => E\Note::getAllNotesByActor($person),
+            '_template'        => 'actor/view.html.twig',
+            'actor'            => $person,
+            'nickname'         => $person->getNickname(),
+            'notes'            => E\Note::getAllNotesByActor($person),
+            'page_title'       => _m($person->getNickname() . '\'s profile'),
+            'notes_feed_title' => (new Heading(level: 2, classes: ['section-title'], text: 'Notes by ' . $person->getNickname())),
         ];
     }
 }

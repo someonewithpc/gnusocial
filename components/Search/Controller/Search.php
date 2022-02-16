@@ -30,6 +30,7 @@ use App\Util\Exception\BugFoundException;
 use App\Util\Exception\RedirectException;
 use App\Util\Form\FormFields;
 use App\Util\Formatting;
+use App\Util\HTML\Heading;
 use Component\Collection\Util\Controller\FeedController;
 use Component\Search as Comp;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
@@ -135,6 +136,8 @@ class Search extends FeedController
             'search_form'         => Comp\Search::searchForm($request, query: $q, add_subscribe: !\is_null($actor)),
             'search_builder_form' => $search_builder_form->createView(),
             'notes'               => $notes ?? [],
+            'notes_feed_title'    => (new Heading(level: 3, classes: ['section-title'], text: 'Notes found')),
+            'actors_feed_title'   => (new Heading(level: 3, classes: ['section-title'], text: 'Actors found')),
             'actors'              => $actors ?? [],
             'page'                => 1, // TODO paginate
         ];

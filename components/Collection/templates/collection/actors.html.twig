@@ -4,7 +4,11 @@
 
 {% block body %}
 <section class="frame-section frame-section-padding">
-    <h1 class="frame-section-title">{{ title }}</h1>
+    <header class="feed-header">
+        {% if actors_feed_title is defined %}
+            {{ actors_feed_title.getHtml() }}
+        {% endif %}
+    </header>
 
     {% set prepend_actors_collection = handle_event('PrependActorsCollection', request) %}
     {% for widget in prepend_actors_collection %}

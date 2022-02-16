@@ -1,11 +1,13 @@
 {% extends '/collection/notes.html.twig' %}
 
-{% block title %}{% trans %}%nickname%'s profile{% endtrans %}{% endblock %}
+{% block title %}
+    {% if page_title is defined %}
+        {{ page_title }}
+    {% endif %}
+{% endblock %}
 
 {% block body %}
-    {% block profile_view %}
-        {% include '/cards/blocks/profile.html.twig' %}
-    {% endblock profile_view %}
-
+    {% include 'cards/blocks/profile.html.twig' with { profile_card_type: 'main' } %}
+    <hr>
     {{ parent() }}
 {% endblock body %}

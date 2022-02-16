@@ -241,7 +241,7 @@
     display: block;
 }
 
-.profile-info-url-nickname {
+.profile-info-url strong {
     font-size: 1.215rem;
     font-weight: 900;
 }

@@ -14,18 +14,10 @@
     {% endfor %}
 
     {% if notes is defined %}
-        <header class="feed-header" title="{{ 'Current page main header' | trans }}">
+        <header class="feed-header">
             {% set current_path = app.request.get('_route') %}
-            {% if page_title is defined %}
-                {% if current_path starts with 'feed_' or 'conversation' in current_path %}
-                    <h1 class="section-title" role="heading">{{ page_title | trans }}</h1>
-                {% endif %}
-            {% else %}
-                {% if current_path starts with 'search' %}
-                    <h3 class="heading-no-margin">{{ 'Notes found' | trans }}</h3>
-                {% else %}
-                    <h1 class="section-title">{{ 'Notes' | trans }}</h1>
-                {% endif %}
+            {% if notes_feed_title is defined %}
+                {{ notes_feed_title.getHtml() }}
             {% endif %}
             <nav class="feed-actions" title="{{ 'Actions that change how the feed behaves' | trans }}">
                 <details class="feed-actions-details" role="group">

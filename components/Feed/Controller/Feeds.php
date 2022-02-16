@@ -37,6 +37,7 @@ namespace Component\Feed\Controller;
 
 use function App\Core\I18n\_m;
 use App\Util\Common;
+use App\Util\HTML\Heading;
 use Component\Collection\Util\Controller\FeedController;
 use Symfony\Component\HttpFoundation\Request;
 
@@ -47,11 +48,13 @@ class Feeds extends FeedController
      */
     public function public(Request $request): array
     {
-        $data = $this->query('note-local:true');
+        $data       = $this->query('note-local:true');
+        $page_title = _m(\is_null(Common::user()) ? 'Feed' : 'Planet');
         return [
-            '_template'  => 'collection/notes.html.twig',
-            'page_title' => _m(\is_null(Common::user()) ? 'Feed' : 'Planet'),
-            'notes'      => $data['notes'],
+            '_template'        => 'collection/notes.html.twig',
+            'page_title'       => $page_title,
+            'notes_feed_title' => (new Heading(level: 1, classes: ['feed-title'], text: $page_title)),
+            'notes'            => $data['notes'],
         ];
     }
 
@@ -63,9 +66,10 @@ class Feeds extends FeedController
         Common::ensureLoggedIn();
         $data = $this->query('note-from:subscribed-person,subscribed-group,subscribed-organisation');
         return [
-            '_template'  => 'collection/notes.html.twig',
-            'page_title' => _m('Home'),
-            'notes'      => $data['notes'],
+            '_template'        => 'collection/notes.html.twig',
+            'page_title'       => _m('Home'),
+            'notes_feed_title' => (new Heading(level: 1, classes: ['feed-title'], text: 'Home')),
+            'notes'            => $data['notes'],
         ];
     }
 }
