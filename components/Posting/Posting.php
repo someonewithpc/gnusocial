@@ -216,21 +216,21 @@ class Posting extends Component
      * @throws ServerException
      */
     public static function storeLocalPage(
-        Actor $actor,
-        ?string $content,
-        string $content_type,
-        ?string $locale = null,
+        Actor            $actor,
+        ?string          $content,
+        string           $content_type,
+        ?string          $locale = null,
         ?VisibilityScope $scope = null,
-        array $targets = [],
-        null|int|Note $reply_to = null,
-        array $attachments = [],
-        array $processed_attachments = [],
-        array $process_note_content_extra_args = [],
-        bool $notify = true,
-        ?string $rendered = null,
-        string $source = 'web',
-    ): Note {
-        $note = self::storeLocalNote(
+        array            $targets = [],
+        null|int|Note    $reply_to = null,
+        array            $attachments = [],
+        array            $processed_attachments = [],
+        array            $process_note_content_extra_args = [],
+        bool             $flush_and_notify = true,
+        ?string          $rendered = null,
+        string           $source = 'web',
+    ): array {
+        [$activity, $note, $attention_ids] = self::storeLocalNote(
             actor: $actor,
             content: $content,
             content_type: $content_type,
@@ -241,11 +241,19 @@ class Posting extends Component
             attachments: $attachments,
             processed_attachments: $processed_attachments,
             process_note_content_extra_args: $process_note_content_extra_args,
-            notify: $notify,
+            flush_and_notify: false,
             rendered: $rendered,
             source: $source
         );
-        return $note->setType(NoteType::PAGE);
+        $note->setType(NoteType::PAGE);
+
+        if ($flush_and_notify) {
+            // Flush before notification
+            DB::flush();
+            Event::handle('NewNotification', [$actor, $activity, ['object' => $attention_ids], _m('{nickname} created a page {note_id}.', ['{nickname}' => $actor->getNickname(), '{note_id}' => $activity->getObjectId()])]);
+        }
+
+        return [$activity, $note, $attention_ids];
     }
 
     /**
@@ -263,10 +271,10 @@ class Posting extends Component
      * @param array $attachments UploadedFile[] to be stored as GSFiles associated to this note
      * @param array $processed_attachments Array of [Attachment, Attachment's name][] to be associated to this $actor and Note
      * @param array $process_note_content_extra_args Extra arguments for the event ProcessNoteContent
-     * @param bool $notify True if the newly created Note activity should be passed on as a Notification
+     * @param bool $flush_and_notify True if the newly created Note activity should be passed on as a Notification
      * @param null|string $rendered The Note's content post RenderNoteContent event, which sanitizes and processes the raw content sent
      * @param string $source The source of this Note
-     * @return Note
+     * @return array [Activity, Note, int[]] Activity, Note, Attention Ids
      * @throws ClientException
      * @throws DuplicateFoundException
      * @throws ServerException
@@ -282,10 +290,10 @@ class Posting extends Component
         array            $attachments = [],
         array            $processed_attachments = [],
         array            $process_note_content_extra_args = [],
-        bool             $notify = true,
+        bool             $flush_and_notify = true,
         ?string          $rendered = null,
         string           $source = 'web',
-    ): Note {
+    ): array {
         $scope ??= VisibilityScope::EVERYWHERE; // TODO: If site is private, default to LOCAL
         $reply_to_id = is_null($reply_to) ? null : (is_int($reply_to) ? $reply_to : $reply_to->getId());
         $mentions = [];
@@ -360,16 +368,15 @@ class Posting extends Component
             ];
         }
 
-        $mention_ids = F\unique(F\flat_map($mentions, fn (array $m) => F\map($m['mentioned'] ?? [], fn (Actor $a) => $a->getId())));
+        $attention_ids = F\unique(F\flat_map($mentions, fn (array $m) => F\map($m['mentioned'] ?? [], fn (Actor $a) => $a->getId())));
 
-        // Flush before notification
-        DB::flush();
-
-        if ($notify) {
-            Event::handle('NewNotification', [$actor, $activity, ['object' => $mention_ids], _m('{nickname} created a note {note_id}.', ['{nickname}' => $actor->getNickname(), '{note_id}' => $activity->getObjectId()])]);
+        if ($flush_and_notify) {
+            // Flush before notification
+            DB::flush();
+            Event::handle('NewNotification', [$actor, $activity, ['object' => $attention_ids], _m('{nickname} created a note {note_id}.', ['{nickname}' => $actor->getNickname(), '{note_id}' => $activity->getObjectId()])]);
         }
 
-        return $note;
+        return [$activity, $note, $attention_ids];
     }
 
     public function onRenderNoteContent(string $content, string $content_type, ?string &$rendered, Actor $author, ?string $language = null, array &$mentions = [])

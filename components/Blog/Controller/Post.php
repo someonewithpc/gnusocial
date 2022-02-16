@@ -139,7 +139,7 @@ class Post extends Controller
                     $extra_args   = [];
                     Event::handle('AddExtraArgsToNoteContent', [$request, $actor, $data, &$extra_args, $form_params, $form]);
 
-                    $note = Posting::storeLocalPage(
+                    [,$note,] = Posting::storeLocalPage(
                         actor: $actor,
                         content: $data['content'],
                         content_type: $content_type,

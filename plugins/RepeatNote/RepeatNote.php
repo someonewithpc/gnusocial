@@ -80,7 +80,7 @@ class RepeatNote extends NoteHandlerPlugin
         $original_note_id = $note->getId();
 
         // Create a new note with the same content as the original
-        $repeat = Posting::storeLocalNote(
+        [, $repeat, ] = Posting::storeLocalNote(
             actor: Actor::getById($actor_id),
             content: $note->getContent(),
             content_type: $note->getContentType(),
@@ -88,7 +88,7 @@ class RepeatNote extends NoteHandlerPlugin
             // If it's a repeat, the reply_to should be to the original, conversation ought to be the same
             reply_to: $note->getReplyTo(),
             processed_attachments: $note->getAttachmentsWithTitle(),
-            notify: false,
+            flush_and_notify: false,
             rendered: $note->getRendered(),
         );
 
@@ -109,6 +109,9 @@ class RepeatNote extends NoteHandlerPlugin
             'source'      => $source,
         ]);
         DB::persist($repeat_activity);
+
+        // Flush before notification
+        DB::flush();
 
         Event::handle('NewNotification', [$actor = Actor::getById($actor_id), $repeat_activity, [], _m('{nickname} repeated note {note_id}.', ['{nickname}' => $actor->getNickname(), '{note_id}' => $repeat_activity->getObjectId()])]);
 
