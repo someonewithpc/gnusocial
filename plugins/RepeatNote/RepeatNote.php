@@ -86,7 +86,7 @@ class RepeatNote extends NoteHandlerPlugin
             content_type: $note->getContentType(),
             locale: \is_null($lang_id = $note->getLanguageId()) ? null : Language::getById($lang_id)->getLocale(),
             // If it's a repeat, the reply_to should be to the original, conversation ought to be the same
-            reply_to_id: $note->getReplyTo(),
+            reply_to: $note->getReplyTo(),
             processed_attachments: $note->getAttachmentsWithTitle(),
             notify: false,
             rendered: $note->getRendered(),

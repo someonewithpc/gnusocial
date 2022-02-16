@@ -72,6 +72,9 @@ class Post extends Controller
         ];
         Event::handle('PostingAvailableContentTypes', [&$available_content_types]);
 
+        if (!is_int($this->int('in'))) {
+            throw new \InvalidArgumentException('You must specify an In group/org.');
+        }
         $context_actor = Actor::getById($this->int('in'));
         if (!$context_actor->isGroup()) {
             throw new \InvalidArgumentException('Only group blog posts are supported for now.');
@@ -135,18 +138,14 @@ class Post extends Controller
                     $extra_args   = [];
                     Event::handle('AddExtraArgsToNoteContent', [$request, $actor, $data, &$extra_args, $form_params, $form]);
 
-                    if (\array_key_exists('in', $data) && $data['in'] !== 'public') {
-                        $target = $data['in'];
-                    }
-
                     Posting::storeLocalNote(
                         actor: $actor,
                         content: $data['content'],
                         content_type: $content_type,
                         locale: $data['language'],
                         scope: VisibilityScope::from($data['visibility']),
-                        target: $target ?? null,
-                        reply_to_id: $data['reply_to_id'],
+                        targets: [(int)$data['in']],
+                        reply_to: $data['reply_to_id'],
                         attachments: $data['attachments'],
                         process_note_content_extra_args: $extra_args,
                     );

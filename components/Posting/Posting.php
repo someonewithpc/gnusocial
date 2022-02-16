@@ -28,6 +28,8 @@ use App\Core\DB\DB;
 use App\Core\Event;
 use App\Core\Form;
 use App\Core\GSFile;
+use App\Entity\NoteType;
+use Component\Notification\Entity\Attention;
 use function App\Core\I18n\_m;
 use App\Core\Modules\Component;
 use App\Core\Router\Router;
@@ -179,8 +181,8 @@ class Posting extends Component
                         content_type: $content_type,
                         locale: $data['language'],
                         scope: VisibilityScope::from($data['visibility']),
-                        target: $target ?? null,
-                        reply_to_id: $data['reply_to_id'],
+                        targets: isset($target) ? [$target] : [],
+                        reply_to: $data['reply_to_id'],
                         attachments: $data['attachments'],
                         process_note_content_extra_args: $extra_args,
                     );
@@ -213,39 +215,41 @@ class Posting extends Component
      * $actor_id, possibly as a reply to note $reply_to and with flag
      * $is_local. Sanitizes $content and $attachments
      *
-     * @param Actor                $actor                           The Actor responsible for the creation of this Note
-     * @param null|string          $content                         The raw text content sent via Posting form
-     * @param string               $content_type                    Indicating one of the various supported text format (Plain Text, Markdown, LaTeX...)
-     * @param null|string          $locale                          Note's written text language, set by the default Actor language or upon filling Posting's form
-     * @param null|VisibilityScope $scope                           The scope of this Note
-     * @param null|Actor|int       $target                          Filled by PostingFillTargetChoices, representing an Actor in its many forms to be targeted by this Note
-     * @param null|int             $reply_to_id                     The soon-to-be Note parent's id, if it's a Reply itself
-     * @param array                $attachments                     Array of UploadedFile to be stored as GSFiles associated to this note
-     * @param array                $processed_attachments           Array of [Attachment, Attachment's name] to be associated to this $actor and Note
-     * @param array                $process_note_content_extra_args Extra arguments for the event ProcessNoteContent
-     * @param bool                 $notify                          True if the newly created Note activity should be passed on as a Notification
-     * @param null|string          $rendered                        The Note's content post RenderNoteContent event, which sanitizes and processes the raw content sent
-     *
+     * @param Actor $actor The Actor responsible for the creation of this Note
+     * @param null|string $content The raw text content
+     * @param string $content_type Indicating one of the various supported content format (Plain Text, Markdown, LaTeX...)
+     * @param null|string $locale Note's written text language, set by the default Actor language or upon filling
+     * @param null|VisibilityScope $scope The visibility of this Note
+     * @param array $targets Actor|int[]: In Group/To Person or Bot, registers an attention between note and target
+     * @param null|int|Note $reply_to The soon-to-be Note parent's id, if it's a Reply itself
+     * @param array $attachments UploadedFile[] to be stored as GSFiles associated to this note
+     * @param array $processed_attachments Array of [Attachment, Attachment's name][] to be associated to this $actor and Note
+     * @param array $process_note_content_extra_args Extra arguments for the event ProcessNoteContent
+     * @param bool $notify True if the newly created Note activity should be passed on as a Notification
+     * @param null|string $rendered The Note's content post RenderNoteContent event, which sanitizes and processes the raw content sent
+     * @param string $source The source of this Note
+     * @return Note
      * @throws ClientException
      * @throws DuplicateFoundException
      * @throws ServerException
      */
     public static function storeLocalNote(
-        Actor $actor,
-        ?string $content,
-        string $content_type,
-        ?string $locale = null,
+        Actor            $actor,
+        ?string          $content,
+        string           $content_type,
+        ?string          $locale = null,
         ?VisibilityScope $scope = null,
-        null|Actor|int $target = null,
-        ?int $reply_to_id = null,
-        array $attachments = [],
-        array $processed_attachments = [],
-        array $process_note_content_extra_args = [],
-        bool $notify = true,
-        ?string $rendered = null,
-        string $source = 'web',
+        array            $targets = [],
+        null|int|Note    $reply_to = null,
+        array            $attachments = [],
+        array            $processed_attachments = [],
+        array            $process_note_content_extra_args = [],
+        bool             $notify = true,
+        ?string          $rendered = null,
+        string           $source = 'web',
     ): Note {
         $scope ??= VisibilityScope::EVERYWHERE; // TODO: If site is private, default to LOCAL
+        $reply_to_id = is_null($reply_to) ? null : (is_int($reply_to) ? $reply_to : $reply_to->getId());
         $mentions = [];
         if (\is_null($rendered) && !empty($content)) {
             Event::handle('RenderNoteContent', [$content, $content_type, &$rendered, $actor, $locale, &$mentions]);
@@ -304,8 +308,9 @@ class Posting extends Component
         ]);
         DB::persist($activity);
 
-        if (!\is_null($target)) {
+        foreach ($targets as $target) {
             $target     = \is_int($target) ? Actor::getById($target) : $target;
+            DB::persist(Attention::create(['note_id' => $note->getId(), 'target_id' => $target->getId()]));
             $mentions[] = [
                 'mentioned'       => [$target],
                 'type'            => match ($target->getType()) {

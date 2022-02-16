@@ -210,7 +210,7 @@ class Note extends Entity
         return $this->language_id;
     }
 
-    public function setType(VisibilityScope|int $type): self
+    public function setType(NoteType|int $type): self
     {
         $this->type = is_int($type) ? $type : $type->value;
         return $this;
