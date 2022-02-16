@@ -23,23 +23,23 @@ declare(strict_types = 1);
 
 namespace App\Controller;
 
+use App\Core\Controller;
 use App\Core\Router\Router;
 use App\Entity\Actor;
-use Component\Collection\Util\Controller\FeedController;
 use InvalidArgumentException;
-use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 
-class ActorFeed extends FeedController
+class ActorProfile extends Controller
 {
-    public function actorViewId(Request $request, int $id): RedirectResponse
+    public function actorViewId(Request $request, int $id): array
     {
-        $route_id = match (Actor::getById($id)->getType()) {
+        $actor = Actor::getById($id);
+        $route_id = match ($actor->getType()) {
             Actor::PERSON => 'person_actor_view_id',
             Actor::GROUP  => 'group_actor_view_id',
             Actor::BOT    => 'bot_actor_view_id',
             default       => throw new InvalidArgumentException(),
         };
-        return new RedirectResponse(Router::url($route_id, ['id' => $id]), status: 302);
+        return ['_redirect' => Router::url($route_id, ['id' => $id]), 'actor' => $actor];
     }
 }

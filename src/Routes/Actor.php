@@ -44,6 +44,6 @@ abstract class Actor
 
     public static function load(RouteLoader $r): void
     {
-        $r->connect(id: 'actor_view_id', uri_path: '/actor/{id<\d+>}', target: [C\ActorFeed::class, 'actorViewId']);
+        $r->connect(id: 'actor_view_id', uri_path: '/actor/{id<\d+>}', target: [C\ActorProfile::class, 'actorViewId']);
     }
 }
