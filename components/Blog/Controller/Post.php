@@ -27,6 +27,7 @@ use App\Core\ActorLocalRoles;
 use App\Core\Controller;
 use App\Core\Event;
 use App\Core\Form;
+use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use function App\Core\I18n\_m;
 use App\Core\Router\Router;
@@ -100,6 +101,7 @@ class Post extends Controller
         }
         $form_params[] = ['visibility', ChoiceType::class, ['label' => _m('Visibility:'), 'multiple' => false, 'expanded' => false, 'choices' => $visibility_options]];
 
+        $form_params[] = ['title', TextType::class, ['label' => _m('Title:'), 'constraints' => [new Length(['max' => 129])], 'required' => true]];
         $form_params[] = ['content', TextareaType::class, ['label' => _m('Content:'), 'data' => $initial_content, 'attr' => ['placeholder' => _m($placeholder)], 'constraints' => [new Length(['max' => Common::config('site', 'text_limit')])]]];
         $form_params[] = ['attachments', FileType::class, ['label' => _m('Attachments:'), 'multiple' => true, 'required' => false, 'invalid_message' => _m('Attachment not valid.')]];
         $form_params[] = FormFields::language($actor, $context_actor, label: _m('Note language'), help: _m('The selected language will be federated and added as a lang attribute, preferred language can be set up in settings'));
@@ -149,6 +151,7 @@ class Post extends Controller
                         reply_to: $data['reply_to_id'],
                         attachments: $data['attachments'],
                         process_note_content_extra_args: $extra_args,
+                        title: $data['title'],
                     );
 
                     return new RedirectResponse($note->getConversationUrl());

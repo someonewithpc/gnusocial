@@ -229,6 +229,7 @@ class Posting extends Component
         bool             $flush_and_notify = true,
         ?string          $rendered = null,
         string           $source = 'web',
+        ?string          $title = null,
     ): array {
         [$activity, $note, $attention_ids] = self::storeLocalNote(
             actor: $actor,
@@ -246,6 +247,7 @@ class Posting extends Component
             source: $source
         );
         $note->setType(NoteType::PAGE);
+        $note->setTitle($title);
 
         if ($flush_and_notify) {
             // Flush before notification
