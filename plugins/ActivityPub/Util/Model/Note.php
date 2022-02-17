@@ -171,7 +171,7 @@ class Note extends Model
         } elseif (\in_array('https://www.w3.org/ns/activitystreams#Public', $cc)) {
             // Unlisted: Visible for all but not shown in public feeds
             // It isn't the note that dictates what feed is shown in but the feed, it only dictates who can access it.
-            $map['scope'] = VisibilityScope::EVERYWHERE;
+            $map['scope'] = 'unlisted';
         } else {
             // Either Followers-only or Direct
             if ($type_note->get('directMessage') ?? false // Is DM explicitly?
@@ -190,14 +190,20 @@ class Note extends Model
             try {
                 $actor                                = ActivityPub::getActorByUri($target);
                 $object_mentions_ids[$actor->getId()] = $target;
-                // If $to is a group, set note's scope as Group
-                if ($actor->isGroup()) {
+                // If $to is a group and note is unlisted, set note's scope as Group
+                if ($actor->isGroup() && $map['scope'] === 'unlisted') {
                     $map['scope'] = VisibilityScope::GROUP;
                 }
             } catch (Exception $e) {
                 Log::debug('ActivityPub->Model->Note->fromJson->getActorByUri', [$e]);
             }
         }
+
+        // We can drop this insight already
+        if ($map['scope'] === 'unlisted') {
+            $map['scope'] = VisibilityScope::EVERYWHERE;
+        }
+
         foreach ($cc as $target) {
             if ($target === 'https://www.w3.org/ns/activitystreams#Public') {
                 continue;
@@ -362,7 +368,8 @@ class Note extends Model
                 $attr['cc'] = [];
                 break;
             case VisibilityScope::GROUP:
-                // Will have the group in the To
+                // Will have the group in the To coming from attentions
+                // no break
             case VisibilityScope::COLLECTION:
                 // Since we don't support sending unlisted/followers-only
                 // notices, arriving here means we're instead answering to that type
@@ -377,7 +384,12 @@ class Note extends Model
 
         $attention_cc = DB::findBy(Attention::class, ['note_id' => $object->getId()]);
         foreach($attention_cc as $cc_id) {
-            $attr['cc'][] = \App\Entity\Actor::getById($cc_id->getTargetId())->getUri(Router::ABSOLUTE_URL);
+            $target = \App\Entity\Actor::getById($cc_id->getTargetId());
+            if ($object->getScope() === VisibilityScope::GROUP && $target->isGroup()) {
+                $attr['to'][] = $target->getUri(Router::ABSOLUTE_URL);
+            } else {
+                $attr['cc'][] = $target->getUri(Router::ABSOLUTE_URL);
+            }
         }
 
         // Mentions
