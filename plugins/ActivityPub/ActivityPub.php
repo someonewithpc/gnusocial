@@ -389,7 +389,7 @@ class ActivityPub extends Plugin
                 return Event::next;
             }
         } catch (Exception $e) {
-            Log::error('ActivityPub Webfinger Mention check failed: ' . $e->getMessage());
+            Log::error('ActivityPub Webfinger Mention check failed.', [$e]);
             return Event::next;
         }
     }

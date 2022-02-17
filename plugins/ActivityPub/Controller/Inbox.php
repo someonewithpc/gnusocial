@@ -67,7 +67,11 @@ class Inbox extends Controller
     {
         $error = function (string $m, ?Exception $e = null): TypeResponse {
             Log::error('ActivityPub Error Answer: ' . ($json = json_encode(['error' => $m, 'exception' => var_export($e, true)])));
-            return new TypeResponse($json, 400);
+            if (is_null($e)) {
+                return new TypeResponse($json, 400);
+            } else {
+                throw $e;
+            }
         };
         $path = Router::url('activitypub_inbox', type: Router::ABSOLUTE_PATH);
 
@@ -76,7 +80,7 @@ class Inbox extends Controller
                 $user = DB::findOneBy('local_user', ['id' => $gsactor_id]);
                 $path = Router::url('activitypub_actor_inbox', ['gsactor_id' => $user->getId()], type: Router::ABSOLUTE_PATH);
             } catch (Exception $e) {
-                throw new ClientException(_m('No such actor.'), 404, $e);
+                throw new ClientException(_m('No such actor.'), 404, previous: $e);
             }
         }
 
@@ -107,7 +111,7 @@ class Inbox extends Controller
         $actor_public_key = $activitypub_rsa->getPublicKey();
 
         $headers = $this->request->headers->all();
-        Log::debug('ActivityPub Inbox: Request Headers: ' . var_export($headers, true));
+        Log::debug('ActivityPub Inbox: Request Headers.', [$headers]);
         // Flattify headers
         foreach ($headers as $key => $val) {
             $headers[$key] = $val[0];
@@ -121,9 +125,8 @@ class Inbox extends Controller
 
         // Extract the signature properties
         $signatureData = HTTPSignature::parseSignatureHeader($headers['signature']);
-        Log::debug('ActivityPub Inbox: HTTP Signature Data: ' . print_r($signatureData, true));
+        Log::debug('ActivityPub Inbox: HTTP Signature Data.', [$signatureData]);
         if (isset($signatureData['error'])) {
-            Log::debug('ActivityPub Inbox: HTTP Signature: ' . json_encode($signatureData, \JSON_PRETTY_PRINT));
             return $error(json_encode($signatureData, \JSON_PRETTY_PRINT));
         }
 
