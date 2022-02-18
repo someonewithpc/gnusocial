@@ -390,15 +390,9 @@ class RepeatNote extends NoteHandlerPlugin
         }
 
         if ($type_activity->get('type') === 'Announce') {
-            if (!\is_null($activity = self::repeatNote($note ?? Note::getById($note_id), $actor->getId(), source: 'ActivityPub'))) {
-                DB::flush();
-                Event::handle('NewNotification', [$actor, $activity, [], _m('{nickname} repeated note {note_id}.', ['{nickname}' => $actor->getNickname(), '{note_id}' => $activity->getObjectId()])]);
-            }
+            $activity = self::repeatNote($note ?? Note::getById($note_id), $actor->getId(), source: 'ActivityPub');
         } else {
-            if (!\is_null($activity = self::unrepeatNote($note_id, $actor->getId(), source: 'ActivityPub'))) {
-                DB::flush();
-                Event::handle('NewNotification', [$actor, $activity, [], _m('{nickname} unrepeated note {note_id}.', ['{nickname}' => $actor->getNickname(), '{note_id}' => $note_id])]);
-            }
+            $activity = self::unrepeatNote($note_id, $actor->getId(), source: 'ActivityPub');
         }
         if (!\is_null($activity)) {
             // Store ActivityPub Activity
@@ -411,6 +405,24 @@ class RepeatNote extends NoteHandlerPlugin
             DB::persist($ap_act);
         }
         return Event::stop;
+    }
+
+    public function onActivityPubNewNotification(Actor $sender, Activity $activity, array $ids_already_known = [], ?string $reason = null): bool
+    {
+        switch ($activity->getVerb()) {
+            case 'repeat':
+                Event::handle('NewNotification', [$sender, $activity, [], _m('{nickname} repeated note {note_id}.', ['{nickname}' => $sender->getNickname(), '{note_id}' => $activity->getObjectId()])]);
+                return Event::stop;
+            case 'undo':
+                if ($activity->getObjectType() === 'activity') {
+                    $undone_repeat = $activity->getObject();
+                    if ($undone_repeat->getVerb() === 'repeat') {
+                        Event::handle('NewNotification', [$sender, $activity, [], _m('{nickname} unrepeated note {note_id}.', ['{nickname}' => $sender->getNickname(), '{note_id}' => $undone_repeat->getObjectId()])]);
+                        return Event::stop;
+                    }
+                }
+        }
+        return Event::next;
     }
 
     /**

@@ -313,15 +313,9 @@ class Favourite extends NoteHandlerPlugin
         }
 
         if ($type_activity->get('type') === 'Like') {
-            if (!\is_null($activity = self::favourNote($note_id, $actor->getId(), source: 'ActivityPub'))) {
-                DB::flush();
-                Event::handle('NewNotification', [$actor, $activity, [], _m('{nickname} favoured note {note_id}.', ['{nickname}' => $actor->getNickname(), '{note_id}' => $activity->getObjectId()])]);
-            }
+            $activity = self::favourNote($note_id, $actor->getId(), source: 'ActivityPub');
         } else {
-            if (!\is_null($activity = self::unfavourNote($note_id, $actor->getId(), source: 'ActivityPub'))) {
-                DB::flush();
-                Event::handle('NewNotification', [$actor, $activity, [], _m('{nickname} unfavoured note {note_id}.', ['{nickname}' => $actor->getNickname(), '{note_id}' => $activity->getObjectId()])]);
-            }
+            $activity = self::unfavourNote($note_id, $actor->getId(), source: 'ActivityPub');
         }
         if (!\is_null($activity)) {
             // Store ActivityPub Activity
@@ -334,6 +328,24 @@ class Favourite extends NoteHandlerPlugin
             DB::persist($ap_act);
         }
         return Event::stop;
+    }
+
+    public function onActivityPubNewNotification(Actor $sender, Activity $activity, array $ids_already_known = [], ?string $reason = null): bool
+    {
+        switch ($activity->getVerb()) {
+            case 'favourite':
+                Event::handle('NewNotification', [$sender, $activity, [], _m('{nickname} favoured note {note_id}.', ['{nickname}' => $sender->getNickname(), '{note_id}' => $activity->getObjectId()])]);
+                return Event::stop;
+            case 'undo':
+                if ($activity->getObjectType() === 'activity') {
+                    $undone_favourite = $activity->getObject();
+                    if ($undone_favourite->getVerb() === 'favourite') {
+                        Event::handle('NewNotification', [$sender, $activity, [], _m('{nickname} unfavoured note {note_id}.', ['{nickname}' => $sender->getNickname(), '{note_id}' => $activity->getObjectId()])]);
+                        return Event::stop;
+                    }
+                }
+        }
+        return Event::next;
     }
 
     /**
