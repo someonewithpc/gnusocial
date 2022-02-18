@@ -19,6 +19,7 @@ declare(strict_types = 1);
  * @package   Nautilus
  *
  * @author    Aaron Parecki <aaron@parecki.com>
+ * @author    Diogo Peralta Cordeiro <@diogo.site>
  * @license   http://www.apache.org/licenses/LICENSE-2.0 Apache License 2.0
  *
  * @see      https://github.com/aaronpk/Nautilus/blob/master/app/ActivityPub/HTTPSignature.php
@@ -142,11 +143,19 @@ class HTTPSignature
     {
         // We need this because the used Request headers fields specified by Signature are in lower case.
         $headersContent = array_change_key_case($inputHeaders, \CASE_LOWER);
-        $digest         = 'SHA-256=' . base64_encode(hash('sha256', $body, true));
+        if ($signatureData['algorithm'] == 'hs2019') {
+            $digest = 'SHA-512=' . base64_encode(hash('sha512', $body, true));
+        } else {
+            $digest = 'SHA-256=' . base64_encode(hash('sha256', $body, true));
+        }
         $headersToSign  = [];
         foreach (explode(' ', $signatureData['headers']) as $h) {
             if ($h == '(request-target)') {
                 $headersToSign[$h] = 'post ' . $path;
+            } elseif ($h == '(created)') {
+                $headersToSign[$h] = $signatureData['created'];
+            } elseif ($h == '(expires)') {
+                $headersToSign[$h] = $signatureData['expires'];
             } elseif ($h == 'digest') {
                 $headersToSign[$h] = $digest;
             } elseif (\array_key_exists($h, $headersContent)) {
@@ -155,7 +164,11 @@ class HTTPSignature
         }
         $signingString = self::_headersToSigningString($headersToSign);
 
-        $verified = openssl_verify($signingString, base64_decode($signatureData['signature']), $publicKey, \OPENSSL_ALGO_SHA256);
+        if ($signatureData['algorithm'] == 'hs2019') {
+            $verified = openssl_verify($signingString, base64_decode($signatureData['signature']), $publicKey, \OPENSSL_ALGO_SHA512);
+        } else {
+            $verified = openssl_verify($signingString, base64_decode($signatureData['signature']), $publicKey, \OPENSSL_ALGO_SHA256);
+        }
 
         return [$verified, $signingString];
     }
