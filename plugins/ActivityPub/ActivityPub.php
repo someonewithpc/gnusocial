@@ -48,6 +48,7 @@ use App\Util\Common;
 use App\Util\Exception\BugFoundException;
 use App\Util\Exception\NoSuchActorException;
 use App\Util\Nickname;
+use Codeception\Coverage\Subscriber\Local;
 use Component\Collection\Util\Controller\OrderedCollection;
 use Component\FreeNetwork\Entity\FreeNetworkActorProtocol;
 use Component\FreeNetwork\Util\Discovery;
@@ -148,7 +149,7 @@ class ActivityPub extends Plugin
             // Is remote?
             !$actor->getIsLocal()
             // Is in ActivityPub?
-            && !\is_null($ap_actor = ActivitypubActor::getByPK(['actor_id' => $actor->getId()]))
+            && !\is_null($ap_actor = DB::findOneBy(ActivitypubActor::class, ['actor_id' => $actor->getId()], return_null: true))
             // We can only provide a full URL (anything else wouldn't make sense)
             && $type === Router::ABSOLUTE_URL
         ) {
@@ -166,8 +167,8 @@ class ActivityPub extends Plugin
     {
         // Are both in AP?
         if (
-            !\is_null($ap_actor = ActivitypubActor::getByPK(['actor_id' => $actor->getId()]))
-            && !\is_null($ap_other = ActivitypubActor::getByPK(['actor_id' => $other->getId()]))
+            !\is_null($ap_actor = DB::findOneBy(ActivitypubActor::class, ['actor_id' => $actor->getId()], return_null: true))
+            && !\is_null($ap_other = DB::findOneBy(ActivitypubActor::class, ['actor_id' => $other->getId()], return_null: true))
         ) {
             // Are they both in the same server?
             $canAdmin = parse_url($ap_actor->getUri(), PHP_URL_HOST) === parse_url($ap_other->getUri(), PHP_URL_HOST);
@@ -258,7 +259,7 @@ class ActivityPub extends Plugin
         $to_addr = [];
         foreach ($targets as $actor) {
             if (FreeNetworkActorProtocol::canIActor('activitypub', $actor->getId())) {
-                if (\is_null($ap_target = ActivitypubActor::getByPK(['actor_id' => $actor->getId()]))) {
+                if (\is_null($ap_target = DB::findOneBy(ActivitypubActor::class, ['actor_id' => $actor->getId()], return_null: true))) {
                     continue;
                 }
                 $to_addr[$ap_target->getInboxSharedUri() ?? $ap_target->getInboxUri()][] = $actor;
@@ -405,7 +406,7 @@ class ActivityPub extends Plugin
                     return $object->getUrl();
                 } else {
                     // Try known remote objects
-                    $known_object = ActivitypubObject::getByPK(['object_type' => 'note', 'object_id' => $object->getId()]);
+                    $known_object = DB::findOneBy(ActivitypubObject::class, ['object_type' => 'note', 'object_id' => $object->getId()], return_null: true);
                     if ($known_object instanceof ActivitypubObject) {
                         return $known_object->getObjectUri();
                     } else {
@@ -418,8 +419,8 @@ class ActivityPub extends Plugin
                 break;
             case Activity::class:
                 // Try known remote activities
-                $known_activity = ActivitypubActivity::getByPK(['activity_id' => $object->getId()]);
-                if ($known_activity instanceof ActivitypubActivity) {
+                $known_activity = DB::findOneBy(ActivitypubActivity::class, ['activity_id' => $object->getId()], return_null: true);
+                if (!\is_null($known_activity)) {
                     return $known_activity->getActivityUri();
                 } else {
                     return Router::url('activity_view', ['id' => $object->getId()], Router::ABSOLUTE_URL);
@@ -444,14 +445,14 @@ class ActivityPub extends Plugin
     public static function getObjectByUri(string $resource, bool $try_online = true)
     {
         // Try known object
-        $known_object = ActivitypubObject::getByPK(['object_uri' => $resource]);
-        if ($known_object instanceof ActivitypubObject) {
+        $known_object = DB::findOneBy(ActivitypubObject::class, ['object_uri' => $resource], return_null: true);
+        if (!\is_null($known_object)) {
             return $known_object->getObject();
         }
 
         // Try known activity
-        $known_activity = ActivitypubActivity::getByPK(['activity_uri' => $resource]);
-        if ($known_activity instanceof ActivitypubActivity) {
+        $known_activity = DB::findOneBy(ActivitypubActivity::class, ['activity_uri' => $resource], return_null: true);
+        if (!\is_null($known_activity)) {
             return $known_activity->getActivity();
         }
 
@@ -477,14 +478,14 @@ class ActivityPub extends Plugin
 
         // Try remote
         if (!$try_online) {
-            return;
+            return null;
         }
 
         $response = HTTPClient::get($resource, ['headers' => self::HTTP_CLIENT_HEADERS]);
         // If it was deleted
         if ($response->getStatusCode() == 410) {
             //$obj = Type::create('Tombstone', ['id' => $resource]);
-            return;
+            return null;
         } elseif (!HTTPClient::statusCodeIsOkay($response)) { // If it is unavailable
             throw new Exception('Non Ok Status Code for given Object id.');
         } else {
@@ -514,7 +515,7 @@ class ActivityPub extends Plugin
                 // actor_view_id
                 $reuri = '/\/actor\/(\d+)\/?/m';
                 if (preg_match_all($renick, $str, $matches, PREG_SET_ORDER, 0) === 1) {
-                    return LocalUser::getByPK(['nickname' => $matches[0][1]])->getActor();
+                    return DB::findOneBy(LocalUser::class, ['nickname' => $matches[0][1]])->getActor();
                 } elseif (preg_match_all($reuri, $str, $matches, PREG_SET_ORDER, 0) === 1) {
                     return Actor::getById((int) $matches[0][1]);
                 }

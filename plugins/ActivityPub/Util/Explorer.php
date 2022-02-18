@@ -32,6 +32,7 @@ declare(strict_types = 1);
 
 namespace Plugin\ActivityPub\Util;
 
+use App\Core\DB\DB;
 use App\Core\HTTPClient;
 use App\Core\Log;
 use App\Util\Exception\NoSuchActorException;
@@ -152,8 +153,8 @@ class Explorer
 
         // Try standard ActivityPub route
         // Is this a known filthy little mudblood?
-        $aprofile = self::get_aprofile_by_url($uri);
-        if ($aprofile instanceof ActivitypubActor) {
+        $aprofile = DB::findOneBy(ActivitypubActor::class, ['uri' => $uri], return_null: true);
+        if (!\is_null($aprofile)) {
             Log::debug('ActivityPub Explorer: Found a known Aprofile for ' . $uri);
 
             // We found something!
@@ -214,19 +215,6 @@ class Explorer
         }
 
         return false;
-    }
-
-    /**
-     * Get a ActivityPub Profile from it's uri
-     *
-     * @param string $v URL
-     *
-     * @return ActivitypubActor|bool false if fails | Aprofile object if successful
-     */
-    public static function get_aprofile_by_url(string $v): ActivitypubActor|bool
-    {
-        $aprofile = ActivitypubActor::getByPK(['uri' => $v]);
-        return \is_null($aprofile) ? false : ActivitypubActor::getByPK(['uri' => $v]);
     }
 
     /**

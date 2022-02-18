@@ -188,7 +188,7 @@ class Note extends Model
                 continue;
             }
             try {
-                $actor                                = ActivityPub::getActorByUri($target);
+                $actor = ActivityPub::getActorByUri($target);
                 $object_mentions_ids[$actor->getId()] = $target;
                 // If $to is a group and note is unlisted, set note's scope as Group
                 if ($actor->isGroup() && $map['scope'] === 'unlisted') {
@@ -209,18 +209,14 @@ class Note extends Model
                 continue;
             }
             try {
-                $actor                                = ActivityPub::getActorByUri($target);
+                $actor = ActivityPub::getActorByUri($target);
                 $object_mentions_ids[$actor->getId()] = $target;
             } catch (Exception $e) {
                 Log::debug('ActivityPub->Model->Note->fromJson->getActorByUri', [$e]);
             }
         }
 
-        $obj = new GSNote();
-        foreach ($map as $prop => $val) {
-            $set = Formatting::snakeCaseToCamelCase("set_{$prop}");
-            $obj->{$set}($val);
-        }
+        $obj = GSNote::create($map);
 
         // Attachments
         $processed_attachments = [];
@@ -235,7 +231,7 @@ class Note extends Model
                     // Create an attachment for this
                     $temp_file = new TemporaryFile();
                     $temp_file->write($media);
-                    $filesize      = $temp_file->getSize();
+                    $filesize = $temp_file->getSize();
                     $max_file_size = Common::getUploadLimit();
                     if ($max_file_size < $filesize) {
                         throw new ClientException(_m('No file may be larger than {quota} bytes and the file you sent was {size} bytes. '
@@ -258,7 +254,7 @@ class Note extends Model
                 case 'Mention':
                 case 'Group':
                     try {
-                        $actor                                = ActivityPub::getActorByUri($ap_tag->get('href'));
+                        $actor = ActivityPub::getActorByUri($ap_tag->get('href'));
                         $object_mentions_ids[$actor->getId()] = $ap_tag->get('href');
                     } catch (Exception $e) {
                         Log::debug('ActivityPub->Model->Note->fromJson->getActorByUri', [$e]);
@@ -276,8 +272,8 @@ class Note extends Model
                     }
                     break;
                 case 'Hashtag':
-                    $match         = ltrim($ap_tag->get('name'), '#');
-                    $tag           = Tag::extract($match);
+                    $match = ltrim($ap_tag->get('name'), '#');
+                    $tag = Tag::extract($match);
                     $canonical_tag = $ap_tag->get('canonical') ?? Tag::canonicalTag($tag, \is_null($lang_id = $obj->getLanguageId()) ? null : Language::getById($lang_id)->getLocale());
                     DB::persist(NoteTag::create([
                         'tag'           => $tag,
@@ -418,7 +414,7 @@ class Note extends Model
                 'type'      => 'Document',
                 'mediaType' => $attachment->getMimetype(),
                 'url'       => $attachment->getUrl(note: $object, type: Router::ABSOLUTE_URL),
-                'name'      => AttachmentToNote::getByPK(['attachment_id' => $attachment->getId(), 'note_id' => $object->getId()])->getTitle(),
+                'name'      => DB::findOneBy(AttachmentToNote::class, ['attachment_id' => $attachment->getId(), 'note_id' => $object->getId()], return_null: true)?->getTitle(),
                 'width'     => $attachment->getWidth(),
                 'height'    => $attachment->getHeight(),
             ];

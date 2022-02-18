@@ -125,7 +125,7 @@ class FreeNetworkActorProtocol extends Entity
         } else {
             $attributed_protocol->setProtocol($protocol);
         }
-        DB::wrapInTransaction(fn () => DB::persist($attributed_protocol));
+        DB::persist($attributed_protocol);
     }
 
     public static function canIActor(string $protocol, int|Actor $actor_id): bool

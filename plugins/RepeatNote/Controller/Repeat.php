@@ -25,7 +25,9 @@ namespace Plugin\RepeatNote\Controller;
 
 use App\Core\Controller;
 use App\Core\DB\DB;
+use App\Core\Event;
 use App\Core\Form;
+use App\Entity\Actor;
 use function App\Core\I18n\_m;
 use App\Core\Log;
 use App\Core\Router\Router;
@@ -71,8 +73,10 @@ class Repeat extends Controller
 
         $form_add_to_repeat->handleRequest($request);
         if ($form_add_to_repeat->isSubmitted()) {
-            \Plugin\RepeatNote\RepeatNote::repeatNote(note: $note, actor_id: $actor_id);
+            $repeat_activity = \Plugin\RepeatNote\RepeatNote::repeatNote(note: $note, actor_id: $actor_id);
             DB::flush();
+            Event::handle('NewNotification', [$actor = Actor::getById($actor_id), $repeat_activity, [], _m('{nickname} repeated note {note_id}.', ['{nickname}' => $actor->getNickname(), '{note_id}' => $repeat_activity->getObjectId()])]);
+
 
             // Redirect user to where they came from
             // Prevent open redirect
@@ -127,8 +131,9 @@ class Repeat extends Controller
 
         $form_remove_repeat->handleRequest($request);
         if ($form_remove_repeat->isSubmitted()) {
-            if (!\is_null(\Plugin\RepeatNote\RepeatNote::unrepeatNote(note_id: $note_id, actor_id: $actor_id))) {
+            if (!\is_null($undo_repeat_activity = \Plugin\RepeatNote\RepeatNote::unrepeatNote(note_id: $note_id, actor_id: $actor_id))) {
                 DB::flush();
+                Event::handle('NewNotification', [$actor = Actor::getById($actor_id), $undo_repeat_activity, [], _m('{nickname} unrepeated note {note_id}.', ['{nickname}' => $actor->getNickname(), '{note_id}' => $note_id])]);
             } else {
                 throw new ClientException(_m('Note wasn\'t repeated!'));
             }

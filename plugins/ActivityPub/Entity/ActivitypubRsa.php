@@ -147,7 +147,7 @@ class ActivitypubRsa extends Entity
      */
     public static function getByActor(Actor $gsactor, bool $fetch = true): self
     {
-        $apRSA = self::getByPK(['actor_id' => ($actor_id = $gsactor->getId())]);
+        $apRSA = DB::findOneBy(self::class, ['actor_id' => ($actor_id = $gsactor->getId())], return_null: true);
         if (\is_null($apRSA)) {
             // Nonexistent key pair for this profile
             if ($gsactor->getIsLocal()) {
@@ -157,7 +157,7 @@ class ActivitypubRsa extends Entity
                     'private_key' => $private_key,
                     'public_key'  => $public_key,
                 ]);
-                DB::wrapInTransaction(fn () => DB::persist($apRSA));
+                DB::persist($apRSA);
             } else {
                 // ASSERT: This should never happen, but try to recover!
                 Log::error('Activitypub_rsa: An impossible thing has happened... Please let the devs know.');

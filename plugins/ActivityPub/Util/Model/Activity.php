@@ -34,6 +34,7 @@ namespace Plugin\ActivityPub\Util\Model;
 
 use ActivityPhp\Type;
 use ActivityPhp\Type\AbstractObject;
+use App\Core\DB\DB;
 use App\Core\Event;
 use App\Core\Router\Router;
 use App\Entity\Activity as GSActivity;
@@ -79,7 +80,7 @@ class Activity extends Model
 
         // Ditch known activities
         if ($type_activity->has('id')) { // We can't dereference a transient activity
-            $ap_act = ActivitypubActivity::getByPK(['activity_uri' => $type_activity->get('id')]);
+            $ap_act = DB::findOneBy(ActivitypubActivity::class, ['activity_uri' => $type_activity->get('id')], return_null: true);
             if (!\is_null($ap_act)) {
                 return $ap_act;
             }

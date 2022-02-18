@@ -96,9 +96,8 @@ class Inbox extends Controller
         try {
             $resource_parts = parse_url($type->get('actor'));
             if ($resource_parts['host'] !== Common::config('site', 'server')) {
-                $ap_actor = ActivitypubActor::fromUri($type->get('actor'));
+                $ap_actor =  DB::wrapInTransaction(fn() => ActivitypubActor::fromUri($type->get('actor')));
                 $actor    = Actor::getById($ap_actor->getActorId());
-                DB::flush();
             } else {
                 throw new Exception('Only remote actors can use this endpoint.');
             }
@@ -173,8 +172,8 @@ class Inbox extends Controller
         if (!empty($ap_act->_object_mention_ids)) {
             $already_known_ids = $ap_act->_object_mention_ids;
         }
-        Event::handle('NewNotification', [$actor, $ap_act->getActivity(), $already_known_ids, _m('{nickname} mentioned you.', ['{nickname}' => $actor->getNickname()])]);
         DB::flush();
+        Event::handle('NewNotification', [$actor, $ap_act->getActivity(), $already_known_ids, _m('{nickname} mentioned you.', ['{nickname}' => $actor->getNickname()])]);
 
         dd($ap_act, $act = $ap_act->getActivity(), $act->getActor(), $act->getObject());
 

@@ -24,7 +24,9 @@ declare(strict_types = 1);
 namespace Plugin\Favourite\Controller;
 
 use App\Core\DB\DB;
+use App\Core\Event;
 use App\Core\Form;
+use App\Entity\Actor;
 use function App\Core\I18n\_m;
 use App\Core\Log;
 use App\Core\Router\Router;
@@ -72,8 +74,9 @@ class Favourite extends FeedController
         $form_add_to_favourite->handleRequest($request);
 
         if ($form_add_to_favourite->isSubmitted()) {
-            if (!\is_null(\Plugin\Favourite\Favourite::favourNote(note_id: $id, actor_id: $actor_id))) {
+            if (!\is_null($activity = \Plugin\Favourite\Favourite::favourNote(note_id: $id, actor_id: $actor_id))) {
                 DB::flush();
+                Event::handle('NewNotification', [$actor = Actor::getById($actor_id), $activity, [], _m('{nickname} favoured note {note_id}.', ['{nickname}' => $actor->getNickname(), '{note_id}' => $activity->getObjectId()])]);
             } else {
                 throw new ClientException(_m('Note already favoured!'));
             }
@@ -131,8 +134,10 @@ class Favourite extends FeedController
 
         $form_remove_favourite->handleRequest($request);
         if ($form_remove_favourite->isSubmitted()) {
-            if (!\is_null(\Plugin\Favourite\Favourite::unfavourNote(note_id: $id, actor_id: $actor_id))) {
+            if (!\is_null($activity = \Plugin\Favourite\Favourite::unfavourNote(note_id: $id, actor_id: $actor_id))) {
                 DB::flush();
+                Event::handle('NewNotification', [$actor = Actor::getById($actor_id), $activity, [], _m('{nickname} unfavoured note {note_id}.', ['{nickname}' => $actor->getNickname(), '{note_id}' => $activity->getObjectId()])]);
+
             } else {
                 throw new ClientException(_m('Note already unfavoured!'));
             }

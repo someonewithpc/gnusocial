@@ -261,7 +261,10 @@ class ActivitypubActor extends Entity
                 'created'          => ['type' => 'datetime', 'not null' => true, 'default' => 'CURRENT_TIMESTAMP', 'description' => 'date this record was created'],
                 'modified'         => ['type' => 'timestamp', 'not null' => true, 'default' => 'CURRENT_TIMESTAMP', 'description' => 'date this record was modified'],
             ],
-            'primary key'  => ['actor_id'],
+            'primary key'  => ['uri'],
+            'unique keys' => [
+                'activitypub_actor_id_ukey' => ['actor_id'],
+            ],
             'foreign keys' => [
                 'activitypub_actor_actor_id_fkey' => ['actor', ['actor_id' => 'id']],
             ],

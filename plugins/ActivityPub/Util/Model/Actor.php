@@ -104,49 +104,46 @@ class Actor extends Model
         }
 
         // Actor
-        $actor_map = [
-            'nickname' => $object->get('preferredUsername'),
-            'fullname' => !empty($object->get('name')) ? $object->get('name') : null,
-            'created'  => new DateTime($object->get('published') ?? 'now'),
-            'bio'      => $object->get('summary'),
-            'is_local' => false, // duh!
-            'type'     => self::$_as2_actor_type_to_gs_actor_type[$object->get('type')],
-            'roles'    => $roles,
-            'modified' => new DateTime(),
-        ];
-
-        $actor = $options['objects']['Actor'] ?? new GSActor();
-
-        foreach ($actor_map as $prop => $val) {
-            $set = Formatting::snakeCaseToCamelCase("set_{$prop}");
-            $actor->{$set}($val);
-        }
-
-        if (!isset($options['objects']['Actor'])) {
-            DB::wrapInTransaction(fn () => DB::persist($actor));
+        if (isset($options['objects']['Actor'])) {
+            $actor = $options['objects']['Actor'];
+        } else {
+            $actor_map = [
+                'nickname' => $object->get('preferredUsername'),
+                'fullname' => !empty($object->get('name')) ? $object->get('name') : null,
+                'created'  => new DateTime($object->get('published') ?? 'now'),
+                'bio'      => $object->get('summary'),
+                'is_local' => false, // duh!
+                'type'     => self::$_as2_actor_type_to_gs_actor_type[$object->get('type')],
+                'roles'    => $roles,
+                'modified' => new DateTime(),
+            ];
+            $actor = GSActor::create($actor_map);
+            DB::persist($actor);
         }
 
         // ActivityPub Actor
-        $ap_actor = ActivitypubActor::create([
-            'inbox_uri'        => $object->get('inbox'),
-            'inbox_shared_uri' => ($object->has('endpoints') && isset($object->get('endpoints')['sharedInbox'])) ? $object->get('endpoints')['sharedInbox'] : null,
-            'uri'              => $object->get('id'),
-            'actor_id'         => $actor->getId(),
-            'url'              => $object->get('url') ?? null,
-        ], $options['objects']['ActivitypubActor'] ?? null);
-
-        if (!isset($options['objects']['ActivitypubActor'])) {
-            DB::wrapInTransaction(fn () => DB::persist($ap_actor));
+        if (isset($options['objects']['ActivitypubActor'])) {
+            $ap_actor = $options['objects']['ActivitypubActor'];
+        } else {
+            $ap_actor = ActivitypubActor::create([
+                'inbox_uri'        => $object->get('inbox'),
+                'inbox_shared_uri' => ($object->has('endpoints') && isset($object->get('endpoints')['sharedInbox'])) ? $object->get('endpoints')['sharedInbox'] : null,
+                'uri'              => $object->get('id'),
+                'actor_id'         => $actor->getId(),
+                'url'              => $object->get('url') ?? null,
+            ], $options['objects']['ActivitypubActor'] ?? null);
+            DB::persist($ap_actor);
         }
 
         // Public Key
-        $apRSA = ActivitypubRsa::create([
-            'actor_id'   => $actor->getID(),
-            'public_key' => ($object->has('publicKey') && isset($object->get('publicKey')['publicKeyPem'])) ? $object->get('publicKey')['publicKeyPem'] : null,
-        ], $options['objects']['ActivitypubRsa'] ?? null);
-
-        if (!isset($options['objects']['ActivitypubRsa'])) {
-            DB::wrapInTransaction(fn () => DB::persist($apRSA));
+        if (isset($options['objects']['ActivitypubRsa'])) {
+            $apRSA = $options['objects']['ActivitypubRsa'];
+        } else {
+            $apRSA = ActivitypubRsa::create([
+                'actor_id'   => $actor->getID(),
+                'public_key' => ($object->has('publicKey') && isset($object->get('publicKey')['publicKeyPem'])) ? $object->get('publicKey')['publicKeyPem'] : null,
+            ], $options['objects']['ActivitypubRsa'] ?? null);
+            DB::persist($apRSA);
         }
 
         // Avatar
@@ -170,14 +167,14 @@ class Actor extends Model
                         if (!\is_null($avatar = DB::findOneBy(\Component\Avatar\Entity\Avatar::class, ['actor_id' => $actor->getId()], return_null: true))) {
                             $avatar->delete();
                         }
-                        DB::wrapInTransaction(function () use ($attachment, $actor, $object) {
+
                             DB::persist($attachment);
                             DB::persist(\Component\Avatar\Entity\Avatar::create([
                                 'actor_id'      => $actor->getId(),
                                 'attachment_id' => $attachment->getId(),
                                 'title'         => $object->get('icon')->get('name') ?? null,
                             ]));
-                        });
+
                         Event::handle('AvatarUpdate', [$actor->getId()]);
                     }
                 }
@@ -216,7 +213,7 @@ class Actor extends Model
         $uri        = $object->getUri(Router::ABSOLUTE_URL);
         $attr       = [
             '@context'  => 'https://www.w3.org/ns/activitystreams',
-            'type'      => ($object->getType() === GSActor::GROUP) ? (LocalGroup::getByPK(['actor_id' => $object->getId()])->getType() === 'organisation' ? 'Organization' : 'Group'): self::$_gs_actor_type_to_as2_actor_type[$object->getType()],
+            'type'      => ($object->getType() === GSActor::GROUP) ? (DB::findOneBy(LocalGroup::class, ['actor_id' => $object->getId()], return_null: true)?->getType() === 'organisation' ? 'Organization' : 'Group'): self::$_gs_actor_type_to_as2_actor_type[$object->getType()],
             'id'        => $uri,
             'inbox'     => Router::url('activitypub_actor_inbox', ['gsactor_id' => $object->getId()], Router::ABSOLUTE_URL),
             'outbox'    => Router::url('activitypub_actor_outbox', ['gsactor_id' => $object->getId()], Router::ABSOLUTE_URL),

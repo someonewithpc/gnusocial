@@ -81,7 +81,6 @@ class Favourite extends NoteHandlerPlugin
             ]);
             DB::persist($activity);
 
-            Event::handle('NewNotification', [$actor = Actor::getById($actor_id), $activity, [], _m('{nickname} favoured note {note_id}.', ['{nickname}' => $actor->getNickname(), '{note_id}' => $activity->getObjectId()])]);
         }
         return $activity;
     }
@@ -116,8 +115,6 @@ class Favourite extends NoteHandlerPlugin
                 'source'      => $source,
             ]);
             DB::persist($activity);
-
-            Event::handle('NewNotification', [$actor = Actor::getById($actor_id), $activity, [], _m('{nickname} unfavoured note {note_id}.', ['{nickname}' => $actor->getNickname(), '{note_id}' => $activity->getObjectId()])]);
         }
         return $activity;
     }
@@ -287,7 +284,8 @@ class Favourite extends NoteHandlerPlugin
         if ($type_activity->get('type') === 'Like') { // Favourite
             if ($type_object instanceof \ActivityPhp\Type\AbstractObject) {
                 if ($type_object->get('type') === 'Note' || $type_object->get('type') === 'Page') {
-                    $note_id = \Plugin\ActivityPub\Util\Model\Note::fromJson($type_object)->getId();
+                    $note    = \Plugin\ActivityPub\Util\Model\Note::fromJson($type_object);
+                    $note_id = $note->getId();
                 } else {
                     return Event::next;
                 }
@@ -315,9 +313,15 @@ class Favourite extends NoteHandlerPlugin
         }
 
         if ($type_activity->get('type') === 'Like') {
-            $activity = self::favourNote($note_id, $actor->getId(), source: 'ActivityPub');
+            if (!\is_null($activity = self::favourNote($note_id, $actor->getId(), source: 'ActivityPub'))) {
+                DB::flush();
+                Event::handle('NewNotification', [$actor, $activity, [], _m('{nickname} favoured note {note_id}.', ['{nickname}' => $actor->getNickname(), '{note_id}' => $activity->getObjectId()])]);
+            }
         } else {
-            $activity = self::unfavourNote($note_id, $actor->getId(), source: 'ActivityPub');
+            if (!\is_null($activity = self::unfavourNote($note_id, $actor->getId(), source: 'ActivityPub'))) {
+                DB::flush();
+                Event::handle('NewNotification', [$actor, $activity, [], _m('{nickname} unfavoured note {note_id}.', ['{nickname}' => $actor->getNickname(), '{note_id}' => $activity->getObjectId()])]);
+            }
         }
         if (!\is_null($activity)) {
             // Store ActivityPub Activity

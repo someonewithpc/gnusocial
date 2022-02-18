@@ -110,11 +110,6 @@ class RepeatNote extends NoteHandlerPlugin
         ]);
         DB::persist($repeat_activity);
 
-        // Flush before notification
-        DB::flush();
-
-        Event::handle('NewNotification', [$actor = Actor::getById($actor_id), $repeat_activity, [], _m('{nickname} repeated note {note_id}.', ['{nickname}' => $actor->getNickname(), '{note_id}' => $repeat_activity->getObjectId()])]);
-
         return $repeat_activity;
     }
 
@@ -164,8 +159,6 @@ class RepeatNote extends NoteHandlerPlugin
                 'source'      => $source,
             ]);
             DB::persist($undo_repeat_activity);
-
-            Event::handle('NewNotification', [$actor = Actor::getById($actor_id), $undo_repeat_activity, [], _m('{nickname} unrepeated note {note_id}.', ['{nickname}' => $actor->getNickname(), '{note_id}' => $note_id])]);
 
             return $undo_repeat_activity;
         } else {
@@ -397,9 +390,15 @@ class RepeatNote extends NoteHandlerPlugin
         }
 
         if ($type_activity->get('type') === 'Announce') {
-            $activity = self::repeatNote($note ?? Note::getById($note_id), $actor->getId(), source: 'ActivityPub');
+            if (!\is_null($activity = self::repeatNote($note ?? Note::getById($note_id), $actor->getId(), source: 'ActivityPub'))) {
+                DB::flush();
+                Event::handle('NewNotification', [$actor, $activity, [], _m('{nickname} repeated note {note_id}.', ['{nickname}' => $actor->getNickname(), '{note_id}' => $activity->getObjectId()])]);
+            }
         } else {
-            $activity = self::unrepeatNote($note_id, $actor->getId(), source: 'ActivityPub');
+            if (!\is_null($activity = self::unrepeatNote($note_id, $actor->getId(), source: 'ActivityPub'))) {
+                DB::flush();
+                Event::handle('NewNotification', [$actor, $activity, [], _m('{nickname} unrepeated note {note_id}.', ['{nickname}' => $actor->getNickname(), '{note_id}' => $note_id])]);
+            }
         }
         if (!\is_null($activity)) {
             // Store ActivityPub Activity
