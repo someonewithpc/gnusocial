@@ -143,11 +143,7 @@ class HTTPSignature
     {
         // We need this because the used Request headers fields specified by Signature are in lower case.
         $headersContent = array_change_key_case($inputHeaders, \CASE_LOWER);
-        if ($signatureData['algorithm'] == 'hs2019') {
-            $digest = 'SHA-512=' . base64_encode(hash('sha512', $body, true));
-        } else {
-            $digest = 'SHA-256=' . base64_encode(hash('sha256', $body, true));
-        }
+        $digest = 'SHA-256=' . base64_encode(hash('sha256', $body, true));
         $headersToSign  = [];
         foreach (explode(' ', $signatureData['headers']) as $h) {
             if ($h == '(request-target)') {
@@ -164,11 +160,7 @@ class HTTPSignature
         }
         $signingString = self::_headersToSigningString($headersToSign);
 
-        if ($signatureData['algorithm'] == 'hs2019') {
-            $verified = openssl_verify($signingString, base64_decode($signatureData['signature']), $publicKey, \OPENSSL_ALGO_SHA512);
-        } else {
-            $verified = openssl_verify($signingString, base64_decode($signatureData['signature']), $publicKey, \OPENSSL_ALGO_SHA256);
-        }
+        $verified = openssl_verify($signingString, base64_decode($signatureData['signature']), $publicKey, \OPENSSL_ALGO_SHA256);
 
         return [$verified, $signingString];
     }
