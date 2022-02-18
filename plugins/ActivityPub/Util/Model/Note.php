@@ -224,7 +224,7 @@ class Note extends Model
 
         // Attachments
         $processed_attachments = [];
-        foreach ($type_note->get('attachment') as $attachment) {
+        foreach ($type_note->get('attachment') ?? [] as $attachment) {
             if ($attachment->get('type') === 'Document') {
                 // Retrieve media
                 $get_response = HTTPClient::get($attachment->get('url'));
@@ -253,7 +253,7 @@ class Note extends Model
         // Assign conversation to this note
         Conversation::assignLocalConversation($obj, $reply_to);
 
-        foreach ($type_note->get('tag') as $ap_tag) {
+        foreach ($type_note->get('tag') ?? [] as $ap_tag) {
             switch ($ap_tag->get('type')) {
                 case 'Mention':
                 case 'Group':

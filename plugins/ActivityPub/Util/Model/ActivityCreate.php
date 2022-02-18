@@ -55,12 +55,12 @@ class ActivityCreate extends Activity
             if ($type_object->get('type') === 'Note'  || $type_object->get('type') === 'Page') {
                 $actual_to = array_flip(is_string($type_object->get('to')) ? [$type_object->get('to')] : $type_object->get('to'));
                 $actual_cc = array_flip(is_string($type_object->get('cc')) ? [$type_object->get('cc')] : $type_object->get('cc'));
-                foreach (is_string($type_activity->get('to')) ? [$type_activity->get('to')] : $type_activity->get('to') as $to) {
+                foreach (is_string($type_activity->get('to')) ? [$type_activity->get('to')] : ($type_activity->get('to') ?? []) as $to) {
                     if ($to !== 'https://www.w3.org/ns/activitystreams#Public') {
                         $actual_to[$to] = true;
                     }
                 }
-                foreach (is_string($type_activity->get('cc')) ? [$type_activity->get('cc')] : $type_activity->get('cc') as $cc) {
+                foreach (is_string($type_activity->get('cc')) ? [$type_activity->get('cc')] : ($type_activity->get('cc') ?? []) as $cc) {
                     if ($cc !== 'https://www.w3.org/ns/activitystreams#Public') {
                         $actual_cc[$cc] = true;
                     }
