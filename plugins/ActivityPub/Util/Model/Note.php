@@ -146,7 +146,7 @@ class Note extends Model
             'is_local'     => false,
             'created'      => new DateTime($type_note->get('published') ?? 'now'),
             'content'      => $type_note->get('content') ?? null,
-            'rendered'     => $type_note->has('content') ? HTML::sanitize($type_note->get('content')) : null,
+            'rendered'     => is_null($type_note->get('content')) ? null : HTML::sanitize($type_note->get('content')),
             'title'        => $type_note->get('name') ?? null,
             'content_type' => 'text/html',
             'language_id'  => $type_note->get('contentLang') ?? null,
