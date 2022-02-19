@@ -119,11 +119,17 @@ class Notification extends Component
             // XXX: Unideal as in failures the rollback will leave behind a false notification,
             // but most notifications (all) require flushing the objects first
             // Should be okay as long as implementors bear this in mind
-            DB::wrapInTransaction(fn () => DB::persist(Entity\Notification::create([
-                'activity_id' => $activity->getId(),
-                'target_id'   => $target->getId(),
-                'reason'      => $reason,
-            ])));
+            try {
+                DB::wrapInTransaction(fn () => DB::persist(Entity\Notification::create([
+                    'activity_id' => $activity->getId(),
+                    'target_id'   => $target->getId(),
+                    'reason'      => $reason,
+                ])));
+            } catch (\Exception|\Throwable $e) {
+                // We do our best not to record duplicated notifications, but it's not insane that can happen
+                Log::error('It was attempted to record an invalid notification!', [$e]);
+            }
+
         }
 
         FreeNetwork::notify($sender, $activity, $remote_targets, $reason);
