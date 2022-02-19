@@ -39,6 +39,7 @@ use App\Core\DB\DB;
 use App\Core\Event;
 use App\Core\GSFile;
 use App\Core\HTTPClient;
+use App\Entity\NoteType;
 use function App\Core\I18n\_m;
 use App\Core\Log;
 use App\Core\Router\Router;
@@ -151,6 +152,7 @@ class Note extends Model
             'actor_id'     => $actor_id,
             'reply_to'     => $reply_to = $handleInReplyTo($type_note),
             'modified'     => new DateTime(),
+            'type'         => match ($type_note->get('type')) {'Page' => NoteType::PAGE, default => NoteType::NOTE},
             'source'       => $source,
         ];
 
@@ -329,7 +331,7 @@ class Note extends Model
 
         $attr = [
             '@context'       => 'https://www.w3.org/ns/activitystreams',
-            'type'           => 'Note',
+            'type'           => match($object->getType()) {NoteType::NOTE => 'Note', NoteType::PAGE => 'Page'},
             'id'             => $object->getUrl(),
             'published'      => $object->getCreated()->format(DateTimeInterface::RFC3339),
             'attributedTo'   => $object->getActor()->getUri(Router::ABSOLUTE_URL),

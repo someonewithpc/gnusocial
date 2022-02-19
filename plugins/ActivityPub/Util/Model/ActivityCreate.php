@@ -52,7 +52,7 @@ class ActivityCreate extends Activity
     protected static function handle_core_activity(\App\Entity\Actor $actor, AbstractObject $type_activity, mixed $type_object, ?ActivitypubActivity &$ap_act): ActivitypubActivity
     {
         if ($type_object instanceof AbstractObject) {
-            if ($type_object->get('type') === 'Note') {
+            if ($type_object->get('type') === 'Note'  || $type_object->get('type') === 'Page') {
                 $actual_to = array_flip(is_string($type_object->get('to')) ? [$type_object->get('to')] : $type_object->get('to'));
                 $actual_cc = array_flip(is_string($type_object->get('cc')) ? [$type_object->get('cc')] : $type_object->get('cc'));
                 foreach (is_string($type_activity->get('to')) ? [$type_activity->get('to')] : $type_activity->get('to') as $to) {

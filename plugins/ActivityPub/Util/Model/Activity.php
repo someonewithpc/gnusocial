@@ -163,7 +163,7 @@ class Activity extends Model
 
         $attr = [
             'type'      => $gs_verb_to_activity_streams_two_verb,
-            '@context'  => 'https://www.w3.org/ns/activitystreams',
+            '@context'  => ['https://www.w3.org/ns/activitystreams'],
             'id'        => Router::url('activity_view', ['id' => $object->getId()], Router::ABSOLUTE_URL),
             'published' => $object->getCreated()->format(DateTimeInterface::RFC3339),
             'actor'     => $object->getActor()->getUri(Router::ABSOLUTE_URL),
@@ -188,7 +188,7 @@ class Activity extends Model
         // If embedded non tombstone Object
         if (!\is_string($attr['object']) && $attr['object']->get('type') !== 'Tombstone') {
             // Little special case
-            if ($attr['type'] === 'Create' && $attr['object']->get('type') === 'Note') {
+            if ($attr['type'] === 'Create' && ($attr['object']->get('type') === 'Note' || $attr['object']->get('type') === 'Page')) {
                 $attr['to'] = $attr['object']->get('to') ?? [];
                 $attr['cc'] = $attr['object']->get('cc') ?? [];
             }
