@@ -23,7 +23,7 @@
 {% endblock note_actions %}
 
 {% block note_replies %}
-    {% import '/cards/macros/note.html.twig' as noteView %}
+    {% import '/cards/macros/note/factory.html.twig' as NoteFactory %}
 
     {% if replies is defined and replies is not empty %}
         <section class="note-replies" title="{{ 'Replies to ' | trans }}{{ nickname }}{{ '\'s note' | trans }}">
@@ -37,7 +37,8 @@
                         {% set extra = extra|merge(parent) %}
                     {% endif %}
                     <span class="note-replies-indicator" role="presentation"></span>
-                    {{ noteView.note_vanilla(conversation['note'], conversation['replies'], extra) }}
+                    {% set args = { 'type': 'vanilla_full', 'note': conversation['note'], 'replies': conversation['replies'] | default, 'extra': extra } %}
+                    {{ NoteFactory.constructor(args) }}
                 {% endfor %}
             </div>
         </section>

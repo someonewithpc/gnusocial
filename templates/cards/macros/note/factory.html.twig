@@ -1,0 +1,40 @@
+{#
+Note factory constructor
+
+    There are various Note types:
+        - Vanilla (common type);
+            + Full;
+            + Compact;
+        - Page;
+            + Full;
+            + Compact;
+
+    This constructor accepts an array of args, this array may or not contain some elements, depending on the Note
+    type in question.
+    However, there's 1 GUARANTEE:
+        - First element identifies note type via a string;
+    This string will be compared, when there's a match the contructor delegates its respective macro.
+
+    The array of args passed should have the following structure for the default types:
+    - Vanilla (common type);
+        + Full: { 'type': { 'vanilla_full' }, 'note': note, ?'replies': { note, ?replies }, ?'extra': { 'foo': bar };
+        + Compact: { 'type': { 'vanilla_compact' }, 'note': note, ?'extra': { 'foo': bar } };
+    - Page;
+        + Full { 'type': { 'page_full' }, 'note': note, ?'replies': { note, ?replies }, ?'extra': { 'foo': bar };
+        + Compact { 'type': { 'page_compact' }, 'note': note, ?'extra': { 'foo': bar } };
+#}
+{% macro constructor(args) %}
+    {% import '/cards/macros/note/types.html.twig' as NoteTypes %}
+
+    {% if args.type is same as 'vanilla_full' %}
+        {{ NoteTypes.vanilla_full(args) }}
+    {% elseif args.type is same as 'vanilla_compact' %}
+        {{ NoteTypes.vanilla_compact(args) }}
+    {% elseif args.type is same as 'page_full' %}
+        {{ NoteTypes.page_full(args) }}
+    {% elseif args.type is same as 'page_compact' %}
+        {{ NoteTypes.page_compact(args) }}
+    {% else %}
+        {{ NoteTypes.vanilla_full(args) }}
+    {% endif %}
+{% endmacro constructor %}

@@ -1,5 +1,5 @@
 {% extends 'stdgrid.html.twig' %}
-{% import '/cards/macros/note.html.twig' as noteView %}
+{% import '/cards/macros/note/factory.html.twig' as NoteFactory %}
 
 {% block title %}{% if page_title is defined %}{{ page_title | trans }}{% endif %}{% endblock %}
 
@@ -39,9 +39,11 @@
                 {% for conversation in notes %}
                     {% block current_note %}
                         {% if conversation is instanceof('array') %}
-                            {{ noteView.note_vanilla(conversation['note'], conversation['replies'], {'depth': 0}) }}
-                        {% else %}
-                            {{ noteView.note_vanilla(conversation) }}
+                            {% set args = { 'type': 'vanilla_full', 'note': conversation['note'], 'replies': conversation['replies'] | default, 'extra': { 'depth': 0 } } %}
+                            {{ NoteFactory.constructor(args) }}
+{#                        {% else %}
+                            {% set args = { 'type': 'vanilla_full', 'note': conversation, 'extra': { 'depth': 0 } } %}
+                            {{ NoteFactory.constructor(args) }}#}
                         {% endif %}
                         <hr class="hr-replies-end" role="separator" aria-label="{{ 'Marks the end of previous conversation\'s initial note' | trans }}">
                     {% endblock current_note %}

@@ -73,15 +73,10 @@
 }
 
 .embed img {
-    height: auto;
-    margin-right: var(--s);
-    width: 25%;
-}
-
-.embed img {
-    max-height: min-content;
-    max-width: min-content;
     padding: unset;
+    margin-right: var(--s);
+    max-block-size: 128px;
+    width: auto;
 }
 
 .feed-header>h1,.feed-header>h2,.feed-header>h3,.feed-header>h4,.feed-header>h5,.feed-header>h6 {
@@ -238,7 +233,6 @@
     border-radius: 0 var(--s) 0 0;
     display: flex;
     line-height: initial;
-    padding: 4px var(--s) 0 0;
 }
 
 .note-info {
@@ -338,11 +332,6 @@
     opacity: .5;
 }
 
-.hr-replies-end {
-    margin-top: var(--xl);
-    margin-bottom: var(--xl);
-}
-
 .hr-replies-end:last-of-type {
     display: none;
 }
@@ -350,19 +339,11 @@
 .note-sidebar {
     display: flex;
     flex-direction: column;
-    padding: var(--s);
+    padding: var(--s) 4px 4px var(--s);
 }
 
-.note-sidebar>* {
-    border-radius: 2px;
-    height: auto;
-    max-height: 3rem;
-    max-width: 3rem;
-    width: 100%;
-}
-
-.note-sidebar img {
-    background: unset !important;
+.note-text {
+    word-break: break-all;
 }
 
 .note-text a {
@@ -389,35 +370,44 @@
 .note-wrapper {
     height: inherit;
     flex: 1;
+    padding: 4px;
 }
 
-.posting-extra .h-entry {
-    padding: var(--s);
+.posting-extra [id|="note-compact"] {
     border: unset;
     border-bottom: 1px solid var(--border);
 }
 
-.posting-extra .note-sidebar {
-    all: unset;
+[id|="note-compact"] .note-wrapper {
+    padding: var(--s);
 }
 
-.posting-extra .note-sidebar .avatar {
+[id|="note-compact"] .note-sidebar {
     all: unset;
-    max-width: 1em;
-    max-height: 1em;
-    min-width: 1em;
+    display: inline-flex;
     margin-right: 4px;
 }
 
+[id|="note-compact"] .note-sidebar img,
+.note-sidebar img {
+    background: unset !important;
+}
+
+[id|="note-compact"] hr {
+    margin-bottom: 4px;
+    margin-top: 4px;
+}
+
+[id|="note-compact"] {
+    display: block;
+    width: 100%;
+    max-height: 16vh;
+    word-break: break-all;
+    overflow: auto;
+    touch-action: manipulation;
+}
+
 @media only screen and (max-width:1280px) {
-    .note-sidebar {
-        max-width: min-content !important;
-    }
-
-    .note-sidebar .avatar {
-        min-width: var(--xl) !important;
-    }
-
     .note-replies .note-replies {
         margin-left: .33em;
     }

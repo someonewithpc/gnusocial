@@ -1,4 +1,4 @@
-{% import '/cards/macros/note.html.twig' as noteView %}
+{% import '/cards/macros/note/factory.html.twig' as NoteFactory %}
 
 <section class="frame-section frame-section-padding">
     <div class="section-title">
@@ -8,6 +8,7 @@
     </div>
 
     {% for note in related_notes %}
-        {{ noteView.note_compact(note) }}
+        {% set args = { 'type': 'vanilla_compact', 'note': note } %}
+        {{ NoteFactory.constructor(args) }}
     {% endfor %}
 </section>

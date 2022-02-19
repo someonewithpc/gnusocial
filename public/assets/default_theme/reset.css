@@ -96,8 +96,8 @@ body {
 }
 
 p {
-    margin-top: 4px;
-    margin-bottom: 4px;
+    margin-top: 0;
+    margin-bottom: var(--s);
 }
 
 h1,h2,h3,h4,h5 {
