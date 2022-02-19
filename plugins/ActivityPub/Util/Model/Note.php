@@ -40,6 +40,7 @@ use App\Core\Event;
 use App\Core\GSFile;
 use App\Core\HTTPClient;
 use App\Entity\NoteType;
+use Component\Notification\Entity\Attention;
 use function App\Core\I18n\_m;
 use App\Core\Log;
 use App\Core\Router\Router;
@@ -368,6 +369,11 @@ class Note extends Model
             default:
                 Log::error('ActivityPub->Note->toJson: Found an unknown visibility scope.');
                 throw new ServerException('Found an unknown visibility scope which cannot federate.');
+        }
+
+        $attention_cc = DB::findBy(Attention::class, ['note_id' => $object->getId()]);
+        foreach($attention_cc as $cc_id) {
+            $attr['cc'][] = \App\Entity\Actor::getById($cc_id->getTargetId())->getUri(Router::ABSOLUTE_URL);
         }
 
         // Mentions
