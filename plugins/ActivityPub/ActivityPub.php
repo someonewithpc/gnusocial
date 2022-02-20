@@ -382,7 +382,7 @@ class ActivityPub extends Plugin
     {
         try {
             if (FreeNetworkActorProtocol::canIAddr('activitypub', $addr = Discovery::normalize($target))) {
-                $ap_actor = ActivitypubActor::getByAddr($addr);
+                $ap_actor = DB::wrapInTransaction(fn() => ActivitypubActor::getByAddr($addr));
                 $actor    = Actor::getById($ap_actor->getActorId());
                 FreeNetworkActorProtocol::protocolSucceeded('activitypub', $actor->getId(), $addr);
                 return Event::stop;
@@ -390,7 +390,7 @@ class ActivityPub extends Plugin
                 return Event::next;
             }
         } catch (Exception $e) {
-            Log::error('ActivityPub Webfinger Mention check failed.', [$e]);
+            Log::error('ActivityPub WebFinger Mention check failed.', [$e]);
             return Event::next;
         }
     }
