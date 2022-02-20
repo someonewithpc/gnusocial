@@ -36,6 +36,7 @@ use App\Core\Controller;
 use App\Core\DB\DB;
 use App\Core\Event;
 use App\Util\Common;
+use Symfony\Component\HttpFoundation\Request;
 use function App\Core\I18n\_m;
 use App\Core\Log;
 use App\Core\Router\Router;
@@ -60,10 +61,15 @@ use Plugin\ActivityPub\Util\TypeResponse;
  */
 class Inbox extends Controller
 {
+    public function onGet(Request $request, ?int $gsactor_id = null): TypeResponse
+    {
+        return new TypeResponse(json_encode(['error' => 'No AP C2S inbox yet.']), 400);
+    }
+
     /**
      * Create an Inbox Handler to receive something from someone.
      */
-    public function handle(?int $gsactor_id = null): TypeResponse
+    public function onPost(Request $request, ?int $gsactor_id = null): TypeResponse
     {
         $error = function (string $m, ?Exception $e = null): TypeResponse {
             Log::error('ActivityPub Error Answer: ' . ($json = json_encode(['error' => $m, 'exception' => var_export($e, true)])));

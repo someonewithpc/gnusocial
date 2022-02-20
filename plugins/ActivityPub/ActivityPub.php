@@ -122,7 +122,7 @@ class ActivityPub extends Plugin
         $r->connect(
             'activitypub_inbox',
             '/inbox.json',
-            [Inbox::class, 'handle'],
+            Inbox::class,
             options: ['format' => self::$accept_headers[0]],
         );
         $r->connect(
