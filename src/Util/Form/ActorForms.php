@@ -38,7 +38,6 @@ use App\Core\Cache;
 use App\Core\Form;
 use function App\Core\I18n\_m;
 use App\Entity\Actor;
-use App\Entity\LocalUser;
 use App\Util\Exception\ClientException;
 use App\Util\Exception\NicknameEmptyException;
 use App\Util\Exception\NicknameInvalidException;
@@ -47,7 +46,6 @@ use App\Util\Exception\NicknameTakenException;
 use App\Util\Exception\NicknameTooLongException;
 use App\Util\Exception\ServerException;
 use App\Util\Nickname;
-use Component\Group\Entity\LocalGroup;
 use Misd\PhoneNumberBundle\Form\Type\PhoneNumberType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
@@ -59,10 +57,10 @@ class ActorForms
     /**
      * Actor personal information panel
      *
-     * @param Request $request
-     * @param Actor $scope The perpetrator of the change
+     * @param Actor $scope  The perpetrator of the change
      * @param Actor $target The victim of changes
-     * @return mixed
+     *
+     * @throws \App\Util\Exception\NicknameException
      * @throws ClientException
      * @throws NicknameEmptyException
      * @throws NicknameInvalidException
@@ -70,7 +68,6 @@ class ActorForms
      * @throws NicknameTakenException
      * @throws NicknameTooLongException
      * @throws ServerException
-     * @throws \App\Util\Exception\NicknameException
      */
     public static function personalInfo(Request $request, Actor $scope, Actor $target): mixed
     {
@@ -91,7 +88,8 @@ class ActorForms
         ];
 
         // Setting nickname normalised and setting actor cache
-        $before_step = static function ($data, $extra_args) use ($target) {
+        $before_step = static function (&$data, $extra_args) use ($target) {
+            // Validate nickname
             if ($target->getNickname() !== $data['nickname']) {
                 // We must only check if is both already used and allowed if the actor is local
                 $check_is_allowed = $target->getIsLocal();
@@ -103,17 +101,21 @@ class ActorForms
 
                 // We will set $target actor's nickname in the form::handle,
                 // but if it is local, we must update the local reference as well
-                if (!is_null($local = $target->getLocal())) {
+                if (!\is_null($local = $target->getLocal())) {
                     $local->setNickname($data['nickname']);
                 }
             }
+
+            // Validate full name
             if ($target->getFullname() !== $data['full_name']) {
-                $data['full_name'] = trim($data['full_name']);
-                if (mb_strlen($data['full_name']) > 64) {
-                    throw new ClientException(_m('Full name cannot be more than 64 character long.'));
+                if (!is_null($data['full_name'])) {
+                    if (mb_strlen($data['full_name']) > 64) {
+                        throw new ClientException(_m('Full name cannot be more than 64 character long.'));
+                    }
                 }
             }
 
+            // Delete related cache
             $cache_keys = Actor::cacheKeys($target->getId());
             foreach (['id', 'nickname', 'fullname'] as $key) {
                 Cache::delete($cache_keys[$key]);
