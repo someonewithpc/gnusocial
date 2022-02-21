@@ -80,7 +80,8 @@ abstract class Parser
                     $actor_res = null;
                     Event::handle('CollectionQueryCreateExpression', [$eb, $term, $locale, $actor, &$note_res, &$actor_res]);
                     if (\is_null($note_res) && \is_null($actor_res)) { // @phpstan-ignore-line
-                        throw new ServerException("No one claimed responsibility for a match term: {$term}");
+                        //throw new ServerException("No one claimed responsibility for a match term: {$term}");
+                        // It's okay if the term doesn't exist, just perform a regular search
                     }
                     if (!empty($note_res)) { // @phpstan-ignore-line
                         if (\is_array($note_res)) {
