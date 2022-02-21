@@ -199,10 +199,18 @@ class Runtime implements RuntimeExtensionInterface, EventSubscriberInterface
 
     public function mention(Actor $actor): string
     {
-        if ($actor->getIsLocal()) {
-            return "@{$actor->getNickname()}";
+        if ($actor->isGroup()) {
+            if ($actor->getIsLocal()) {
+                return "!{$actor->getNickname()}";
+            } else {
+                return FreeNetwork::groupTagToName($actor->getNickname(), $actor->getUri(type: Router::ABSOLUTE_URL));
+            }
         } else {
-            return FreeNetwork::mentionToName($actor->getNickname(), $actor->getUri(type: Router::ABSOLUTE_URL));
+            if ($actor->getIsLocal()) {
+                return "@{$actor->getNickname()}";
+            } else {
+                return FreeNetwork::mentionTagToName($actor->getNickname(), $actor->getUri(type: Router::ABSOLUTE_URL));
+            }
         }
     }
 

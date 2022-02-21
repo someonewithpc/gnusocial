@@ -390,11 +390,19 @@ class Note extends Model
 
         // Mentions
         foreach ($object->getNotificationTargets() as $mention) {
-            $attr['tag'][] = [
-                'type' => 'Mention',
-                'href' => ($href = $mention->getUri()),
-                'name' => FreeNetwork::mentionToName($mention->getNickname(), $href),
-            ];
+            if ($mention->isGroup()) {
+                $attr['tag'][] = [
+                    'type' => 'Group',
+                    'href' => ($href = $mention->getUri()),
+                    'name' => FreeNetwork::groupTagToName($mention->getNickname(), $href),
+                ];
+            } else {
+                $attr['tag'][] = [
+                    'type' => 'Mention',
+                    'href' => ($href = $mention->getUri()),
+                    'name' => FreeNetwork::mentionTagToName($mention->getNickname(), $href),
+                ];
+            }
             $attr['to'][] = $href;
         }
 
