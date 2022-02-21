@@ -25,6 +25,8 @@ use App\Core\DB\DB;
 use App\Core\Event;
 use App\Core\GSFile;
 use App\Core\HTTPClient;
+use App\Util\Formatting;
+use Doctrine\Common\Collections\ExpressionBuilder;
 use function App\Core\I18n\_m;
 use App\Core\Log;
 use App\Core\Modules\Component;
@@ -76,6 +78,12 @@ class FreeNetwork extends Component
     public const OAUTH_ACCESS_TOKEN_REL  = 'http://apinamespace.org/oauth/access_token';
     public const OAUTH_REQUEST_TOKEN_REL = 'http://apinamespace.org/oauth/request_token';
     public const OAUTH_AUTHORIZE_REL     = 'http://apinamespace.org/oauth/authorize';
+    private static array $protocols = [];
+
+    public function onInitializeComponent()
+    {
+        Event::handle('AddFreeNetworkProtocol', [&self::$protocols]);
+    }
 
     public function onAddRoute(RouteLoader $m): bool
     {
@@ -489,10 +497,8 @@ class FreeNetwork extends Component
 
     public static function notify(Actor $sender, Activity $activity, array $targets, ?string $reason = null): bool
     {
-        $protocols = [];
-        Event::handle('AddFreeNetworkProtocol', [&$protocols]);
         $delivered = [];
-        foreach ($protocols as $protocol) {
+        foreach (self::$protocols as $protocol) {
             $protocol::freeNetworkDistribute($sender, $activity, $targets, $reason, $delivered);
         }
         $failed_targets = array_udiff($targets, $delivered, fn (Actor $a, Actor $b): int => $a->getId() <=> $b->getId());
@@ -508,6 +514,23 @@ class FreeNetwork extends Component
     public static function groupTagToName(string $nickname, string $uri): string
     {
         return '!' . $nickname . '@' . parse_url($uri, \PHP_URL_HOST);
+    }
+
+    /**
+     * Add fediverse: query expression
+     * // TODO: adding WebFinger would probably be nice
+     */
+    public function onCollectionQueryCreateExpression(ExpressionBuilder $eb, string $term, ?string $locale, ?Actor $actor, &$note_expr, &$actor_expr): bool
+    {
+        if (Formatting::startsWith($term, ['fediverse:'])) {
+            foreach (self::$protocols as $protocol) {
+                // 10 is strlen of `fediverse:`
+                if ($protocol::freeNetworkGrabRemote(mb_substr($term, 10))) {
+                    break;
+                }
+            }
+        }
+        return Event::next;
     }
 
     public function onPluginVersion(array &$versions): bool

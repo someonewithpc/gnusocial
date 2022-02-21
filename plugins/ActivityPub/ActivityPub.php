@@ -48,7 +48,6 @@ use App\Util\Common;
 use App\Util\Exception\BugFoundException;
 use App\Util\Exception\NoSuchActorException;
 use App\Util\Nickname;
-use Codeception\Coverage\Subscriber\Local;
 use Component\Collection\Util\Controller\OrderedCollection;
 use Component\FreeNetwork\Entity\FreeNetworkActorProtocol;
 use Component\FreeNetwork\Util\Discovery;
@@ -247,6 +246,34 @@ class ActivityPub extends Plugin
     }
 
     /**
+     * The FreeNetwork component will call this function to pull ActivityPub objects by URI
+     *
+     * @param string $uri Query
+     * @return bool true if imported, false otherwise
+     */
+    public static function freeNetworkGrabRemote(string $uri): bool
+    {
+        if (Common::isValidHttpUrl($uri)) {
+            try {
+                $object = self::getObjectByUri($uri);
+                if (!\is_null($object)) {
+                    if ($object instanceof Type\AbstractObject) {
+                        if (in_array($object->get('type'), array_keys(Model\Actor::$_as2_actor_type_to_gs_actor_type))) {
+                            DB::wrapInTransaction(fn() => Model\Actor::fromJson($object));
+                        } else {
+                            DB::wrapInTransaction(fn() => Model\Activity::fromJson($object));
+                        }
+                    }
+                    return true;
+                }
+            } catch (\Exception|\Throwable) {
+                // May be invalid input, we can safely ignore in this case
+            }
+        }
+        return false;
+    }
+
+    /**
      * The FreeNetwork component will call this function to distribute this instance's activities
      *
      * @throws ClientExceptionInterface
@@ -440,7 +467,7 @@ class ActivityPub extends Plugin
      * @throws ServerExceptionInterface
      * @throws TransportExceptionInterface
      *
-     * @return null|mixed|Note got from URI
+     * @return null|mixed|Note|Actor got from URI
      */
     public static function getObjectByUri(string $resource, bool $try_online = true)
     {
