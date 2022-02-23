@@ -42,7 +42,6 @@ use App\Core\Log;
 use App\Core\Router\Router;
 use App\Entity\Actor as GSActor;
 use App\Util\Exception\ServerException;
-use App\Util\Formatting;
 use App\Util\TemporaryFile;
 use Component\Avatar\Avatar;
 use Component\Group\Entity\LocalGroup;
@@ -50,6 +49,7 @@ use DateTime;
 use DateTimeInterface;
 use Exception;
 use InvalidArgumentException;
+use Plugin\ActivityPub\ActivityPub;
 use Plugin\ActivityPub\Entity\ActivitypubActor;
 use Plugin\ActivityPub\Entity\ActivitypubRsa;
 use Plugin\ActivityPub\Util\Model;
@@ -168,12 +168,12 @@ class Actor extends Model
                             $avatar->delete();
                         }
 
-                            DB::persist($attachment);
-                            DB::persist(\Component\Avatar\Entity\Avatar::create([
-                                'actor_id'      => $actor->getId(),
-                                'attachment_id' => $attachment->getId(),
-                                'title'         => $object->get('icon')->get('name') ?? null,
-                            ]));
+                        DB::persist($attachment);
+                        DB::persist(\Component\Avatar\Entity\Avatar::create([
+                            'actor_id'      => $actor->getId(),
+                            'attachment_id' => $attachment->getId(),
+                            'title'         => $object->get('icon')->get('name') ?? null,
+                        ]));
 
                         Event::handle('AvatarUpdate', [$actor->getId()]);
                     }
@@ -212,8 +212,8 @@ class Actor extends Model
         $public_key = $rsa->getPublicKey();
         $uri        = $object->getUri(Router::ABSOLUTE_URL);
         $attr       = [
-            '@context'  => 'https://www.w3.org/ns/activitystreams',
-            'type'      => ($object->getType() === GSActor::GROUP) ? (DB::findOneBy(LocalGroup::class, ['actor_id' => $object->getId()], return_null: true)?->getType() === 'organisation' ? 'Organization' : 'Group'): self::$_gs_actor_type_to_as2_actor_type[$object->getType()],
+            '@context'  => ActivityPub::$activity_streams_two_context,
+            'type'      => ($object->getType() === GSActor::GROUP) ? (DB::findOneBy(LocalGroup::class, ['actor_id' => $object->getId()], return_null: true)?->getType() === 'organisation' ? 'Organization' : 'Group') : self::$_gs_actor_type_to_as2_actor_type[$object->getType()],
             'id'        => $uri,
             'inbox'     => Router::url('activitypub_actor_inbox', ['gsactor_id' => $object->getId()], Router::ABSOLUTE_URL),
             'outbox'    => Router::url('activitypub_actor_outbox', ['gsactor_id' => $object->getId()], Router::ABSOLUTE_URL),

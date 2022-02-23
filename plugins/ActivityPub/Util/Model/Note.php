@@ -39,13 +39,12 @@ use App\Core\DB\DB;
 use App\Core\Event;
 use App\Core\GSFile;
 use App\Core\HTTPClient;
-use App\Entity\NoteType;
-use Component\Notification\Entity\Attention;
 use function App\Core\I18n\_m;
 use App\Core\Log;
 use App\Core\Router\Router;
 use App\Core\VisibilityScope;
 use App\Entity\Note as GSNote;
+use App\Entity\NoteType;
 use App\Util\Common;
 use App\Util\Exception\ClientException;
 use App\Util\Exception\DuplicateFoundException;
@@ -59,6 +58,7 @@ use Component\Attachment\Entity\AttachmentToNote;
 use Component\Conversation\Conversation;
 use Component\FreeNetwork\FreeNetwork;
 use Component\Language\Entity\Language;
+use Component\Notification\Entity\Attention;
 use Component\Tag\Entity\NoteTag;
 use Component\Tag\Tag;
 use DateTime;
@@ -146,7 +146,7 @@ class Note extends Model
             'is_local'     => false,
             'created'      => new DateTime($type_note->get('published') ?? 'now'),
             'content'      => $type_note->get('content') ?? null,
-            'rendered'     => is_null($type_note->get('content')) ? null : HTML::sanitize($type_note->get('content')),
+            'rendered'     => \is_null($type_note->get('content')) ? null : HTML::sanitize($type_note->get('content')),
             'title'        => $type_note->get('name') ?? null,
             'content_type' => 'text/html',
             'language_id'  => $type_note->get('contentLang') ?? null,
@@ -154,8 +154,10 @@ class Note extends Model
             'actor_id'     => $actor_id,
             'reply_to'     => $reply_to = $handleInReplyTo($type_note),
             'modified'     => new DateTime(),
-            'type'         => match ($type_note->get('type')) {'Page' => NoteType::PAGE, default => NoteType::NOTE},
-            'source'       => $source,
+            'type'         => match ($type_note->get('type')) {
+                'Page'     => NoteType::PAGE, default => NoteType::NOTE
+            },
+            'source' => $source,
         ];
 
         if (!\is_null($map['language_id'])) {
@@ -188,7 +190,7 @@ class Note extends Model
                 continue;
             }
             try {
-                $actor = ActivityPub::getActorByUri($target);
+                $actor                                = ActivityPub::getActorByUri($target);
                 $object_mentions_ids[$actor->getId()] = $target;
                 // If $to is a group and note is unlisted, set note's scope as Group
                 if ($actor->isGroup() && $map['scope'] === 'unlisted') {
@@ -209,7 +211,7 @@ class Note extends Model
                 continue;
             }
             try {
-                $actor = ActivityPub::getActorByUri($target);
+                $actor                                = ActivityPub::getActorByUri($target);
                 $object_mentions_ids[$actor->getId()] = $target;
             } catch (Exception $e) {
                 Log::debug('ActivityPub->Model->Note->fromJson->getActorByUri', [$e]);
@@ -231,7 +233,7 @@ class Note extends Model
                     // Create an attachment for this
                     $temp_file = new TemporaryFile();
                     $temp_file->write($media);
-                    $filesize = $temp_file->getSize();
+                    $filesize      = $temp_file->getSize();
                     $max_file_size = Common::getUploadLimit();
                     if ($max_file_size < $filesize) {
                         throw new ClientException(_m('No file may be larger than {quota} bytes and the file you sent was {size} bytes. '
@@ -254,7 +256,7 @@ class Note extends Model
                 case 'Mention':
                 case 'Group':
                     try {
-                        $actor = ActivityPub::getActorByUri($ap_tag->get('href'));
+                        $actor                                = ActivityPub::getActorByUri($ap_tag->get('href'));
                         $object_mentions_ids[$actor->getId()] = $ap_tag->get('href');
                     } catch (Exception $e) {
                         Log::debug('ActivityPub->Model->Note->fromJson->getActorByUri', [$e]);
@@ -272,8 +274,8 @@ class Note extends Model
                     }
                     break;
                 case 'Hashtag':
-                    $match = ltrim($ap_tag->get('name'), '#');
-                    $tag = Tag::extract($match);
+                    $match         = ltrim($ap_tag->get('name'), '#');
+                    $tag           = Tag::extract($match);
                     $canonical_tag = $ap_tag->get('canonical') ?? Tag::canonicalTag($tag, \is_null($lang_id = $obj->getLanguageId()) ? null : Language::getById($lang_id)->getLocale());
                     DB::persist(NoteTag::create([
                         'tag'           => $tag,
@@ -334,8 +336,10 @@ class Note extends Model
         }
 
         $attr = [
-            '@context'       => 'https://www.w3.org/ns/activitystreams',
-            'type'           => match($object->getType()) {NoteType::NOTE => 'Note', NoteType::PAGE => 'Page'},
+            '@context'         => ActivityPub::$activity_streams_two_context,
+            'type'             => match ($object->getType()) {
+                NoteType::NOTE => 'Note', NoteType::PAGE => 'Page'
+            },
             'id'             => $object->getUrl(),
             'published'      => $object->getCreated()->format(DateTimeInterface::RFC3339),
             'attributedTo'   => $object->getActor()->getUri(Router::ABSOLUTE_URL),
@@ -365,7 +369,6 @@ class Note extends Model
                 break;
             case VisibilityScope::GROUP:
                 // Will have the group in the To coming from attentions
-                // no break
             case VisibilityScope::COLLECTION:
                 // Since we don't support sending unlisted/followers-only
                 // notices, arriving here means we're instead answering to that type
@@ -379,7 +382,7 @@ class Note extends Model
         }
 
         $attention_cc = DB::findBy(Attention::class, ['note_id' => $object->getId()]);
-        foreach($attention_cc as $cc_id) {
+        foreach ($attention_cc as $cc_id) {
             $target = \App\Entity\Actor::getById($cc_id->getTargetId());
             if ($object->getScope() === VisibilityScope::GROUP && $target->isGroup()) {
                 $attr['to'][] = $target->getUri(Router::ABSOLUTE_URL);

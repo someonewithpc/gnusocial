@@ -38,6 +38,7 @@ use App\Core\Router\Router;
 use Component\Collection\Util\Controller\CircleController;
 use Component\Collection\Util\Controller\FeedController;
 use Component\Collection\Util\Controller\OrderedCollection as GSOrderedCollection;
+use Plugin\ActivityPub\ActivityPub;
 use Symfony\Component\HttpFoundation\Request;
 
 /**
@@ -80,7 +81,7 @@ abstract class OrderedCollectionController extends GSOrderedCollection
     {
         $page = $route_args['page'] ?? 0;
         $type = $page === 0 ? new OrderedCollection() : new OrderedCollectionPage();
-        $type->set('@context', 'https://www.w3.org/ns/activitystreams');
+        $type->set('@context', ActivityPub::$activity_streams_two_context);
         $type->set('items', $ordered_items);
         $type->set('orderedItems', $ordered_items);
         $type->set('totalItems', \count($ordered_items));

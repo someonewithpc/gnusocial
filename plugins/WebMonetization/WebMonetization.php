@@ -240,6 +240,17 @@ class WebMonetization extends Plugin
         return Event::next;
     }
 
+    public function onActivityStreamsTwoContext(array &$activity_streams_two_context): bool
+    {
+        $activity_streams_two_context[] = [
+            'webmonetizationWallet' => [
+                '@id'   => 'gs:webmonetizationWallet',
+                '@type' => '@id',
+            ],
+        ];
+        return Event::next;
+    }
+
     public function onActivityPubAddActivityStreamsTwoData(string $type_name, &$type): bool
     {
         if ($type_name === 'Person') {

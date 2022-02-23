@@ -145,19 +145,22 @@ class PinnedNotes extends Plugin
     }
 
     // Activity Pub handling stuff
+
+    public function onActivityStreamsTwoContext(array &$activity_streams_two_context): bool
+    {
+        $activity_streams_two_context[] = ['toot' => 'http://joinmastodon.org/ns#'];
+        $activity_streams_two_context[] = [
+            'featured' => [
+                '@id'   => 'toot:featured',
+                '@type' => '@id',
+            ],
+        ];
+        return Event::next;
+    }
+
     public function onActivityPubAddActivityStreamsTwoData(string $type_name, &$type): bool
     {
-        if ($type_name === 'Note') {
-            $actor = \Plugin\ActivityPub\ActivityPub::getActorByUri($type->get('attributedTo'));
-            // Note uri is `https://domain:port/object/note/3`.
-            // is it always like that? I honestly don't know, but I see
-            // no other way of getting Note id:
-            $uri_parts = explode('/', $type->get('id'));
-            $note_id   = end($uri_parts);
-            $is_pinned = !\is_null(DB::findOneBy(E\PinnedNotes::class, ['actor_id' => $actor->getId(), 'note_id' => $note_id], return_null: true));
-
-            $type->set('featured', $is_pinned);
-        } elseif ($type_name === 'Person') {
+        if ($type_name === 'Person') {
             $actor       = \Plugin\ActivityPub\ActivityPub::getActorByUri($type->get('id'));
             $router_args = ['id' => $actor->getId()];
             $router_type = Router::ABSOLUTE_URL;

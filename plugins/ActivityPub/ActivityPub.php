@@ -53,8 +53,6 @@ use Component\FreeNetwork\Entity\FreeNetworkActorProtocol;
 use Component\FreeNetwork\Util\Discovery;
 use Exception;
 use InvalidArgumentException;
-use Plugin\ActivityPub\Util\Response\ActivityResponse;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use const PHP_URL_HOST;
 use Plugin\ActivityPub\Controller\Inbox;
 use Plugin\ActivityPub\Controller\Outbox;
@@ -64,12 +62,13 @@ use Plugin\ActivityPub\Entity\ActivitypubObject;
 use Plugin\ActivityPub\Util\HTTPSignature;
 use Plugin\ActivityPub\Util\Model;
 use Plugin\ActivityPub\Util\OrderedCollectionController;
+use Plugin\ActivityPub\Util\Response\ActivityResponse;
 use Plugin\ActivityPub\Util\Response\ActorResponse;
 use Plugin\ActivityPub\Util\Response\NoteResponse;
 use Plugin\ActivityPub\Util\TypeResponse;
 use Plugin\ActivityPub\Util\Validator\contentLangModelValidator;
 use Plugin\ActivityPub\Util\Validator\manuallyApprovesFollowersModelValidator;
-use const PREG_SET_ORDER;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface;
@@ -108,6 +107,27 @@ class ActivityPub extends Plugin
     public function version(): string
     {
         return '3.0.0';
+    }
+
+    public static array $activity_streams_two_context = [
+        'https://www.w3.org/ns/activitystreams',
+        'https://w3id.org/security/v1',
+        ['gs'          => 'https://www.gnu.org/software/social/ns#'],
+        ['litepub'     => 'http://litepub.social/ns#'],
+        ['chatMessage' => 'litepub:chatMessage'],
+        [
+            'inConversation' => [
+                '@id'   => 'gs:inConversation',
+                '@type' => '@id',
+            ],
+        ],
+    ];
+
+    public function onInitializePlugin(): bool
+    {
+        Event::handle('ActivityStreamsTwoContext', [&self::$activity_streams_two_context]);
+        self::$activity_streams_two_context = array_unique(self::$activity_streams_two_context, \SORT_REGULAR);
+        return Event::next;
     }
 
     /**
@@ -249,6 +269,7 @@ class ActivityPub extends Plugin
      * The FreeNetwork component will call this function to pull ActivityPub objects by URI
      *
      * @param string $uri Query
+     *
      * @return bool true if imported, false otherwise
      */
     public static function freeNetworkGrabRemote(string $uri): bool
@@ -258,15 +279,15 @@ class ActivityPub extends Plugin
                 $object = self::getObjectByUri($uri);
                 if (!\is_null($object)) {
                     if ($object instanceof Type\AbstractObject) {
-                        if (in_array($object->get('type'), array_keys(Model\Actor::$_as2_actor_type_to_gs_actor_type))) {
-                            DB::wrapInTransaction(fn() => Model\Actor::fromJson($object));
+                        if (\in_array($object->get('type'), array_keys(Model\Actor::$_as2_actor_type_to_gs_actor_type))) {
+                            DB::wrapInTransaction(fn () => Model\Actor::fromJson($object));
                         } else {
-                            DB::wrapInTransaction(fn() => Model\Activity::fromJson($object));
+                            DB::wrapInTransaction(fn () => Model\Activity::fromJson($object));
                         }
                     }
                     return true;
                 }
-            } catch (\Exception|\Throwable) {
+            } catch (Exception|Throwable) {
                 // May be invalid input, we can safely ignore in this case
             }
         }
@@ -409,7 +430,7 @@ class ActivityPub extends Plugin
     {
         try {
             if (FreeNetworkActorProtocol::canIAddr('activitypub', $addr = Discovery::normalize($target))) {
-                $ap_actor = DB::wrapInTransaction(fn() => ActivitypubActor::getByAddr($addr));
+                $ap_actor = DB::wrapInTransaction(fn () => ActivitypubActor::getByAddr($addr));
                 $actor    = Actor::getById($ap_actor->getActorId());
                 FreeNetworkActorProtocol::protocolSucceeded('activitypub', $actor->getId(), $addr);
                 return Event::stop;
@@ -467,7 +488,7 @@ class ActivityPub extends Plugin
      * @throws ServerExceptionInterface
      * @throws TransportExceptionInterface
      *
-     * @return null|mixed|Note|Actor got from URI
+     * @return null|Actor|mixed|Note got from URI
      */
     public static function getObjectByUri(string $resource, bool $try_online = true)
     {
@@ -485,12 +506,11 @@ class ActivityPub extends Plugin
 
         // Try local Note
         if (Common::isValidHttpUrl($resource)) {
-            // This means $resource is a valid url
             $resource_parts = parse_url($resource);
             // TODO: Use URLMatcher
             if ($resource_parts['host'] === Common::config('site', 'server')) {
                 $local_note = DB::findOneBy('note', ['url' => $resource], return_null: true);
-                if ($local_note instanceof Note) {
+                if (!\is_null($local_note)) {
                     return $local_note;
                 }
             }
@@ -505,14 +525,14 @@ class ActivityPub extends Plugin
 
         // Try remote
         if (!$try_online) {
-            return null;
+            return;
         }
 
         $response = HTTPClient::get($resource, ['headers' => self::HTTP_CLIENT_HEADERS]);
         // If it was deleted
         if ($response->getStatusCode() == 410) {
             //$obj = Type::create('Tombstone', ['id' => $resource]);
-            return null;
+            return;
         } elseif (!HTTPClient::statusCodeIsOkay($response)) { // If it is unavailable
             throw new Exception('Non Ok Status Code for given Object id.');
         } else {

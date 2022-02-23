@@ -36,9 +36,13 @@ class myValidator extends \Plugin\ActivityPub\Util\ModelValidator
 ```
 
 **ActivityPubAddActivityStreamsTwoData**: To add attributes to an entity that we are managing to JSON (commonly federating out via ActivityPub)
-* `@param  string                            $type_name`       When we handle a Type, we will send you the type identifier of the one being handleded
+* `@param  string                            $type_name`       When we handle a Type, we will send you the type identifier of the one being handled
 * `@param  \ActivityPhp\Type\AbstractObject  &$type_activity`  The Activity in the intermediate format between Model and JSON
 * `@return`                                                    Returns `Event::next`
+
+**ActivityStreamsTwoContext**: To expand our ActivityStreams 2 Context
+* `@param  array &$activity_streams_two_context`  Append to the array your additional context
+* `@return`                                       Returns `Event::next`
 
 **ActivityPubActivityStreamsTwoResponse**: To add a route to ActivityPub (the route must already exist in your plugin) (commonly being requested to ActivityPub)
 * `@param  string                                 $route`      Route identifier

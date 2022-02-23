@@ -25,8 +25,6 @@ use App\Core\DB\DB;
 use App\Core\Event;
 use App\Core\GSFile;
 use App\Core\HTTPClient;
-use App\Util\Formatting;
-use Doctrine\Common\Collections\ExpressionBuilder;
 use function App\Core\I18n\_m;
 use App\Core\Log;
 use App\Core\Modules\Component;
@@ -46,6 +44,7 @@ use App\Util\Exception\NicknameTakenException;
 use App\Util\Exception\NicknameTooLongException;
 use App\Util\Exception\NoSuchActorException;
 use App\Util\Exception\ServerException;
+use App\Util\Formatting;
 use App\Util\Nickname;
 use Component\FreeNetwork\Controller\Feeds;
 use Component\FreeNetwork\Controller\HostMeta;
@@ -55,6 +54,7 @@ use Component\FreeNetwork\Util\Discovery;
 use Component\FreeNetwork\Util\WebfingerResource;
 use Component\FreeNetwork\Util\WebfingerResource\WebfingerResourceActor;
 use Component\FreeNetwork\Util\WebfingerResource\WebfingerResourceNote;
+use Doctrine\Common\Collections\ExpressionBuilder;
 use Exception;
 use const PREG_SET_ORDER;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -78,11 +78,12 @@ class FreeNetwork extends Component
     public const OAUTH_ACCESS_TOKEN_REL  = 'http://apinamespace.org/oauth/access_token';
     public const OAUTH_REQUEST_TOKEN_REL = 'http://apinamespace.org/oauth/request_token';
     public const OAUTH_AUTHORIZE_REL     = 'http://apinamespace.org/oauth/authorize';
-    private static array $protocols = [];
+    private static array $protocols      = [];
 
-    public function onInitializeComponent()
+    public function onInitializeComponent(): bool
     {
         Event::handle('AddFreeNetworkProtocol', [&self::$protocols]);
+        return Event::next;
     }
 
     public function onAddRoute(RouteLoader $m): bool

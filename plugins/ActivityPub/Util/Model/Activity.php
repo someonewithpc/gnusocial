@@ -64,9 +64,6 @@ class Activity extends Model
      * Create an Entity from an ActivityStreams 2.0 JSON string
      * This will persist new GSActivities, GSObjects, and APActivity
      *
-     * @param string|AbstractObject $json
-     * @param array $options
-     * @return ActivitypubActivity
      * @throws ClientExceptionInterface
      * @throws NoSuchActorException
      * @throws NotImplementedException
@@ -121,6 +118,7 @@ class Activity extends Model
             case 'Undo':
                 $object_type = $type_object instanceof AbstractObject ? match ($type_object->get('type')) {
                     'Note' => \App\Entity\Note::class,
+                    // no break
                     default => throw new NotImplementedException('Unsupported Undo of Object Activity.'),
                 } : $type_object::class;
 
@@ -164,7 +162,7 @@ class Activity extends Model
 
         $attr = [
             'type'      => $gs_verb_to_activity_streams_two_verb,
-            '@context'  => ['https://www.w3.org/ns/activitystreams'],
+            '@context'  => ActivityPub::$activity_streams_two_context,
             'id'        => Router::url('activity_view', ['id' => $object->getId()], Router::ABSOLUTE_URL),
             'published' => $object->getCreated()->format(DateTimeInterface::RFC3339),
             'actor'     => $object->getActor()->getUri(Router::ABSOLUTE_URL),
