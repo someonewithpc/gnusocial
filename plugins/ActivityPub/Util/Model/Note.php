@@ -254,15 +254,6 @@ class Note extends Model
         foreach ($type_note->get('tag') ?? [] as $ap_tag) {
             switch ($ap_tag->get('type')) {
                 case 'Mention':
-                case 'Group':
-                    try {
-                        $actor                                = ActivityPub::getActorByUri($ap_tag->get('href'));
-                        $object_mentions_ids[$actor->getId()] = $ap_tag->get('href');
-                    } catch (Exception $e) {
-                        Log::debug('ActivityPub->Model->Note->fromJson->getActorByUri', [$e]);
-                    }
-                    break;
-                case 'Collection':
                     $explorer = new Explorer();
                     try {
                         $actors = $explorer->lookup($ap_tag->get('href'));
@@ -270,7 +261,7 @@ class Note extends Model
                             $object_mentions_ids[$actor->getId()] = $ap_tag->get('href');
                         }
                     } catch (Exception $e) {
-                        Log::debug('ActivityPub->Model->Note->fromJson->getActorByUri', [$e]);
+                        Log::debug('ActivityPub->Model->Note->fromJson->Mention->Explorer', [$e]);
                     }
                     break;
                 case 'Hashtag':
@@ -393,19 +384,11 @@ class Note extends Model
 
         // Mentions
         foreach ($object->getNotificationTargets() as $mention) {
-            if ($mention->isGroup()) {
-                $attr['tag'][] = [
-                    'type' => 'Group',
-                    'href' => ($href = $mention->getUri()),
-                    'name' => FreeNetwork::groupTagToName($mention->getNickname(), $href),
-                ];
-            } else {
-                $attr['tag'][] = [
-                    'type' => 'Mention',
-                    'href' => ($href = $mention->getUri()),
-                    'name' => FreeNetwork::mentionTagToName($mention->getNickname(), $href),
-                ];
-            }
+            $attr['tag'][] = [
+                'type' => 'Mention',
+                'href' => ($href = $mention->getUri()),
+                'name' => $mention->isGroup() ? FreeNetwork::groupTagToName($mention->getNickname(), $href) : FreeNetwork::mentionTagToName($mention->getNickname(), $href),
+            ];
             $attr['to'][] = $href;
         }
 
