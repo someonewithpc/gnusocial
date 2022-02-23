@@ -1,61 +1,16 @@
-{% extends 'stdgrid.html.twig' %}
-{% import '/cards/macros/note.html.twig' as noteView %}
+{% extends 'collection/notes.html.twig' %}
 
 {% set nickname = nickname|escape %}
 {% block title %}{{ nickname }}{% endblock %}
 
-{% block stylesheets %}
-    {{ parent() }}
-    <link rel="stylesheet" href="{{ asset('assets/default_theme/pages/feeds.css') }}" type="text/css">
-{% endblock stylesheets %}
-
 {% block body %}
-
     {% if actor is defined and actor is not null %}
         {% block profile_view %}
             {% include 'cards/blocks/profile.html.twig' with { 'actor': actor } only %}
         {% endblock profile_view %}
 
         {% if notes is defined %}
-            <article>
-                <header class="feed-header">
-                    <h1 class="section-title">{{ 'Notes' | trans }}</h1>
-                    <nav class="feed-actions">
-                        <details class="feed-actions-details">
-                            <summary>
-                                {{ icon('filter', 'icon icon-feed-actions') | raw }} {# button-container #}
-                            </summary>
-                            <div class="feed-actions-details-dropdown">
-                                <menu>
-                                    {% for block in handle_event('AddFeedActions', app.request, notes is defined and notes is not empty) %}
-                                        {{ block | raw }}
-                                    {% endfor %}
-                                </menu>
-                            </div>
-                        </details>
-                    </nav>
-                </header>
-
-                {% if notes is not empty %}
-                    {# Backwards compatibility with hAtom 0.1 #}
-                    <section class="feed h-feed hfeed notes" tabindex="0" role="feed">
-                        {% for conversation in notes %}
-                            {% block current_note %}
-                                {% if conversation is instanceof('array') %}
-                                    {{ noteView.note_vanilla(conversation['note'], conversation['replies']) }}
-                                {% else %}
-                                    {{ noteView.note_vanilla(conversation) }}
-                                {% endif %}
-                                <hr tabindex="0" title="{{ 'End of note and replies.' | trans }}">
-                            {% endblock current_note %}
-                        {% endfor %}
-                    </section>
-                {% else %}
-                    <section class="feed h-feed hfeed notes" tabindex="0" role="feed">
-                        <strong>{% trans %}No notes yet...{% endtrans %}</strong>
-                    </section>
-                {% endif %}
-            </article>
+            {{ parent() }}
         {% endif %}
     {% endif %}
 {% endblock body %}

@@ -83,14 +83,12 @@ class Conversation extends Component
         } else {
             // It's a reply for sure
             // Set reply_to property in newly created Note to parent's id
-            $current_note->setReplyTo($parent_id);
-
             // Parent will have a conversation of its own, the reply should have the same one
             $parent_note = Note::getById($parent_id);
             $current_note->setConversationId($parent_note->getConversationId());
         }
 
-        DB::merge($current_note);
+        DB::persist($current_note);
     }
 
     /**
