@@ -193,6 +193,7 @@ class Activity extends Model
             }
         }
 
+        $attr['object']->set('@context', null);
         $type = self::jsonToType($attr);
         Event::handle('ActivityPubAddActivityStreamsTwoData', [$type->get('type'), &$type]);
         return $type->toJson($options);
