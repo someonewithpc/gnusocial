@@ -357,7 +357,7 @@ class RepeatNote extends NoteHandlerPlugin
         }
         if ($type_activity->get('type') === 'Announce') { // Repeat
             if ($type_object instanceof \ActivityPhp\Type\AbstractObject) {
-                if ($type_object->get('type') === 'Note' || $type_object->get('type') === 'Page') {
+                if ($type_object->get('type') === 'Note' || $type_object->get('type') === 'ChatMessage' || $type_object->get('type') === 'Page') {
                     $note    = \Plugin\ActivityPub\Util\Model\Note::fromJson($type_object);
                     $note_id = $note->getId();
                 } else {

@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types=1);
+declare(strict_types = 1);
 
 // {{{ License
 // This file is part of GNU social - https://www.gnu.org/software/social
@@ -52,15 +52,15 @@ class ActivityCreate extends Activity
     protected static function handle_core_activity(\App\Entity\Actor $actor, AbstractObject $type_activity, mixed $type_object, ?ActivitypubActivity &$ap_act): ActivitypubActivity
     {
         if ($type_object instanceof AbstractObject) {
-            if ($type_object->get('type') === 'Note'  || $type_object->get('type') === 'Page') {
-                $actual_to = array_flip(is_string($type_object->get('to')) ? [$type_object->get('to')] : $type_object->get('to'));
-                $actual_cc = array_flip(is_string($type_object->get('cc')) ? [$type_object->get('cc')] : $type_object->get('cc'));
-                foreach (is_string($type_activity->get('to')) ? [$type_activity->get('to')] : ($type_activity->get('to') ?? []) as $to) {
+            if ($type_object->get('type') === 'Note' || $type_object->get('type') === 'ChatMessage' || $type_object->get('type') === 'Page') {
+                $actual_to = array_flip(\is_string($type_object->get('to')) ? [$type_object->get('to')] : $type_object->get('to'));
+                $actual_cc = array_flip(\is_string($type_object->get('cc')) ? [$type_object->get('cc')] : $type_object->get('cc'));
+                foreach (\is_string($type_activity->get('to')) ? [$type_activity->get('to')] : ($type_activity->get('to') ?? []) as $to) {
                     if ($to !== 'https://www.w3.org/ns/activitystreams#Public') {
                         $actual_to[$to] = true;
                     }
                 }
-                foreach (is_string($type_activity->get('cc')) ? [$type_activity->get('cc')] : ($type_activity->get('cc') ?? []) as $cc) {
+                foreach (\is_string($type_activity->get('cc')) ? [$type_activity->get('cc')] : ($type_activity->get('cc') ?? []) as $cc) {
                     if ($cc !== 'https://www.w3.org/ns/activitystreams#Public') {
                         $actual_cc[$cc] = true;
                     }
@@ -78,20 +78,20 @@ class ActivityCreate extends Activity
         }
         // Store Activity
         $act = GSActivity::create([
-            'actor_id' => $actor->getId(),
-            'verb' => 'create',
+            'actor_id'    => $actor->getId(),
+            'verb'        => 'create',
             'object_type' => 'note',
-            'object_id' => $note->getId(),
-            'created' => new DateTime($type_activity->get('published') ?? 'now'),
-            'source' => 'ActivityPub',
+            'object_id'   => $note->getId(),
+            'created'     => new DateTime($type_activity->get('published') ?? 'now'),
+            'source'      => 'ActivityPub',
         ]);
         DB::persist($act);
         // Store ActivityPub Activity
         $ap_act = ActivitypubActivity::create([
-            'activity_id' => $act->getId(),
+            'activity_id'  => $act->getId(),
             'activity_uri' => $type_activity->get('id'),
-            'created' => new DateTime($type_activity->get('published') ?? 'now'),
-            'modified' => new DateTime(),
+            'created'      => new DateTime($type_activity->get('published') ?? 'now'),
+            'modified'     => new DateTime(),
         ]);
         DB::persist($ap_act);
         $ap_act->setObjectMentionIds($note->_object_mentions_ids);

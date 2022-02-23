@@ -176,7 +176,7 @@ class Note extends Model
             $map['scope'] = 'unlisted';
         } else {
             // Either Followers-only or Direct
-            if ($type_note->get('directMessage') ?? false // Is DM explicitly?
+            if ($type_note->get('type') === 'ChatMessage' // Is DM explicitly?
             || (empty($type_note->get('cc')))) { // Only has TO targets
                 $map['scope'] = VisibilityScope::MESSAGE;
             } else { // Then is collection
@@ -328,9 +328,9 @@ class Note extends Model
 
         $attr = [
             '@context'         => ActivityPub::$activity_streams_two_context,
-            'type'             => match ($object->getType()) {
+            'type'             => $object->getScope() === VisibilityScope::MESSAGE ? 'ChatMessage' : (match ($object->getType()) {
                 NoteType::NOTE => 'Note', NoteType::PAGE => 'Page'
-            },
+            }),
             'id'             => $object->getUrl(),
             'published'      => $object->getCreated()->format(DateTimeInterface::RFC3339),
             'attributedTo'   => $object->getActor()->getUri(Router::ABSOLUTE_URL),
@@ -342,7 +342,6 @@ class Note extends Model
             'tag'            => [],
             'inReplyTo'      => \is_null($object->getReplyTo()) ? null : ActivityPub::getUriByObject(GSNote::getById($object->getReplyTo())),
             'inConversation' => $object->getConversationUri(),
-            'directMessage'  => $object->getScope() === VisibilityScope::MESSAGE,
         ];
 
         // Target scope
