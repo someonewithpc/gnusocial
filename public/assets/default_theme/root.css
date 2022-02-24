@@ -1,37 +1,38 @@
+
 :root {
-    --s: 0.666rem;
-    --unit: 1rem;
-    --m: 1.067rem;
-    --xl: 1.138rem;
-    --xxl: 3.2rem;
+    --m:1.067em;
+    --s:.666em;
+    --unit:1em;
+    --xl:1.138em;
+    --xxl:3.138em;
 }
 
-@media(prefers-color-scheme:dark) {
+@media(prefers-color-scheme: dark) {
     :root {
-        --foreground: #eff0f1;
-        --background-hard: #0E0E0F;
-        --background-card: #0E0E0F;
-        --border: #26262C;
-        --accent: #5ddbcf;
-        --shadow: 0 5px 20px -10px rgba(255,255,255,0.1)!important;
-        --shadow-inset-accent: inset 0 0 0 2px var(--accent);
-        --background-checkerboard: repeating-conic-gradient(#ffffff66 0 90deg,#ffffff33 0 180deg) 0 0/40px 40px round;
-        --gradient: linear-gradient(5deg,var(--border) -33%,transparent 66%) !important;
-        --gradient-backwards: linear-gradient(-5deg,var(--border) -33%,transparent 66%) !important;
+        --accent:#5ddbcf;
+        --background-card:#0e0e0f;
+        --background-checkerboard:repeating-conic-gradient(#ffffff66 0 90deg,#ffffff33 0 180deg) 0 0/40px 40px round;
+        --background-hard:#0e0e0f;
+        --border:#26262c;
+        --foreground:#eff0f1;
+        --gradient:linear-gradient(5deg,var(--border) -33%,transparent 66%)!important;
+        --gradient-backwards:linear-gradient(-5deg,var(--border) -33%,transparent 66%)!important;
+        --shadow:0 5px 20px -10px rgba(255,255,255,.1)!important;
+        --shadow-inset-accent:inset 0 0 0 2px var(--accent);
     }
 }
 
-@media(prefers-color-scheme:light) {
+@media(prefers-color-scheme: light) {
     :root {
-        --foreground: #09090d;
-        --background-hard: #ebebeb;
-        --background-card: #f0f0f0;
-        --border: #C2C2C2;
-        --accent: #a22430;
-        --shadow: 0 5px 20px -10px rgba(0,0,0,0.1)!important;
-        --shadow-inset-accent: inset 0 0 0 2px var(--accent);
-        --background-checkerboard: repeating-conic-gradient(#ffffff66 0 90deg,#ffffff33 0 180deg) 0 0/40px 40px round;
-        --gradient: linear-gradient(10deg,var(--background-hard) 0,transparent) !important;
-        --gradient-backwards: linear-gradient(290deg,var(--background-hard) 0,var(--background-card) 100%) !important;
+        --accent:#a22430;
+        --background-card:#f0f0f0;
+        --background-checkerboard:repeating-conic-gradient(#ffffff66 0 90deg,#ffffff33 0 180deg) 0 0/40px 40px round;
+        --background-hard:#ebebeb;
+        --border:#c2c2c2;
+        --foreground:#09090d;
+        --gradient:linear-gradient(10deg,var(--background-hard) 0,transparent)!important;
+        --gradient-backwards:linear-gradient(290deg,var(--background-hard) 0,var(--background-card) 100%)!important;
+        --shadow:0 5px 20px -10px rgba(0,0,0,.1)!important;
+        --shadow-inset-accent:inset 0 0 0 2px var(--accent);
     }
 }

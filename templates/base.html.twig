@@ -16,10 +16,11 @@
 
     {% block stylesheets %}
         <link rel='preload' type='text/css' as='style' href="{{ asset('assets/default_theme/fonts/opensans/opensans.css') }}">
-        <link rel='preload' type='text/css' as='style' href="{{ asset('assets/default_theme/fonts/poppins/poppins.css') }}">
-
         <link rel='stylesheet' type='text/css' href="{{ asset('assets/default_theme/fonts/opensans/opensans.css') }}">
-        <link rel='stylesheet' type='text/css' href="{{ asset('assets/default_theme/fonts/poppins/poppins.css') }}">
+
+        <link rel='stylesheet' type='text/css' href="{{ asset('assets/default_theme/reset.css') }}">
+        <link rel='stylesheet' type='text/css' href="{{ asset('assets/default_theme/root.css') }}">
+        <link rel='stylesheet' type='text/css' href="{{ asset('assets/default_theme/widgets.css') }}">
         <link rel='stylesheet' type='text/css' href="{{ asset('assets/default_theme/base.css') }}">
 
         {% for stylesheet in show_stylesheets(app.request.get('_route')) %}
@@ -87,14 +88,14 @@
     <header class="page-header">
         {{ block("leftpanel", "stdgrid.html.twig") }}
 
-        <span class="header-instance">
+        <div class="header-instance">
             <a id="anchor-main-page" class="anchor-hidden"
                title="{{ 'Press tab to access instance\'s main page.' | trans }}"></a>
             <a class="accessibility-target" href="{{ path('feed_public') }}" tabindex="0"
                title="{{ 'This instance\'s name. Access public feed.' | trans }}">
                 <h1>{{ icon('logo', 'icon icon-logo') | raw }}{{ config('site', 'name') }}</h1>
             </a>
-        </span>
+        </div>
 
         {{ block("rightpanel", "stdgrid.html.twig") }}
     </header>

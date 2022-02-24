@@ -118,46 +118,45 @@
 
 {% block note_complementary %}
     {% set complementary_info_array = handle_event('AppendCardNote', { 'note': note, 'request': app.request }) %}
-    <aside
+
+    {% if app.user is not null or complementary_info_array is not empty %}
+        <aside
         title="{{ 'Additional note context information and actions' | trans }}"
         class="note-complementary">
-    {% if complementary_info_array is not empty %}
-        <div class="note-complementary-info">
-            {% for complementary_info in complementary_info_array %}
-                {% set actor_count = complementary_info['actors'] | length %}
-                {% set counter = 0 %}
-                {% for complementary_info_actor in complementary_info['actors'] %}
-                <span>
-                    {% if app.user is not null %}
-                        {% if complementary_info_actor is defined and complementary_info_actor.getNickname() != app.user.nickname %}
-                            <a href="{{ complementary_info_actor.getUrl() }}">{{ complementary_info_actor.getNickname() }}{% if actor_count > 1 and counter < actor_count - 2 %}{{ ', ' | trans }}{% endif %}</a>
-                            {% if counter == actor_count - 2 %}
-                                {{ ' and ' | trans }}
-                            {% endif %}
-                            {% set counter = counter + 1 %}
+            {% if complementary_info_array is not empty %}
+                <div class="note-complementary-info">
+                {% for complementary_info in complementary_info_array %}
+                    {% set actor_count = complementary_info['actors'] | length %}
+                    {% set counter = 0 %}
+                    <span>
+                        {% for complementary_info_actor in complementary_info['actors'] %}
+                                {% if app.user is not null %}
+                                    {% if complementary_info_actor is defined and complementary_info_actor.getNickname() != app.user.nickname %}
+                                        <a href="{{ complementary_info_actor.getUrl() }}">{{ complementary_info_actor.getNickname() }}{% if actor_count > 1 and counter < actor_count - 2 %}{{ ', ' | trans }}{% endif %}</a>
+                                        {% if counter == actor_count - 2 %}{{ ' and ' | trans }}{% endif %}
+
+                                        {% set counter = counter + 1 %}
+                                    {% endif %}
+                                {% else %}
+                                    {% if complementary_info_actor is defined %}
+                                        <a href="{{ complementary_info_actor.getUrl() }}">{{ complementary_info_actor.getNickname() }}{% if actor_count > 1 and counter < actor_count - 2 %}{{ ', ' | trans }}{% endif %}</a>
+                                        {% if counter == actor_count - 2 %}{{ ' and ' | trans }}{% endif %}
+                                        {% set counter = counter + 1 %}
+                                    {% endif %}
+                                {% endif %}
+                        {% endfor %}
+
+                        {% if complementary_info['action'] is defined and not null and counter > 0 %}
+                            {% if counter > 1 %}{{ ' have ' | trans }}
+                            {% else %}{{ ' has ' | trans }}
+                            {% endif %}{{ complementary_info['action'] ~ ' this note' | trans }}
                         {% endif %}
-                    {% else %}
-                        {% if complementary_info_actor is defined %}
-                            <a href="{{ complementary_info_actor.getUrl() }}">{{ complementary_info_actor.getNickname() }}{% if actor_count > 1 and counter < actor_count - 2 %}{{ ', ' | trans }}{% endif %}</a>
-                            {% if counter == actor_count - 2 %}
-                                {{ ' and ' | trans }}
-                            {% endif %}
-                            {% set counter = counter + 1 %}
-                        {% endif %}
-                    {% endif %}
-                    {% endfor %}
-                    {% if complementary_info['action'] is defined and not null and counter > 0 %}
-                        {% if counter > 1 %}
-                            {{ ' have ' | trans }}
-                        {% else %}
-                            {{ ' has ' | trans }}
-                        {% endif %}
-                        {{ complementary_info['action'] ~ ' this note' | trans }}
-                    {% endif %}
-                </span>
-            {% endfor %}
-        </div>
+                    </span>
+                {% endfor %}
+                </div>
+            {% endif %}
+
+            {{ block('note_actions', 'cards/blocks/note.html.twig') }}
+        </aside>
     {% endif %}
-    {{ block('note_actions', 'cards/blocks/note.html.twig') }}
-    </aside>
 {% endblock note_complementary %}

@@ -1,18 +1,20 @@
 {% extends 'stdgrid.html.twig' %}
-{% import "/cards/macros/note.html.twig" as noteView %}
+{% import "/cards/macros/note/factory.html.twig" as NoteFactory %}
 
 {% block title %}{{ 'Remove repeat from ' | trans }}{{ note.getActorNickname() }}{{ '\'s note.' | trans }}{% endblock %}
 
 {% block stylesheets %}
     {{ parent() }}
-    <link rel="stylesheet" href="{{ asset('assets/default_theme/pages/feeds.css') }}" type="text/css">
+    <link rel="stylesheet" href="{{ asset('assets/default_theme/feeds.css') }}" type="text/css">
 {% endblock stylesheets %}
 
 {% block body %}
     {{ parent() }}
     <div class="page">
         <div class="main">
-            {{ noteView.note_vanilla(note) }}
+            {% set args = { 'type': 'vanilla_full', 'note': note, 'extra': { 'depth': 0 } } %}
+            {{ NoteFactory.constructor(args) }}
+            <hr>
             {{ form(remove_repeat) }}
         </div>
     </div>
