@@ -26,18 +26,19 @@ namespace Component\Group\Controller;
 use App\Core\Cache;
 use App\Core\DB\DB;
 use App\Core\Form;
+use function App\Core\I18n\_m;
 use App\Core\Router\Router;
-use App\Entity as E;
 use App\Entity\Actor;
+use App\Entity as E;
 use App\Util\Common;
 use App\Util\Exception\ClientException;
 use App\Util\Exception\ServerException;
+use App\Util\HTML\Heading;
 use Component\Collection\Util\Controller\FeedController;
 use Component\Group\Entity\LocalGroup;
 use Component\Subscription\Entity\ActorSubscription;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\HttpFoundation\Request;
-use function App\Core\I18n\_m;
 
 class GroupFeed extends FeedController
 {
@@ -82,11 +83,12 @@ class GroupFeed extends FeedController
             EOF, ['id' => $group->getId()]);
 
         return [
-            '_template'      => 'group/view.html.twig',
-            'actor'          => $group,
-            'nickname'       => $group->getNickname(),
-            'notes'          => $notes,
-            'subscribe_form' => $subscribe_form?->createView(),
+            '_template'        => 'group/view.html.twig',
+            'actor'            => $group,
+            'nickname'         => $group->getNickname(),
+            'notes'            => $notes,
+            'notes_feed_title' => (new Heading(1, [], $group->getNickname() . '\'s feed')),
+            'subscribe_form'   => $subscribe_form?->createView(),
         ];
     }
 

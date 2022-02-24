@@ -25,14 +25,26 @@
             {{ block('note_info', 'cards/blocks/note.html.twig') }}
 
             <section class="e-content entry-content note-content" title="{{ 'Note\'s main content' | trans }}">
-                {% if extra.parent is defined  %}
-                    <em
-                            tabindex="0"
-                            class="note-replies-parent"
-                            title="{{'This is a reply with depth: ' | trans}} {{ extra.depth }}"
-                            aria-flowto="note-anchor-">
-                        {{'in reply to' | trans}} {{ extra.parent | raw }}
-                    </em>
+                {% set notification_targets = note.getNotificationTargets() %}
+                {% if notification_targets is not empty  %}
+                    {% for target in notification_targets %}
+                        {% if target.isGroup() %}
+                            <em tabindex="0"
+                                class="note-replies-parent"
+                                title="{{'The group in which this note was addressed to' | trans}}">
+                                {{'in ' | trans}}
+                                <a href="{{ target.getUrl() }}">{{ mention(target) | raw }}</a>
+                            </em>
+                        {% else %}
+                            <em tabindex="0"
+                                class="note-replies-parent"
+                                title="{{'Whom this is a reply to' | trans}}"
+                                aria-flowto="note-anchor-{{ note.getReplyTo() }}">
+                                {{'in reply to' | trans}}
+                                <a href="{{ target.getUrl() }}">{{ mention(target) | raw }}</a>
+                            </em>
+                        {% endif %}
+                    {% endfor %}
                 {% endif %}
                 {{ block('note_text', 'cards/blocks/note.html.twig') }}
                 {{ block('note_attachments', 'cards/blocks/note.html.twig') }}

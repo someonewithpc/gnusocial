@@ -8,7 +8,7 @@
         {% block profile_view %}
             {% include 'cards/blocks/profile.html.twig' with { 'actor': actor } only %}
         {% endblock profile_view %}
-
+        <hr>
         {% if notes is defined %}
             {{ parent() }}
         {% endif %}

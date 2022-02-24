@@ -30,12 +30,6 @@
             <div class="note-replies-start"></div>
             <div class="u-in-reply-to replies">
                 {% for conversation in replies %}
-                    {% if extra.depth is defined  %}
-                        {% set depth_increment = {'depth': extra.depth + 1} %}
-                        {% set parent = {'parent': block('note_author')} %}
-                        {% set extra = extra|merge(depth_increment) %}
-                        {% set extra = extra|merge(parent) %}
-                    {% endif %}
                     <span class="note-replies-indicator" role="presentation"></span>
                     {% set args = { 'type': 'vanilla_full', 'note': conversation['note'], 'replies': conversation['replies'] | default, 'extra': extra } %}
                     {{ NoteFactory.constructor(args) }}
