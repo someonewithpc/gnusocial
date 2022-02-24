@@ -155,7 +155,8 @@ class Note extends Model
             'reply_to'     => $reply_to = $handleInReplyTo($type_note),
             'modified'     => new DateTime(),
             'type'         => match ($type_note->get('type')) {
-                'Page'     => NoteType::PAGE, default => NoteType::NOTE
+                'Page'     => NoteType::PAGE,
+                default    => NoteType::NOTE
             },
             'source' => $source,
         ];
@@ -177,14 +178,14 @@ class Note extends Model
         } else {
             // Either Followers-only or Direct
             if ($type_note->get('type') === 'ChatMessage' // Is DM explicitly?
-            || (empty($type_note->get('cc')))) { // Only has TO targets
+                || (empty($type_note->get('cc')))) { // Only has TO targets
                 $map['scope'] = VisibilityScope::MESSAGE;
             } else { // Then is collection
                 $map['scope'] = VisibilityScope::COLLECTION;
             }
         }
 
-        $object_mentions_ids = [];
+        $attention_ids = [];
         foreach ($to as $target) {
             if ($target === 'https://www.w3.org/ns/activitystreams#Public') {
                 continue;
@@ -219,6 +220,21 @@ class Note extends Model
         }
 
         $obj = GSNote::create($map);
+        DB::persist($obj);
+
+        foreach ($attention_ids as $attention_uri) {
+            $explorer = new Explorer();
+            try {
+                $actors = $explorer->lookup($attention_uri);
+                foreach ($actors as $actor) {
+                    $object_mention_ids[$target_id = $actor->getId()] = $attention_uri;
+                    DB::persist(Attention::create(['note_id' => $obj->getId(), 'target_id' => $target_id]));
+                }
+            } catch (Exception $e) {
+                Log::debug('ActivityPub->Model->Note->fromJson->Attention->Explorer', [$e]);
+            }
+        }
+        $attention_ids = array_keys($attention_ids);
 
         // Attachments
         $processed_attachments = [];
@@ -246,11 +262,10 @@ class Note extends Model
             }
         }
 
-        DB::persist($obj);
-
         // Assign conversation to this note
         Conversation::assignLocalConversation($obj, $reply_to);
 
+        $object_mention_ids = [];
         foreach ($type_note->get('tag') ?? [] as $ap_tag) {
             switch ($ap_tag->get('type')) {
                 case 'Mention':
@@ -258,7 +273,7 @@ class Note extends Model
                     try {
                         $actors = $explorer->lookup($ap_tag->get('href'));
                         foreach ($actors as $actor) {
-                            $object_mentions_ids[$actor->getId()] = $ap_tag->get('href');
+                            $object_mention_ids[$actor->getId()] = $ap_tag->get('href');
                         }
                     } catch (Exception $e) {
                         Log::debug('ActivityPub->Model->Note->fromJson->Mention->Explorer', [$e]);
@@ -284,10 +299,10 @@ class Note extends Model
         }
 
         // The content would be non-sanitized text/html
-        Event::handle('ProcessNoteContent', [$obj, $obj->getRendered(), $obj->getContentType(), $process_note_content_extra_args = ['TagProcessed' => true, 'ignoreLinks' => $object_mentions_ids]]);
+        Event::handle('ProcessNoteContent', [$obj, $obj->getRendered(), $obj->getContentType(), $process_note_content_extra_args = ['TagProcessed' => true, 'ignoreLinks' => $object_mention_ids]]);
 
-        $object_mentions_ids = array_keys($object_mentions_ids);
-        $obj->setObjectMentionsIds($object_mentions_ids);
+        $object_mention_ids = array_keys($object_mention_ids);
+        $obj->setObjectMentionsIds($object_mention_ids);
 
         if ($processed_attachments !== []) {
             foreach ($processed_attachments as [$a, $fname]) {
@@ -318,7 +333,9 @@ class Note extends Model
     /**
      * Get a JSON
      *
-     * @throws Exception
+     * @throws ClientException
+     * @throws InvalidArgumentException
+     * @throws ServerException
      */
     public static function toJson(mixed $object, ?int $options = null): string
     {
@@ -329,7 +346,8 @@ class Note extends Model
         $attr = [
             '@context'         => ActivityPub::$activity_streams_two_context,
             'type'             => $object->getScope() === VisibilityScope::MESSAGE ? 'ChatMessage' : (match ($object->getType()) {
-                NoteType::NOTE => 'Note', NoteType::PAGE => 'Page'
+                NoteType::NOTE => 'Note',
+                NoteType::PAGE => 'Page'
             }),
             'id'             => $object->getUrl(),
             'published'      => $object->getCreated()->format(DateTimeInterface::RFC3339),
@@ -349,7 +367,7 @@ class Note extends Model
             case VisibilityScope::EVERYWHERE:
                 $attr['to'] = ['https://www.w3.org/ns/activitystreams#Public'];
                 $attr['cc'] = [Router::url('actor_subscribers_id', ['id' => $object->getActor()->getId()], Router::ABSOLUTE_URL)];
-            break;
+                break;
             case VisibilityScope::LOCAL:
                 throw new ClientException('This note was not federated.', 403);
             case VisibilityScope::ADDRESSEE:
@@ -371,9 +389,9 @@ class Note extends Model
                 throw new ServerException('Found an unknown visibility scope which cannot federate.');
         }
 
-        $attention_cc = DB::findBy(Attention::class, ['note_id' => $object->getId()]);
-        foreach ($attention_cc as $cc_id) {
-            $target = \App\Entity\Actor::getById($cc_id->getTargetId());
+        // Notification Targets without Mentions
+        $attentions = $object->getNotificationTargets(ids_already_known: ['object' => []]);
+        foreach ($attentions as $target) {
             if ($object->getScope() === VisibilityScope::GROUP && $target->isGroup()) {
                 $attr['to'][] = $target->getUri(Router::ABSOLUTE_URL);
             } else {
@@ -382,7 +400,7 @@ class Note extends Model
         }
 
         // Mentions
-        foreach ($object->getNotificationTargets() as $mention) {
+        foreach ($object->getMentionTargets() as $mention) {
             $attr['tag'][] = [
                 'type' => 'Mention',
                 'href' => ($href = $mention->getUri()),

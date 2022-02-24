@@ -180,8 +180,8 @@ class Inbox extends Controller
         }
 
         DB::flush();
-        if (Event::handle('ActivityPubNewNotification', [$actor, $ap_act->getActivity(), $already_known_ids, _m('{nickname} mentioned you.', ['{nickname}' => $actor->getNickname()])]) === Event::next) {
-            Event::handle('NewNotification', [$actor, $ap_act->getActivity(), $already_known_ids, _m('{nickname} mentioned you.', ['{nickname}' => $actor->getNickname()])]);
+        if (Event::handle('ActivityPubNewNotification', [$actor, $ap_act->getActivity(), $already_known_ids, _m('{nickname} attentioned you.', ['{nickname}' => $actor->getNickname()])]) === Event::next) {
+            Event::handle('NewNotification', [$actor, $ap_act->getActivity(), $already_known_ids, _m('{nickname} attentioned you.', ['{nickname}' => $actor->getNickname()])]);
         }
 
         dd($ap_act, $act = $ap_act->getActivity(), $act->getActor(), $act->getObject());

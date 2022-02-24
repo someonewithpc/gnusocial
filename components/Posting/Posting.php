@@ -357,26 +357,29 @@ class Posting extends Component
         ]);
         DB::persist($activity);
 
+        $attention_ids = [];
         foreach ($targets as $target) {
-            $target = \is_int($target) ? Actor::getById($target) : $target;
-            DB::persist(Attention::create(['note_id' => $note->getId(), 'target_id' => $target->getId()]));
-            $mentions[] = [
-                'mentioned'       => [$target],
-                'type'            => match ($target->getType()) {
-                    Actor::PERSON => 'mention',
-                    Actor::GROUP  => 'group',
-                    default       => throw new ClientException(_m('Unknown target type give in \'In\' field: {target}', ['{target}' => $target?->getNickname() ?? '<null>'])),
-                },
-                'text' => $target->getNickname(),
-            ];
+            $target_id = \is_int($target) ? $target : $target->getId();
+            DB::persist(Attention::create(['note_id' => $note->getId(), 'target_id' => $target_id]));
+            $attention_ids[$target_id] = true;
         }
-
-        $attention_ids = F\unique(F\flat_map($mentions, fn (array $m) => F\map($m['mentioned'] ?? [], fn (Actor $a) => $a->getId())));
+        $attention_ids = array_keys($attention_ids);
 
         if ($flush_and_notify) {
             // Flush before notification
             DB::flush();
-            Event::handle('NewNotification', [$actor, $activity, ['object' => $attention_ids], _m('{nickname} created a note {note_id}.', ['{nickname}' => $actor->getNickname(), '{note_id}' => $activity->getObjectId()])]);
+            Event::handle('NewNotification', [
+                $actor,
+                $activity,
+                [
+                    'note-attention' => $attention_ids,
+                    'object' => F\unique(F\flat_map($mentions, fn (array $m) => F\map($m['mentioned'] ?? [], fn (Actor $a) => $a->getId()))),
+                ],
+                _m('{nickname} created a note {note_id}.', [
+                    '{nickname}' => $actor->getNickname(),
+                    '{note_id}'  => $activity->getObjectId(),
+                ]),
+            ]);
         }
 
         return [$activity, $note, $attention_ids];

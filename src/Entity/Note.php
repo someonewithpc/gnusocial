@@ -28,6 +28,7 @@ use App\Core\Cache;
 use App\Core\DB\DB;
 use App\Core\Entity;
 use App\Core\Event;
+use function App\Core\I18n\_m;
 use App\Core\Log;
 use App\Core\Router\Router;
 use App\Core\VisibilityScope;
@@ -37,15 +38,17 @@ use App\Util\Formatting;
 use Component\Avatar\Avatar;
 use Component\Conversation\Entity\Conversation;
 use Component\Language\Entity\Language;
-use function App\Core\I18n\_m;
+use Component\Notification\Entity\Attention;
+use DateTimeInterface;
+use function mb_substr;
+use const PREG_SPLIT_NO_EMPTY;
 
 // The domain of this enum are Notes
-enum NoteType: int // having an int is just convenient
+enum NoteType : int // having an int is just convenient
 {
     case NOTE = 1;  // Is an element of microblogging, a direct message, or a reply to another note or page
     case PAGE = 2;  // Larger content note, beginning of a thread, or an email message
-};
-
+}
 
 /**
  * Entity for notices
@@ -63,20 +66,20 @@ class Note extends Entity
     // @codeCoverageIgnoreStart
     private int $id;
     private int $actor_id;
-    private ?string $content = null;
+    private ?string $content     = null;
     private string $content_type = 'text/plain';
-    private ?string $rendered = null;
+    private ?string $rendered    = null;
     private int $conversation_id;
     private ?int $reply_to = null;
     private bool $is_local;
-    private ?string $source = null;
-    private int $scope = 1;  //VisibilityScope::EVERYWHERE->value;
-    private ?string $url = null;
+    private ?string $source   = null;
+    private int $scope        = 1;  //VisibilityScope::EVERYWHERE->value;
+    private ?string $url      = null;
     private ?int $language_id = null;
-    private int $type = 1;  //NoteType::NOTE->value;
-    private ?string $title = null;
-    private \DateTimeInterface $created;
-    private \DateTimeInterface $modified;
+    private int $type         = 1;  //NoteType::NOTE->value;
+    private ?string $title    = null;
+    private DateTimeInterface $created;
+    private DateTimeInterface $modified;
 
     public function setId(int $id): self
     {
@@ -113,7 +116,7 @@ class Note extends Entity
 
     public function setContentType(string $content_type): self
     {
-        $this->content_type = \mb_substr($content_type, 0, 129);
+        $this->content_type = mb_substr($content_type, 0, 129);
         return $this;
     }
 
@@ -168,7 +171,7 @@ class Note extends Entity
 
     public function setSource(?string $source): self
     {
-        $this->source = \is_null($source) ? null : \mb_substr($source, 0, 32);
+        $this->source = \is_null($source) ? null : mb_substr($source, 0, 32);
         return $this;
     }
 
@@ -179,7 +182,7 @@ class Note extends Entity
 
     public function setScope(VisibilityScope|int $scope): self
     {
-        $this->scope = is_int($scope) ? $scope : $scope->value;
+        $this->scope = \is_int($scope) ? $scope : $scope->value;
         return $this;
     }
 
@@ -212,7 +215,7 @@ class Note extends Entity
 
     public function setType(NoteType|int $type): self
     {
-        $this->type = is_int($type) ? $type : $type->value;
+        $this->type = \is_int($type) ? $type : $type->value;
         return $this;
     }
 
@@ -223,7 +226,7 @@ class Note extends Entity
 
     public function setTitle(?string $title): self
     {
-        $this->title = \is_null($title) ? null : \mb_substr($title, 0, 129);
+        $this->title = \is_null($title) ? null : mb_substr($title, 0, 129);
         return $this;
     }
 
@@ -232,24 +235,24 @@ class Note extends Entity
         return $this->title;
     }
 
-    public function setCreated(\DateTimeInterface $created): self
+    public function setCreated(DateTimeInterface $created): self
     {
         $this->created = $created;
         return $this;
     }
 
-    public function getCreated(): \DateTimeInterface
+    public function getCreated(): DateTimeInterface
     {
         return $this->created;
     }
 
-    public function setModified(\DateTimeInterface $modified): self
+    public function setModified(DateTimeInterface $modified): self
     {
         $this->modified = $modified;
         return $this;
     }
 
-    public function getModified(): \DateTimeInterface
+    public function getModified(): DateTimeInterface
     {
         return $this->modified;
     }
@@ -260,12 +263,12 @@ class Note extends Entity
     public static function cacheKeys(int $note_id)
     {
         return [
-            'note' => "note-{$note_id}",
-            'attachments' => "note-attachments-{$note_id}",
+            'note'              => "note-{$note_id}",
+            'attachments'       => "note-attachments-{$note_id}",
             'attachments-title' => "note-attachments-with-title-{$note_id}",
-            'links' => "note-links-{$note_id}",
-            'tags' => "note-tags-{$note_id}",
-            'replies' => "note-replies-{$note_id}",
+            'links'             => "note-links-{$note_id}",
+            'tags'              => "note-tags-{$note_id}",
+            'replies'           => "note-replies-{$note_id}",
         ];
     }
 
@@ -335,7 +338,7 @@ class Note extends Entity
             return DB::dql(
                 <<<'EOF'
                     select att from attachment att
-                    join attachment_to_note atn with atn.attachment_id = att.id
+                        join attachment_to_note atn with atn.attachment_id = att.id
                     where atn.note_id = :note_id
                     EOF,
                 ['note_id' => $this->id],
@@ -350,7 +353,7 @@ class Note extends Entity
                 <<<'EOF'
                     select att, atn.title
                     from attachment att
-                    join attachment_to_note atn with atn.attachment_id = att.id
+                        join attachment_to_note atn with atn.attachment_id = att.id
                     where atn.note_id = :note_id
                     EOF,
                 ['note_id' => $this->id],
@@ -369,7 +372,7 @@ class Note extends Entity
             return DB::dql(
                 <<<'EOF'
                     select l from link l
-                    join note_to_link ntl with ntl.link_id = l.id
+                        join note_to_link ntl with ntl.link_id = l.id
                     where ntl.note_id = :note_id
                     EOF,
                 ['note_id' => $this->id],
@@ -396,7 +399,7 @@ class Note extends Entity
      */
     public function getReplyToNote(): ?self
     {
-        return is_null($this->getReplyTo()) ? null : self::getById($this->getReplyTo());
+        return \is_null($this->getReplyTo()) ? null : self::getById($this->getReplyTo());
     }
 
     /**
@@ -419,36 +422,34 @@ class Note extends Entity
                 return true;
             case VisibilityScope::ADDRESSEE:
                 // If the actor is logged in and
-                if (!\is_null($actor)
+                return (bool) (!\is_null($actor)
                     && (
                         // Is either the author Or
                         $this->getActorId() == $actor->getId()
                         // one of the targets
                         || \in_array($actor->getId(), $this->getNotificationTargetIds())
-                    )) {
-                    return true;
-                }
-                return false;
+                    ));
             case VisibilityScope::GROUP:
-                if (is_null($in)) {
+                if (\is_null($in)) {
                     return false; // If we don't have a context, don't risk leaking this note.
                 }
                 // Only for the group to see
                 return !\is_null($actor) && (
                     !($in->getRoles() & ActorLocalRoles::PRIVATE_GROUP) // Public Group
-                    || DB::dql( // It's a member of the private group
-                    <<<'EOF'
-                        SELECT m FROM \Component\Group\Entity\GroupMember m
-                            JOIN \Component\Notification\Entity\Notification att WITH m.group_id = att.target_id
-                            JOIN \App\Entity\Activity a WITH att.activity_id = a.id
-                        WHERE a.object_id = :note_id AND m.actor_id = :actor_id
-                    EOF,
-                    ['note_id' => $this->id, 'actor_id' => $in->getId()],
-                ) !== []);
+                        || DB::dql( // It's a member of the private group
+                            <<<'EOF'
+                                SELECT m FROM \Component\Group\Entity\GroupMember m
+                                	JOIN \Component\Notification\Entity\Notification att WITH m.group_id = att.target_id
+                                	JOIN \App\Entity\Activity a WITH att.activity_id = a.id
+                                WHERE a.object_id = :note_id AND m.actor_id = :actor_id
+                                EOF,
+                            ['note_id' => $this->id, 'actor_id' => $in->getId()],
+                        ) !== []
+                );
             case VisibilityScope::COLLECTION:
             case VisibilityScope::MESSAGE:
                 // Only for the collection to see
-                return !\is_null($actor) && in_array($actor->getId(), $this->getNotificationTargetIds());
+                return !\is_null($actor) && \in_array($actor->getId(), $this->getNotificationTargetIds());
             default:
                 Log::error("Unknown scope found: {$this->getScope()->value}.");
         }
@@ -457,10 +458,40 @@ class Note extends Entity
 
     // @return array of ids of Actors
     public array $_object_mentions_ids = [];
+
     public function setObjectMentionsIds(array $mentions): self
     {
         $this->_object_mentions_ids = $mentions;
         return $this;
+    }
+
+    public function getAttentionTargetIds(?int $sender_id = null): array
+    {
+        $attentioned = [];
+        $attention_cc = DB::findBy(Attention::class, ['note_id' => $this->getId()]);
+        foreach ($attention_cc as $cc) {
+            $cc_id = $cc->getTargetId();
+            if ($cc_id === $sender_id) {
+                continue;
+            }
+            $attentioned[] = $cc_id;
+        }
+        return $attentioned;
+    }
+
+    public function getMentionTargetIds(): array
+    {
+        $target_ids = [];
+        $content = $this->getContent();
+        if (!\is_null($content)) {
+            $mentions = Formatting::findMentions($content, $this->getActor());
+            foreach ($mentions as $mention) {
+                foreach ($mention['mentioned'] as $m) {
+                    $target_ids[] = $m->getId();
+                }
+            }
+        }
+        return $target_ids;
     }
 
     /**
@@ -469,29 +500,29 @@ class Note extends Entity
     public function getNotificationTargetIds(array $ids_already_known = [], ?int $sender_id = null, bool $include_additional = true): array
     {
         $target_ids = $this->_object_mentions_ids ?? [];
-        if ($target_ids === []) {
-            $content = $this->getContent();
-            if (!\array_key_exists('object', $ids_already_known)) {
-                if (!\is_null($content)) {
-                    $mentions = Formatting::findMentions($content, $this->getActor());
-                    foreach ($mentions as $mention) {
-                        foreach ($mention['mentioned'] as $m) {
-                            $target_ids[] = $m->getId();
-                        }
-                    }
-                }
-            } else {
-                $target_ids = $ids_already_known['object'];
-            }
-        }
 
+        // Parent
         if (!\array_key_exists('object-related', $ids_already_known)) {
-            if (!is_null($parent = $this->getReplyToNote())) {
+            if (!\is_null($parent = $this->getReplyToNote())) {
                 $target_ids[] = $parent->getActorId();
                 array_push($target_ids, ...$parent->getNotificationTargetIds());
             }
         } else {
             array_push($target_ids, ...$ids_already_known['object-related']);
+        }
+
+        // Mentions
+        if (!\array_key_exists('object', $ids_already_known)) {
+            array_push($target_ids, ...$this->getMentionTargetIds());
+        } else {
+            array_push($target_ids, ...$ids_already_known['object']);
+        }
+
+        // Attentions
+        if (!\array_key_exists('note-attention', $ids_already_known)) {
+            array_push($target_ids, ...$this->getAttentionTargetIds($sender_id));
+        } else {
+            array_push($target_ids, ...$ids_already_known['note-attention']);
         }
 
         // Additional actors that should know about this
@@ -502,38 +533,65 @@ class Note extends Entity
         return array_unique($target_ids);
     }
 
+    public function getAttentionTargets(?int $sender_id = null): array
+    {
+        $attentioned = $this->getAttentionTargetIds();
+        return DB::findBy('actor', ['id' => $attentioned]);
+    }
+
+    public function getMentionTargets(): array
+    {
+        $mentioned = [];
+        $mentions = Formatting::findMentions($this->getContent(), $this->getActor());
+        foreach ($mentions as $mention) {
+            foreach ($mention['mentioned'] as $m) {
+                $mentioned[] = $m;
+            }
+        }
+        return $mentioned;
+    }
+
     /**
      * @return array of Actors
      */
     public function getNotificationTargets(array $ids_already_known = [], ?int $sender_id = null, bool $include_additional = true): array
     {
+        // Additional (if we have additional, we will just return all the actors from ids)
         if ($include_additional && \array_key_exists('additional', $ids_already_known)) {
             $target_ids = $this->getNotificationTargetIds($ids_already_known, $sender_id);
-            return $target_ids === [] ? [] : DB::findBy('actor', ['id' => $target_ids]);
+            return $target_ids === [] ? [] : DB::findBy(Actor::class, ['id' => $target_ids]);
         }
 
-        $mentioned = [];
-        if (!\array_key_exists('object', $ids_already_known)) {
-            $mentions = Formatting::findMentions($this->getContent(), $this->getActor());
-            foreach ($mentions as $mention) {
-                foreach ($mention['mentioned'] as $m) {
-                    $mentioned[] = $m;
-                }
-            }
-        } else {
-            $mentioned = $ids_already_known['object'] === [] ? [] : DB::findBy('actor', ['id' => $ids_already_known['object']]);
-        }
+        $targets = $this->_object_mentions_ids === [] ? [] : DB::findBy(Actor::class, ['id' => $this->_object_mentions_ids]);
 
+        // Parent
         if (!\array_key_exists('object-related', $ids_already_known)) {
-            if (!is_null($parent = $this->getReplyToNote())) {
-                $mentioned[] = $parent->getActor();
-                array_push($mentioned, ...$parent->getNotificationTargets());
+            if (!\is_null($parent = $this->getReplyToNote())) {
+                $targets[] = $parent->getActor();
+                array_push($targets, ...$parent->getNotificationTargets());
             }
         } else {
-            array_push($mentioned, ...$ids_already_known['object-related']);
+            array_push($targets, ...$ids_already_known['object-related']);
         }
 
-        return $mentioned;
+        // Mentions
+        if (!\array_key_exists('object', $ids_already_known)) {
+            array_push($targets, ...$this->getMentionTargets());
+        } elseif ($ids_already_known['object'] !== []) {
+            array_push($targets, ...DB::findBy('actor', ['id' => $ids_already_known['object']]));
+        }
+
+        // Attentions
+        if (!\array_key_exists('note-attention', $ids_already_known)) {
+            array_push($targets, ...$this->getAttentionTargets($sender_id));
+        } else {
+            $attentioned = $ids_already_known['note-attention'] ?? [];
+            if ($attentioned !== []) {
+                array_push($targets, ...DB::findBy('actor', ['id' => $attentioned]));
+            }
+        }
+
+        return $targets;
     }
 
     public function delete(?Actor $actor = null, string $source = 'web'): Activity
@@ -550,7 +608,7 @@ class Note extends Entity
         return $activity;
     }
 
-    public static function ensureCanInteract(?Note $note, LocalUser|Actor $actor): Note
+    public static function ensureCanInteract(?self $note, LocalUser|Actor $actor): self
     {
         if (\is_null($note)) {
             throw new NoSuchNoteException();
@@ -566,21 +624,21 @@ class Note extends Entity
         return [
             'name'   => 'note',
             'fields' => [
-                'id'              => ['type' => 'serial',    'not null' => true],
-                'actor_id'        => ['type' => 'int',       'foreign key' => true, 'target' => 'Actor.id', 'multiplicity' => 'one to one', 'not null' => true, 'description' => 'who made the note'],
-                'content'         => ['type' => 'text',      'description' => 'note content'],
-                'content_type'    => ['type' => 'varchar',   'not null' => true, 'default' => 'text/plain', 'length' => 129,      'description' => 'A note can be written in a multitude of formats such as text/plain, text/markdown, application/x-latex, and text/html'],
-                'rendered'        => ['type' => 'text',      'description' => 'rendered note content, so we can keep the microtags (if not local)'],
-                'conversation_id' => ['type' => 'serial',    'not null' => true, 'foreign key' => true, 'target' => 'Conversation.id', 'multiplicity' => 'one to one', 'description' => 'the conversation identifier'],
-                'reply_to'        => ['type' => 'int',       'not null' => false, 'default' => null, 'foreign key' => true, 'target' => 'Note.id', 'multiplicity' => 'one to one', 'description' => 'note replied to, null if root of a conversation'],
-                'is_local'        => ['type' => 'bool',      'not null' => true, 'description' => 'was this note generated by a local actor'],
-                'source'          => ['type' => 'varchar',   'foreign key' => true, 'length' => 32, 'target' => 'NoteSource.code', 'multiplicity' => 'many to one', 'description' => 'fkey to source of note, like "web", "im", or "clientname"'],
-                'scope'           => ['type' => 'int',       'not null' => true, 'default' => VisibilityScope::EVERYWHERE->value, 'description' => 'bit map for distribution scope; 1 = everywhere; 2 = this server only; 4 = addressees; 8 = groups; 16 = collection; 32 = messages'],
-                'url'             => ['type' => 'text',      'description' => 'Permalink to Note'],
-                'language_id'     => ['type' => 'int',       'foreign key' => true, 'target' => 'Language.id', 'multiplicity' => 'one to many', 'description' => 'The language for this note'],
-                'type'            => ['type' => 'int',       'not null' => true, 'default' => NoteType::NOTE->value, 'description' => 'bit map for note type; 1 = Note; 2 = Page'],
-                'title'           => ['type' => 'varchar',   'not null' => false, 'default' => null, 'length' => 129,      'description' => 'Title of a page or a note'],
-                'created'         => ['type' => 'datetime',  'not null' => true, 'default' => 'CURRENT_TIMESTAMP', 'description' => 'date this record was created'],
+                'id'              => ['type' => 'serial', 'not null' => true],
+                'actor_id'        => ['type' => 'int', 'foreign key' => true, 'target' => 'Actor.id', 'multiplicity' => 'one to one', 'not null' => true, 'description' => 'who made the note'],
+                'content'         => ['type' => 'text', 'description' => 'note content'],
+                'content_type'    => ['type' => 'varchar', 'not null' => true, 'default' => 'text/plain', 'length' => 129, 'description' => 'A note can be written in a multitude of formats such as text/plain, text/markdown, application/x-latex, and text/html'],
+                'rendered'        => ['type' => 'text', 'description' => 'rendered note content, so we can keep the microtags (if not local)'],
+                'conversation_id' => ['type' => 'serial', 'not null' => true, 'foreign key' => true, 'target' => 'Conversation.id', 'multiplicity' => 'one to one', 'description' => 'the conversation identifier'],
+                'reply_to'        => ['type' => 'int', 'not null' => false, 'default' => null, 'foreign key' => true, 'target' => 'Note.id', 'multiplicity' => 'one to one', 'description' => 'note replied to, null if root of a conversation'],
+                'is_local'        => ['type' => 'bool', 'not null' => true, 'description' => 'was this note generated by a local actor'],
+                'source'          => ['type' => 'varchar', 'foreign key' => true, 'length' => 32, 'target' => 'NoteSource.code', 'multiplicity' => 'many to one', 'description' => 'fkey to source of note, like "web", "im", or "clientname"'],
+                'scope'           => ['type' => 'int', 'not null' => true, 'default' => VisibilityScope::EVERYWHERE->value, 'description' => 'bit map for distribution scope; 1 = everywhere; 2 = this server only; 4 = addressees; 8 = groups; 16 = collection; 32 = messages'],
+                'url'             => ['type' => 'text', 'description' => 'Permalink to Note'],
+                'language_id'     => ['type' => 'int', 'foreign key' => true, 'target' => 'Language.id', 'multiplicity' => 'one to many', 'description' => 'The language for this note'],
+                'type'            => ['type' => 'int', 'not null' => true, 'default' => NoteType::NOTE->value, 'description' => 'bit map for note type; 1 = Note; 2 = Page'],
+                'title'           => ['type' => 'varchar', 'not null' => false, 'default' => null, 'length' => 129, 'description' => 'Title of a page or a note'],
+                'created'         => ['type' => 'datetime', 'not null' => true, 'default' => 'CURRENT_TIMESTAMP', 'description' => 'date this record was created'],
                 'modified'        => ['type' => 'timestamp', 'not null' => true, 'default' => 'CURRENT_TIMESTAMP', 'description' => 'date this record was modified'],
             ],
             'primary key' => ['id'],
