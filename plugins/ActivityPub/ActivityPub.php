@@ -42,23 +42,20 @@ use App\Core\Router\RouteLoader;
 use App\Core\Router\Router;
 use App\Entity\Activity;
 use App\Entity\Actor;
-use App\Entity\LocalUser;
 use App\Entity\Note;
 use App\Util\Common;
 use App\Util\Exception\BugFoundException;
-use App\Util\Exception\NoSuchActorException;
-use App\Util\Nickname;
 use Component\Collection\Util\Controller\OrderedCollection;
 use Component\FreeNetwork\Entity\FreeNetworkActorProtocol;
 use Component\FreeNetwork\Util\Discovery;
 use Exception;
 use InvalidArgumentException;
-use const PHP_URL_HOST;
 use Plugin\ActivityPub\Controller\Inbox;
 use Plugin\ActivityPub\Controller\Outbox;
 use Plugin\ActivityPub\Entity\ActivitypubActivity;
 use Plugin\ActivityPub\Entity\ActivitypubActor;
 use Plugin\ActivityPub\Entity\ActivitypubObject;
+use Plugin\ActivityPub\Util\Explorer;
 use Plugin\ActivityPub\Util\HTTPSignature;
 use Plugin\ActivityPub\Util\Model;
 use Plugin\ActivityPub\Util\OrderedCollectionController;
@@ -190,7 +187,7 @@ class ActivityPub extends Plugin
             && !\is_null($ap_other = DB::findOneBy(ActivitypubActor::class, ['actor_id' => $other->getId()], return_null: true))
         ) {
             // Are they both in the same server?
-            $canAdmin = parse_url($ap_actor->getUri(), PHP_URL_HOST) === parse_url($ap_other->getUri(), PHP_URL_HOST);
+            $canAdmin = parse_url($ap_actor->getUri(), \PHP_URL_HOST) === parse_url($ap_other->getUri(), \PHP_URL_HOST);
             return Event::stop;
         }
 
@@ -339,7 +336,7 @@ class ActivityPub extends Plugin
                         FreeNetworkActorProtocol::protocolSucceeded(
                             'activitypub',
                             $actor,
-                            Discovery::normalize($actor->getNickname() . '@' . parse_url($inbox, PHP_URL_HOST)),
+                            Discovery::normalize($actor->getNickname() . '@' . parse_url($inbox, \PHP_URL_HOST)),
                         );
                     }
                 }
@@ -518,8 +515,8 @@ class ActivityPub extends Plugin
 
         // Try Actor
         try {
-            return self::getActorByUri($resource, try_online: false);
-        } catch (Exception) {
+            return Explorer::getOneFromUri($resource, try_online: false);
+        } catch (\Exception) {
             // Ignore, this is brute forcing, it's okay not to find
         }
 
@@ -538,50 +535,5 @@ class ActivityPub extends Plugin
         } else {
             return Model::jsonToType($response->getContent());
         }
-    }
-
-    /**
-     * Get an Actor from ActivityPub URI, if it doesn't exist, attempt to fetch it
-     * This should only be necessary internally.
-     *
-     * @throws NoSuchActorException
-     *
-     * @return Actor got from URI
-     */
-    public static function getActorByUri(string $resource, bool $try_online = true): Actor
-    {
-        // Try local
-        if (Common::isValidHttpUrl($resource)) {
-            // This means $resource is a valid url
-            $resource_parts = parse_url($resource);
-            // TODO: Use URLMatcher
-            if ($resource_parts['host'] === Common::config('site', 'server')) {
-                $str = $resource_parts['path'];
-                // actor_view_nickname
-                $renick = '/\/@(' . Nickname::DISPLAY_FMT . ')\/?/m';
-                // actor_view_id
-                $reuri = '/\/actor\/(\d+)\/?/m';
-                if (preg_match_all($renick, $str, $matches, PREG_SET_ORDER, 0) === 1) {
-                    return DB::findOneBy(LocalUser::class, ['nickname' => $matches[0][1]])->getActor();
-                } elseif (preg_match_all($reuri, $str, $matches, PREG_SET_ORDER, 0) === 1) {
-                    return Actor::getById((int) $matches[0][1]);
-                }
-            }
-        }
-
-        // Try known remote
-        $aprofile = DB::findOneBy(ActivitypubActor::class, ['uri' => $resource], return_null: true);
-        if (!\is_null($aprofile)) {
-            return Actor::getById($aprofile->getActorId());
-        }
-
-        // Try remote
-        if ($try_online) {
-            $aprofile = ActivitypubActor::getByAddr($resource);
-            if ($aprofile instanceof ActivitypubActor) {
-                return Actor::getById($aprofile->getActorId());
-            }
-        }
-        throw new NoSuchActorException("From URI: {$resource}");
     }
 }

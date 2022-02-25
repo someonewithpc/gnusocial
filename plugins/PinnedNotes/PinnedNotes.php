@@ -161,7 +161,7 @@ class PinnedNotes extends Plugin
     public function onActivityPubAddActivityStreamsTwoData(string $type_name, &$type): bool
     {
         if ($type_name === 'Person') {
-            $actor       = \Plugin\ActivityPub\ActivityPub::getActorByUri($type->get('id'));
+            $actor       = \Plugin\ActivityPub\Util\Explorer::getOneFromUri($type->get('id'));
             $router_args = ['id' => $actor->getId()];
             $router_type = Router::ABSOLUTE_URL;
             $action_url  = Router::url('list_pinned_notes_by_id', $router_args, $router_type);

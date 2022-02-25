@@ -254,7 +254,7 @@ class WebMonetization extends Plugin
     public function onActivityPubAddActivityStreamsTwoData(string $type_name, &$type): bool
     {
         if ($type_name === 'Person') {
-            $actor  = \Plugin\ActivityPub\ActivityPub::getActorByUri($type->getId());
+            $actor  = \Plugin\ActivityPub\Util\Explorer::getOneFromUri($type->getId());
             $wallet = DB::findOneBy(Wallet::class, ['actor_id' => $actor->getId()], return_null: true);
 
             if (!\is_null($address = $wallet?->getAddress())) {

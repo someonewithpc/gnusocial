@@ -35,8 +35,13 @@ namespace Plugin\ActivityPub\Util;
 use App\Core\DB\DB;
 use App\Core\HTTPClient;
 use App\Core\Log;
+use App\Entity\Actor;
+use App\Entity\LocalUser;
+use App\Util\Common;
 use App\Util\Exception\NoSuchActorException;
+use App\Util\Nickname;
 use Exception;
+use InvalidArgumentException;
 use const JSON_UNESCAPED_SLASHES;
 use Plugin\ActivityPub\ActivityPub;
 use Plugin\ActivityPub\Entity\ActivitypubActor;
@@ -55,12 +60,12 @@ use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
  */
 class Explorer
 {
-    private array $discovered_activitypub_actor_profiles = [];
+    private array $discovered_actors = [];
 
     /**
      * Shortcut function to get a single profile from its URL.
      *
-     * @param bool $grab_online whether to try online grabbing, defaults to true
+     * @param bool $try_online whether to try online grabbing, defaults to true
      *
      * @throws ClientExceptionInterface
      * @throws NoSuchActorException
@@ -68,15 +73,17 @@ class Explorer
      * @throws ServerExceptionInterface
      * @throws TransportExceptionInterface
      */
-    public static function get_profile_from_url(string $url, bool $grab_online = true): ActivitypubActor
+    public static function getOneFromUri(string $uri, bool $try_online = true): Actor
     {
-        $discovery = new self();
-        // Get valid Actor object
-        $actor_profile = $discovery->lookup($url, $grab_online);
-        if (!empty($actor_profile)) {
-            return $actor_profile[0];
+        $actors = (new self())->lookup($uri, $try_online);
+        switch (\count($actors)) {
+            case 1:
+                return $actors[0];
+            case 0:
+                throw new NoSuchActorException('Invalid Actor.');
+            default:
+                throw new InvalidArgumentException('More than one actor found for this URI.');
         }
-        throw new NoSuchActorException('Invalid Actor.');
     }
 
     /**
@@ -84,8 +91,8 @@ class Explorer
      * This function cleans the $this->discovered_actor_profiles array
      * so that there is no erroneous data
      *
-     * @param string $url         User's url
-     * @param bool   $grab_online whether to try online grabbing, defaults to true
+     * @param string $uri        User's url
+     * @param bool   $try_online whether to try online grabbing, defaults to true
      *
      * @throws ClientExceptionInterface
      * @throws NoSuchActorException
@@ -95,16 +102,16 @@ class Explorer
      *
      * @return array of Actor objects
      */
-    public function lookup(string $url, bool $grab_online = true): array
+    public function lookup(string $uri, bool $try_online = true): array
     {
-        if (\in_array($url, ActivityPub::PUBLIC_TO)) {
+        if (\in_array($uri, ActivityPub::PUBLIC_TO)) {
             return [];
         }
 
-        Log::debug('ActivityPub Explorer: Started now looking for ' . $url);
-        $this->discovered_activitypub_actor_profiles = [];
+        Log::debug('ActivityPub Explorer: Started now looking for ' . $uri);
+        $this->discovered_actors = [];
 
-        return $this->_lookup($url, $grab_online);
+        return $this->_lookup($uri, $try_online);
     }
 
     /**
@@ -112,8 +119,8 @@ class Explorer
      * This is a recursive function that will accumulate the results on
      * $discovered_actor_profiles array
      *
-     * @param string $url         User's url
-     * @param bool   $grab_online whether to try online grabbing, defaults to true
+     * @param string $uri        User's url
+     * @param bool   $try_online whether to try online grabbing, defaults to true
      *
      * @throws ClientExceptionInterface
      * @throws NoSuchActorException
@@ -121,19 +128,19 @@ class Explorer
      * @throws ServerExceptionInterface
      * @throws TransportExceptionInterface
      *
-     * @return array of ActivityPub Actor objects
+     * @return array of Actor objects
      */
-    private function _lookup(string $url, bool $grab_online = true): array
+    private function _lookup(string $uri, bool $try_online = true): array
     {
-        $grab_known = $this->grab_known_user($url);
+        $grab_known = $this->grabKnownActor($uri);
 
         // First check if we already have it locally and, if so, return it.
         // If the known fetch fails and remote grab is required: store locally and return.
-        if (!$grab_known && (!$grab_online || !$this->grab_remote_user($url))) {
+        if (!$grab_known && (!$try_online || !$this->grabRemoteActor($uri))) {
             throw new NoSuchActorException('Actor not found.');
         }
 
-        return $this->discovered_activitypub_actor_profiles;
+        return $this->discovered_actors;
     }
 
     /**
@@ -147,21 +154,43 @@ class Explorer
      *
      * @return bool success state
      */
-    private function grab_known_user(string $uri): bool
+    private function grabKnownActor(string $uri): bool
     {
         Log::debug('ActivityPub Explorer: Searching locally for ' . $uri . ' offline.');
+
+        // Try local
+        if (Common::isValidHttpUrl($uri)) {
+            // This means $uri is a valid url
+            $resource_parts = parse_url($uri);
+            // TODO: Use URLMatcher
+            if ($resource_parts['host'] === Common::config('site', 'server')) {
+                $str = $resource_parts['path'];
+                // actor_view_nickname
+                $renick = '/\/@(' . Nickname::DISPLAY_FMT . ')\/?/m';
+                // actor_view_id
+                $reuri = '/\/actor\/(\d+)\/?/m';
+                if (preg_match_all($renick, $str, $matches, \PREG_SET_ORDER, 0) === 1) {
+                    $this->discovered_actors[] = DB::findOneBy(
+                        LocalUser::class,
+                        ['nickname' => $matches[0][1]],
+                    )->getActor();
+                    return true;
+                } elseif (preg_match_all($reuri, $str, $matches, \PREG_SET_ORDER, 0) === 1) {
+                    $this->discovered_actors[] = Actor::getById((int) $matches[0][1]);
+                    return true;
+                }
+            }
+        }
 
         // Try standard ActivityPub route
         // Is this a known filthy little mudblood?
         $aprofile = DB::findOneBy(ActivitypubActor::class, ['uri' => $uri], return_null: true);
         if (!\is_null($aprofile)) {
-            Log::debug('ActivityPub Explorer: Found a known Aprofile for ' . $uri);
-
-            // We found something!
-            $this->discovered_activitypub_actor_profiles[] = $aprofile;
+            Log::debug('ActivityPub Explorer: Found a known ActivityPub Actor for ' . $uri);
+            $this->discovered_actors[] = $aprofile->getActor();
             return true;
         } else {
-            Log::debug('ActivityPub Explorer: Unable to find a known Aprofile for ' . $uri);
+            Log::debug('ActivityPub Explorer: Unable to find a known ActivityPub Actor for ' . $uri);
         }
 
         return false;
@@ -171,7 +200,7 @@ class Explorer
      * Get a remote user(s) profile(s) from its URL and joins it on
      * $this->discovered_actor_profiles
      *
-     * @param string $url User's url
+     * @param string $uri User's url
      *
      * @throws ClientExceptionInterface
      * @throws NoSuchActorException
@@ -181,10 +210,10 @@ class Explorer
      *
      * @return bool success state
      */
-    private function grab_remote_user(string $url): bool
+    private function grabRemoteActor(string $uri): bool
     {
-        Log::debug('ActivityPub Explorer: Trying to grab a remote actor for ' . $url);
-        $response = HTTPClient::get($url, ['headers' => ACTIVITYPUB::HTTP_CLIENT_HEADERS]);
+        Log::debug('ActivityPub Explorer: Trying to grab a remote actor for ' . $uri);
+        $response = HTTPClient::get($uri, ['headers' => ACTIVITYPUB::HTTP_CLIENT_HEADERS]);
         $res      = json_decode($response->getContent(), true);
         if ($response->getStatusCode() == 410) { // If it was deleted
             return true; // Nothing to add.
@@ -197,16 +226,16 @@ class Explorer
         }
 
         if ($res['type'] === 'OrderedCollection') { // It's a potential collection of actors!!!
-            Log::debug('ActivityPub Explorer: Found a collection of actors for ' . $url);
-            $this->travel_collection($res['first']);
+            Log::debug('ActivityPub Explorer: Found a collection of actors for ' . $uri);
+            $this->travelCollection($res['first']);
             return true;
         } else {
             try {
-                $this->discovered_activitypub_actor_profiles[] = Model\Actor::fromJson(json_encode($res));
+                $this->discovered_actors[] = DB::wrapInTransaction(fn() => Model\Actor::fromJson(json_encode($res)))->getActor();
                 return true;
             } catch (Exception $e) {
                 Log::debug(
-                    'ActivityPub Explorer: Invalid potential remote actor while grabbing remotely: ' . $url
+                    'ActivityPub Explorer: Invalid potential remote actor while grabbing remotely: ' . $uri
                     . '. He returned the following: ' . json_encode($res, JSON_UNESCAPED_SLASHES)
                     . ' and the following exception: ' . $e->getMessage(),
                 );
@@ -226,23 +255,23 @@ class Explorer
      * @throws ServerExceptionInterface
      * @throws TransportExceptionInterface
      */
-    private function travel_collection(string $url): bool
+    private function travelCollection(string $uri): bool
     {
-        $response = HTTPClient::get($url, ['headers' => ACTIVITYPUB::HTTP_CLIENT_HEADERS]);
+        $response = HTTPClient::get($uri, ['headers' => ACTIVITYPUB::HTTP_CLIENT_HEADERS]);
         $res      = json_decode($response->getContent(), true);
 
         if (!isset($res['orderedItems'])) {
             return false;
         }
 
-        foreach ($res['orderedItems'] as $profile) {
-            if ($this->_lookup($profile) == false) {
-                Log::debug('ActivityPub Explorer: Found an invalid actor for ' . $profile);
-            }
+        // Accumulate findings
+        foreach ($res['orderedItems'] as $actor_uri) {
+            $this->_lookup($actor_uri);
         }
+
         // Go through entire collection
         if (!\is_null($res['next'])) {
-            $this->travel_collection($res['next']);
+            $this->travelCollection($res['next']);
         }
 
         return true;
@@ -252,7 +281,7 @@ class Explorer
      * Get a remote user array from its URL (this function is only used for
      * profile updating and shall not be used for anything else)
      *
-     * @param string $url User's url
+     * @param string $uri User's url
      *
      * @throws ClientExceptionInterface
      * @throws Exception
@@ -263,9 +292,9 @@ class Explorer
      * @return null|string If it is able to fetch, false if it's gone
      *                     // Exceptions when network issues or unsupported Activity format
      */
-    public static function get_remote_user_activity(string $url): string|null
+    public static function getRemoteActorActivity(string $uri): string|null
     {
-        $response = HTTPClient::get($url, ['headers' => ACTIVITYPUB::HTTP_CLIENT_HEADERS]);
+        $response = HTTPClient::get($uri, ['headers' => ACTIVITYPUB::HTTP_CLIENT_HEADERS]);
         // If it was deleted
         if ($response->getStatusCode() == 410) {
             return null;

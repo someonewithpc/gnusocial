@@ -139,7 +139,7 @@ class Note extends Model
         }
 
         if (\is_null($actor_id)) {
-            $actor    = ActivityPub::getActorByUri($type_note->get('attributedTo'));
+            $actor    = Explorer::getOneFromUri($type_note->get('attributedTo'));
             $actor_id = $actor->getId();
         }
         $map = [
@@ -190,8 +190,8 @@ class Note extends Model
                 continue;
             }
             try {
-                $actor                                = ActivityPub::getActorByUri($target);
-                $object_mentions_ids[$actor->getId()] = $target;
+                $actor                          = Explorer::getOneFromUri($target);
+                $attention_ids[$actor->getId()] = $target;
                 // If $to is a group and note is unlisted, set note's scope as Group
                 if ($actor->isGroup() && $map['scope'] === 'unlisted') {
                     $map['scope'] = VisibilityScope::GROUP;
@@ -211,8 +211,8 @@ class Note extends Model
                 continue;
             }
             try {
-                $actor                                = ActivityPub::getActorByUri($target);
-                $object_mentions_ids[$actor->getId()] = $target;
+                $actor                          = Explorer::getOneFromUri($target);
+                $attention_ids[$actor->getId()] = $target;
             } catch (Exception $e) {
                 Log::debug('ActivityPub->Model->Note->fromJson->getActorByUri', [$e]);
             }

@@ -35,12 +35,11 @@ namespace Plugin\ActivityPub\Controller;
 use App\Core\Controller;
 use App\Core\DB\DB;
 use App\Core\Event;
-use App\Util\Common;
-use Symfony\Component\HttpFoundation\Request;
 use function App\Core\I18n\_m;
 use App\Core\Log;
 use App\Core\Router\Router;
 use App\Entity\Actor;
+use App\Util\Common;
 use App\Util\Exception\ClientException;
 use Component\FreeNetwork\Entity\FreeNetworkActorProtocol;
 use Component\FreeNetwork\Util\Discovery;
@@ -52,6 +51,7 @@ use Plugin\ActivityPub\Util\Explorer;
 use Plugin\ActivityPub\Util\HTTPSignature;
 use Plugin\ActivityPub\Util\Model;
 use Plugin\ActivityPub\Util\TypeResponse;
+use Symfony\Component\HttpFoundation\Request;
 
 /**
  * ActivityPub Inbox Handler
@@ -73,7 +73,7 @@ class Inbox extends Controller
     {
         $error = function (string $m, ?Exception $e = null): TypeResponse {
             Log::error('ActivityPub Error Answer: ' . ($json = json_encode(['error' => $m, 'exception' => var_export($e, true)])));
-            if (is_null($e)) {
+            if (\is_null($e)) {
                 return new TypeResponse($json, 400);
             } else {
                 throw $e;
@@ -102,8 +102,8 @@ class Inbox extends Controller
         try {
             $resource_parts = parse_url($type->get('actor'));
             if ($resource_parts['host'] !== Common::config('site', 'server')) {
-                $ap_actor =  DB::wrapInTransaction(fn() => ActivitypubActor::fromUri($type->get('actor')));
-                $actor    = Actor::getById($ap_actor->getActorId());
+                $actor = DB::wrapInTransaction(fn () => Explorer::getOneFromUri($type->get('actor')));
+                $ap_actor = DB::findOneBy(ActivitypubActor::class, ['actor_id' => $actor->getId()]);
             } else {
                 throw new Exception('Only remote actors can use this endpoint.');
             }
@@ -140,7 +140,7 @@ class Inbox extends Controller
         // If the signature fails verification the first time, update profile as it might have changed public key
         if ($verified !== 1) {
             try {
-                $res = Explorer::get_remote_user_activity($ap_actor->getUri());
+                $res = Explorer::getRemoteActorActivity($ap_actor->getUri());
                 if (\is_null($res)) {
                     return $error('Invalid remote actor (null response).');
                 }

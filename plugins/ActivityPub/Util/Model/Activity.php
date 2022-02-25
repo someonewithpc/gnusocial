@@ -46,6 +46,7 @@ use DateTimeInterface;
 use InvalidArgumentException;
 use Plugin\ActivityPub\ActivityPub;
 use Plugin\ActivityPub\Entity\ActivitypubActivity;
+use Plugin\ActivityPub\Util\Explorer;
 use Plugin\ActivityPub\Util\Model;
 use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
@@ -84,7 +85,7 @@ class Activity extends Model
         }
 
         // Find Actor and Object
-        $actor       = ActivityPub::getActorByUri($type_activity->get('actor'));
+        $actor       = Explorer::getOneFromUri($type_activity->get('actor'));
         $type_object = $type_activity->get('object');
         if (\is_string($type_object)) { // Retrieve it
             $type_object = ActivityPub::getObjectByUri($type_object, try_online: true);

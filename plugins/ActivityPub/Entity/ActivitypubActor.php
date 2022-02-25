@@ -33,6 +33,7 @@ declare(strict_types = 1);
 namespace Plugin\ActivityPub\Entity;
 
 use App\Core\Cache;
+use App\Core\DB\DB;
 use App\Core\Entity;
 use function App\Core\I18n\_m;
 use App\Core\Log;
@@ -142,6 +143,11 @@ class ActivitypubActor extends Entity
     // @codeCoverageIgnoreEnd
     // }}} Autocode
 
+    public function getActor(): Actor
+    {
+        return Actor::getById($this->getActorId());
+    }
+
     /**
      * Look up, and if necessary create, an Activitypub_profile for the remote
      * entity with the given WebFinger address.
@@ -152,7 +158,7 @@ class ActivitypubActor extends Entity
      *
      * @throws Exception on error conditions
      */
-    public static function getByAddr(string $addr): self
+    public static function getByAddr(string $addr): Actor
     {
         // Normalize $addr, i.e. add 'acct:' if missing
         $addr = Discovery::normalize($addr);
@@ -166,9 +172,9 @@ class ActivitypubActor extends Entity
                 throw new Exception(_m('Not a valid WebFinger address (via cache).'));
             }
             try {
-                return self::fromUri($uri);
+                return DB::wrapInTransaction(fn () => Explorer::getOneFromUri($uri));
             } catch (Exception $e) {
-                Log::error(sprintf(__METHOD__ . ': WebFinger address cache inconsistent with database, did not find Activitypub_profile uri==%s', $uri));
+                Log::error(sprintf(__METHOD__ . ': WebFinger address cache inconsistent with database, did not find Activitypub_profile uri==%s', $uri), [$e]);
                 Cache::set(sprintf('ActivitypubActor-webfinger-%s', urlencode($addr)), false);
             }
         }
@@ -190,7 +196,7 @@ class ActivitypubActor extends Entity
         return self::fromXrd($addr, $xrd);
     }
 
-    public static function fromXrd(string $addr, XML_XRD $xrd): self
+    public static function fromXrd(string $addr, XML_XRD $xrd): Actor
     {
         $hints = array_merge(
             ['webfinger' => $addr],
@@ -201,9 +207,9 @@ class ActivitypubActor extends Entity
             $uri = $hints['activitypub'];
             try {
                 LOG::info("Discovery on acct:{$addr} with URI:{$uri}");
-                $aprofile = self::fromUri($hints['activitypub']);
-                Cache::set(sprintf('ActivitypubActor-webfinger-%s', urlencode($addr)), $aprofile->getUri());
-                return $aprofile;
+                $actor = DB::wrapInTransaction(fn () => Explorer::getOneFromUri($hints['activitypub']));
+                Cache::set(sprintf('ActivitypubActor-webfinger-%s', urlencode($addr)), $hints['activitypub']);
+                return $actor;
             } catch (Exception $e) {
                 Log::warning("Failed creating profile from URI:'{$uri}', error:" . $e->getMessage());
                 throw $e;
@@ -220,22 +226,6 @@ class ActivitypubActor extends Entity
 
         // TRANS: Exception. %s is a WebFinger address.
         throw new Exception(sprintf(_m('Could not find a valid profile for "%s".'), $addr));
-    }
-
-    /**
-     * Ensures a valid Activitypub_profile when provided with a valid URI.
-     *
-     * @param bool $grab_online whether to try online grabbing, defaults to true
-     *
-     * @throws Exception if it isn't possible to return an Activitypub_profile
-     */
-    public static function fromUri(string $url, bool $grab_online = true): self
-    {
-        try {
-            return Explorer::get_profile_from_url($url, $grab_online);
-        } catch (Exception $e) {
-            throw new Exception('No valid ActivityPub profile found for given URI.', previous: $e);
-        }
     }
 
     /**
@@ -261,7 +251,7 @@ class ActivitypubActor extends Entity
                 'created'          => ['type' => 'datetime', 'not null' => true, 'default' => 'CURRENT_TIMESTAMP', 'description' => 'date this record was created'],
                 'modified'         => ['type' => 'timestamp', 'not null' => true, 'default' => 'CURRENT_TIMESTAMP', 'description' => 'date this record was modified'],
             ],
-            'primary key'  => ['uri'],
+            'primary key' => ['uri'],
             'unique keys' => [
                 'activitypub_actor_id_ukey' => ['actor_id'],
             ],
