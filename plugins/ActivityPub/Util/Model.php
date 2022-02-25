@@ -121,7 +121,7 @@ abstract class Model
      *
      * @throws ClientException
      */
-    public static function toJson(mixed $object, ?int $options = null): string
+    public static function toJson(mixed $object, int $options = \JSON_UNESCAPED_SLASHES): string
     {
         switch ($object::class) {
             case \App\Entity\Activity::class:

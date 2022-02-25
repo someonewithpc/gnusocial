@@ -203,7 +203,7 @@ class Actor extends Model
      *
      * @throws ServerException
      */
-    public static function toJson(mixed $object, ?int $options = null): string
+    public static function toJson(mixed $object, int $options = \JSON_UNESCAPED_SLASHES): string
     {
         if ($object::class !== GSActor::class) {
             throw new InvalidArgumentException('First argument type must be an Actor.');

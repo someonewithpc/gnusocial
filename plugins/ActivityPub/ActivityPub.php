@@ -333,11 +333,13 @@ class ActivityPub extends Plugin
                 } else {
                     array_push($delivered, ...$dummy);
                     foreach ($dummy as $actor) {
-                        FreeNetworkActorProtocol::protocolSucceeded(
-                            'activitypub',
-                            $actor,
-                            Discovery::normalize($actor->getNickname() . '@' . parse_url($inbox, \PHP_URL_HOST)),
-                        );
+                        if ($actor->isPerson()) {
+                            FreeNetworkActorProtocol::protocolSucceeded(
+                                'activitypub',
+                                $actor,
+                                Discovery::normalize($actor->getNickname() . '@' . parse_url($inbox, \PHP_URL_HOST)),
+                            );
+                        }
                     }
                 }
             } catch (Exception $e) {
