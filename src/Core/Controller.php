@@ -248,7 +248,7 @@ abstract class Controller extends AbstractController implements EventSubscriberI
                         'int'    => $this->request->query->getInt($args[0]),
                         'bool'   => $this->request->query->getBoolean($args[0]),
                         'string' => $this->request->query->get($args[0]),
-                        default  => throw new BugFoundException('Inconsistent switch/match spotted'),
+                        default  => throw new BugFoundException('Inconsistent switch/match spotted'), // @phpstan-ignore-line
                     };
                 }
 

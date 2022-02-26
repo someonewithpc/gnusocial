@@ -56,6 +56,11 @@ use Functional as F;
  * @author    Hugo Sales <hugo@hsal.es>
  * @copyright 2020-2021 Free Software Foundation, Inc http://www.fsf.org
  * @license   https://www.gnu.org/licenses/agpl.html GNU AGPL v3 or later
+ *
+ *
+ * @method bool isPerson()
+ * @method bool isGroup()
+ * @method bool isBot()
  */
 class Actor extends Entity
 {
@@ -533,11 +538,6 @@ class Actor extends Entity
         }
     }
 
-    /**
-     * @method bool isPerson()
-     * @method bool isGroup()
-     * @method bool isBot()
-     */
     public function __call(string $name, array $arguments): mixed
     {
         if (Formatting::startsWith($name, 'is')) {

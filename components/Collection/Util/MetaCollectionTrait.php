@@ -46,8 +46,8 @@ use Symfony\Component\HttpFoundation\Request;
 
 trait MetaCollectionTrait
 {
-    //protected string $slug        = 'collection';
-    //protected string $plural_slug = 'collections';
+    //protected const SLUG        = 'collection';
+    //protected const PLURAL_SLUG = 'collections';
 
     /**
      * create a collection owned by Actor $owner.
@@ -127,9 +127,9 @@ trait MetaCollectionTrait
                 },
             ]],
             ['add', SubmitType::class, [
-                'label' => _m('Add to ' . $this->plural_slug),
+                'label' => _m('Add to ' . static::PLURAL_SLUG),
                 'attr'  => [
-                    'title' => _m('Add to ' . $this->plural_slug),
+                    'title' => _m('Add to ' . static::PLURAL_SLUG),
                 ],
             ]],
         ]);
@@ -151,17 +151,17 @@ trait MetaCollectionTrait
         // form: add to new collection
         $create_form = Form::create([
             ['name', TextType::class, [
-                'label' => _m('Add to a new ' . $this->slug),
+                'label' => _m('Add to a new ' . static::SLUG),
                 'attr'  => [
-                    'placeholder' => _m('New ' . $this->slug . ' name'),
+                    'placeholder' => _m('New ' . static::SLUG . ' name'),
                     'required'    => 'required',
                 ],
                 'data' => '',
             ]],
             ['create', SubmitType::class, [
-                'label' => _m('Create a new ' . $this->slug),
+                'label' => _m('Create a new ' . static::SLUG),
                 'attr'  => [
-                    'title' => _m('Create a new ' . $this->slug),
+                    'title' => _m('Create a new ' . static::SLUG),
                 ],
             ]],
         ]);
@@ -176,7 +176,7 @@ trait MetaCollectionTrait
         $res[] = Formatting::twigRenderFile(
             'collection/widget_add_to.html.twig',
             [
-                'ctitle'          => _m('Add to ' . $this->plural_slug),
+                'ctitle'          => _m('Add to ' . static::PLURAL_SLUG),
                 'user'            => $user,
                 'has_collections' => \count($collections) > 0,
                 'add_form'        => $add_form->createView(),

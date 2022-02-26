@@ -57,8 +57,8 @@ class Circle extends Component
 {
     use MetaCollectionTrait;
     public const TAG_CIRCLE_REGEX = '/' . Nickname::BEFORE_MENTIONS . '@#([\pL\pN_\-\.]{1,64})/';
-    protected string $slug        = 'circle';
-    protected string $plural_slug = 'circles';
+    protected const SLUG          = 'circle';
+    protected const PLURAL_SLUG   = 'circles';
 
     public function onAddRoute(RouteLoader $r): bool
     {

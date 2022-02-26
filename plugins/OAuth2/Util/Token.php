@@ -33,14 +33,43 @@ namespace Plugin\OAuth2\Util;
 
 use App\Core\Entity;
 use DateTimeImmutable;
+use DateTimeInterface;
 use Functional as F;
 use League\OAuth2\Server\Entities\ClientEntityInterface;
 use League\OAuth2\Server\Entities\ScopeEntityInterface;
 use League\OAuth2\Server\Entities\TokenInterface;
 use Plugin\OAuth2\Repository;
 
+/**
+ * A type of token, needs to be extended.
+ *
+ * Since there's no way to specify an abstract method that returns a
+ * child of self, need to use method annotations
+ *
+ * @template T of self
+ *
+ * @method T setId(string $id)
+ * @method T setExpiry(\DateTimeInterface $expiry)
+ * @method T setUserId(?int $id)
+ * @method T setClientId(string $id)
+ * @method T setTokenScopes(string $scopes)
+ *
+ * From Entity:
+ * @method bool hasTokenScopes()
+ */
 abstract class Token extends Entity implements TokenInterface
 {
+    abstract public function getId(): string;
+    // abstract public function setId(string $id): child;
+    abstract public function getExpiry(): DateTimeInterface;
+    // abstract public function setExpiry(\DateTimeInterface $expiry): child;
+    abstract public function getUserId(): ?int;
+    // abstract public function setUserId(?int $id): child;
+    abstract public function getClientId(): string;
+    // abstract public function setClientId(string $id): child;
+    abstract public function getTokenScopes(): string;
+    // abstract public function setTokenScopes(string $scopes): child;
+
     public function getIdentifier(): string
     {
         return $this->getId();
@@ -56,7 +85,7 @@ abstract class Token extends Entity implements TokenInterface
      */
     public function getExpiryDateTime(): DateTimeImmutable
     {
-        return $this->getExpiry();
+        return DateTimeImmutable::createFromInterface($this->getExpiry());
     }
 
     /**

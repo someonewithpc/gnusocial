@@ -33,9 +33,9 @@ use Component\Collection\Util\Controller\MetaCollectionController;
 
 class Circles extends MetaCollectionController
 {
-    protected string $slug        = 'circle';
-    protected string $plural_slug = 'circles';
-    protected string $page_title  = 'Actor circles';
+    protected const SLUG         = 'circle';
+    protected const PLURAL_SLUG  = 'circles';
+    protected string $page_title = 'Actor circles';
 
     public function createCollection(int $owner_id, string $name)
     {

@@ -33,6 +33,8 @@ use Symfony\Component\HttpFoundation\Request;
 class Bundles extends Plugin
 {
     use MetaCollectionTrait;
+    protected const SLUG        = 'bundle';
+    protected const PLURAL_SLUG = 'bundles';
 
     protected function createCollection(Actor $owner, array $vars, string $name)
     {

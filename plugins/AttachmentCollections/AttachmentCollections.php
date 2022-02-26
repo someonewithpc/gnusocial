@@ -50,8 +50,8 @@ use Symfony\Component\HttpFoundation\Request;
 class AttachmentCollections extends Plugin
 {
     use MetaCollectionTrait;
-    protected string $slug        = 'collection';
-    protected string $plural_slug = 'collections';
+    protected const SLUG        = 'collection';
+    protected const PLURAL_SLUG = 'collections';
     protected function createCollection(Actor $owner, array $vars, string $name)
     {
         $col = AttachmentCollection::create([

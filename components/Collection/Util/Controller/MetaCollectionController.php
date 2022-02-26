@@ -43,9 +43,9 @@ use Symfony\Component\HttpFoundation\Request;
 
 abstract class MetaCollectionController extends FeedController
 {
-    protected string $slug        = 'collectionsEntry';
-    protected string $plural_slug = 'collectionsList';
-    protected string $page_title  = 'Collections';
+    protected const SLUG         = 'collectionsEntry';
+    protected const PLURAL_SLUG  = 'collectionsList';
+    protected string $page_title = 'Collections';
 
     abstract public function getCollectionUrl(int $owner_id, string $owner_nickname, int $collection_id): string;
     abstract public function getCollectionItems(int $owner_id, $collection_id): array;
@@ -76,8 +76,8 @@ abstract class MetaCollectionController extends FeedController
     {
         $collections = $this->getCollectionsByActorId($id);
 
-        $create_title      = _m('Create a ' . mb_strtolower(preg_replace('/([a-z0-9])([A-Z])/', '$1 $2', $this->slug)));
-        $collections_title = _m('The ' . mb_strtolower(preg_replace('/([a-z0-9])([A-Z])/', '$1 $2', $this->plural_slug)));
+        $create_title      = _m('Create a ' . mb_strtolower(preg_replace('/([a-z0-9])([A-Z])/', '$1 $2', static::SLUG)));
+        $collections_title = _m('The ' . mb_strtolower(preg_replace('/([a-z0-9])([A-Z])/', '$1 $2', static::PLURAL_SLUG)));
         // create collection form
         $create = null;
         if (Common::user()?->getId() === $id) {
@@ -111,8 +111,8 @@ abstract class MetaCollectionController extends FeedController
         //
         // Instead, I'm using an anonymous class to encapsulate
         // the functions and passing that class to the template.
-        // This is suggested at https://stackoverflow.com/a/50364502.
-        $fn = new class($id, $nickname, $request, $this, $this->slug) {
+        // This is suggested at https://web.archive.org/web/20220226132328/https://stackoverflow.com/questions/3595727/twig-pass-function-into-template/50364502
+        $fn = new class($id, $nickname, $request, $this, static::SLUG) {
             private $id;
             private $nick;
             private $request;

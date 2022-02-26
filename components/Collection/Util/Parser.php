@@ -50,8 +50,9 @@ abstract class Parser
      * recognises either spaces (currently `or`, should be fuzzy match), `OR` or `|` (`or`) and `AND` or `&` (`and`)
      *
      * TODO: Better fuzzy match, implement exact match with quotes and nesting with parens
+     * TODO: Proper parser, tokenize better. Mostly a rewrite
      *
-     * @return Criteria[]
+     * @return array{?Criteria, ?Criteria} [?$note_criteria, ?$actor_criteria]
      */
     public static function parse(string $input, ?string $locale = null, ?Actor $actor = null, int $level = 0): array
     {
@@ -83,13 +84,13 @@ abstract class Parser
                         //throw new ServerException("No one claimed responsibility for a match term: {$term}");
                         // It's okay if the term doesn't exist, just perform a regular search
                     }
-                    if (!empty($note_res)) { // @phpstan-ignore-line
+                    if (!empty($note_res)) { // @phpstan-ignore-line currently an open bug. See https://web.archive.org/web/20220226131651/https://github.com/phpstan/phpstan/issues/6234
                         if (\is_array($note_res)) {
                             $note_res = $eb->orX(...$note_res);
                         }
                         $note_parts[] = $note_res;
                     }
-                    if (!empty($actor_res)) {
+                    if (!empty($actor_res)) { // @phpstan-ignore-line currently an open bug. See https://web.archive.org/web/20220226131651/https://github.com/phpstan/phpstan/issues/6234
                         if (\is_array($actor_res)) {
                             $actor_res = $eb->orX(...$actor_res);
                         }
@@ -108,18 +109,18 @@ abstract class Parser
                 }
             }
             // TODO
-            if (!$match) { // @phpstan-ignore-line
+            if (!$match) {
                 ++$right;
             }
         }
 
         $note_criteria  = null;
         $actor_criteria = null;
-        if (!empty($note_parts)) { // @phpstan-ignore-line
+        if (!empty($note_parts)) {
             self::connectParts($note_parts, $note_criteria_arr, $last_op, $eb, force: true);
             $note_criteria = new Criteria($eb->orX(...$note_criteria_arr));
         }
-        if (!empty($actor_parts)) { // @phpstan-ignore-line
+        if (!empty($actor_parts)) { // @phpstan-ignore-line weird, but this whole thing needs a rewrite
             self::connectParts($actor_parts, $actor_criteria_arr, $last_op, $eb, force: true);
             $actor_criteria = new Criteria($eb->orX(...$actor_criteria_arr));
         }

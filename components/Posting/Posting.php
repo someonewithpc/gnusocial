@@ -121,7 +121,7 @@ class Posting extends Component
             _m('Local')     => VisibilityScope::LOCAL->value,
             _m('Addressee') => VisibilityScope::ADDRESSEE->value,
         ];
-        if (!\is_null($context_actor) && $context_actor->isGroup()) {
+        if (!\is_null($context_actor) && $context_actor->isGroup()) { // @phpstan-ignore-line currently an open bug. See https://web.archive.org/web/20220226131651/https://github.com/phpstan/phpstan/issues/6234
             if ($actor->canModerate($context_actor)) {
                 if ($context_actor->getRoles() & ActorLocalRoles::PRIVATE_GROUP) {
                     $visibility_options = array_merge([_m('Group') => VisibilityScope::GROUP->value], $visibility_options);
