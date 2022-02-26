@@ -72,4 +72,10 @@ flush-redis-cache:
 install-plugins:
 	docker exec -it $(call translate-container-name,$(strip $(DIR))_php_1) /var/www/social/bin/install_plugins.sh
 
+update-dependencies:
+	docker exec -it $(call translate-container-name,$(strip $(DIR))_php_1) sh -c 'cd /var/www/social && composer update'
+
+update-autocode:
+	docker exec -it $(call translate-container-name,$(strip $(DIR))_php_1) sh -c 'cd /var/www/social && bin/update_autocode'
+
 force-nuke-everything: down remove-var remove-file up flush-redis-cache database-force-nuke install-plugins
