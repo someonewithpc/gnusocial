@@ -143,7 +143,7 @@ class HTTPSignature
     {
         // We need this because the used Request headers fields specified by Signature are in lower case.
         $headersContent = array_change_key_case($inputHeaders, \CASE_LOWER);
-        $digest = 'SHA-256=' . base64_encode(hash('sha256', $body, true));
+        $digest         = 'SHA-256=' . base64_encode(hash('sha256', $body, true));
         $headersToSign  = [];
         foreach (explode(' ', $signatureData['headers']) as $h) {
             if ($h == '(request-target)') {

@@ -65,7 +65,7 @@ class NoteRepeat extends Entity
         return $this;
     }
 
-    public function getActorId(): ?int
+    public function getActorId(): int
     {
         return $this->actor_id;
     }
@@ -80,6 +80,7 @@ class NoteRepeat extends Entity
     {
         return $this->repeat_of;
     }
+
     // @codeCoverageIgnoreEnd
     // }}} Autocode
 

@@ -102,7 +102,7 @@ class Inbox extends Controller
         try {
             $resource_parts = parse_url($type->get('actor'));
             if ($resource_parts['host'] !== Common::config('site', 'server')) {
-                $actor = DB::wrapInTransaction(fn () => Explorer::getOneFromUri($type->get('actor')));
+                $actor    = DB::wrapInTransaction(fn () => Explorer::getOneFromUri($type->get('actor')));
                 $ap_actor = DB::findOneBy(ActivitypubActor::class, ['actor_id' => $actor->getId()]);
             } else {
                 throw new Exception('Only remote actors can use this endpoint.');

@@ -50,12 +50,23 @@ class NoteTag extends Entity
 {
     // {{{ Autocode
     // @codeCoverageIgnoreStart
+    private int $note_id;
     private string $tag;
     private string $canonical;
-    private int $note_id;
     private bool $use_canonical;
     private ?int $language_id = null;
     private DateTimeInterface $created;
+
+    public function setNoteId(int $note_id): self
+    {
+        $this->note_id = $note_id;
+        return $this;
+    }
+
+    public function getNoteId(): int
+    {
+        return $this->note_id;
+    }
 
     public function setTag(string $tag): self
     {
@@ -77,17 +88,6 @@ class NoteTag extends Entity
     public function getCanonical(): string
     {
         return $this->canonical;
-    }
-
-    public function setNoteId(int $note_id): self
-    {
-        $this->note_id = $note_id;
-        return $this;
-    }
-
-    public function getNoteId(): int
-    {
-        return $this->note_id;
     }
 
     public function setUseCanonical(bool $use_canonical): self

@@ -52,20 +52,15 @@ class Client extends Entity implements ClientEntityInterface
     private DateTimeInterface $created;
     private DateTimeInterface $modified;
 
-    public function getId(): string
-    {
-        return $this->id;
-    }
-
     public function setId(string $id): self
     {
         $this->id = mb_substr($id, 0, 64);
         return $this;
     }
 
-    public function getSecret(): string
+    public function getId(): string
     {
-        return $this->secret;
+        return $this->id;
     }
 
     public function setSecret(string $secret): self
@@ -74,9 +69,9 @@ class Client extends Entity implements ClientEntityInterface
         return $this;
     }
 
-    public function getActive(): bool
+    public function getSecret(): string
     {
-        return $this->active;
+        return $this->secret;
     }
 
     public function setActive(bool $active): self
@@ -85,9 +80,9 @@ class Client extends Entity implements ClientEntityInterface
         return $this;
     }
 
-    public function getPlainPcke(): bool
+    public function getActive(): bool
     {
-        return $this->plain_pcke;
+        return $this->active;
     }
 
     public function setPlainPcke(bool $plain_pcke): self
@@ -96,9 +91,9 @@ class Client extends Entity implements ClientEntityInterface
         return $this;
     }
 
-    public function getIsConfidential(): bool
+    public function getPlainPcke(): bool
     {
-        return $this->is_confidential;
+        return $this->plain_pcke;
     }
 
     public function setIsConfidential(bool $is_confidential): self
@@ -107,9 +102,9 @@ class Client extends Entity implements ClientEntityInterface
         return $this;
     }
 
-    public function getRedirectUris(): string
+    public function getIsConfidential(): bool
     {
-        return $this->redirect_uris;
+        return $this->is_confidential;
     }
 
     public function setRedirectUris(string $redirect_uris): self
@@ -118,9 +113,9 @@ class Client extends Entity implements ClientEntityInterface
         return $this;
     }
 
-    public function getGrants(): string
+    public function getRedirectUris(): string
     {
-        return $this->grants;
+        return $this->redirect_uris;
     }
 
     public function setGrants(string $grants): self
@@ -129,15 +124,20 @@ class Client extends Entity implements ClientEntityInterface
         return $this;
     }
 
-    public function getScopes(): string
+    public function getGrants(): string
     {
-        return $this->scopes;
+        return $this->grants;
     }
 
     public function setScopes(string $scopes): self
     {
         $this->scopes = $scopes;
         return $this;
+    }
+
+    public function getScopes(): string
+    {
+        return $this->scopes;
     }
 
     public function setClientName(string $client_name): self
@@ -151,20 +151,15 @@ class Client extends Entity implements ClientEntityInterface
         return $this->client_name;
     }
 
-    public function getWebsite(): ?string
-    {
-        return $this->website;
-    }
-
     public function setWebsite(?string $website): self
     {
         $this->website = $website;
         return $this;
     }
 
-    public function getCreated(): DateTimeInterface
+    public function getWebsite(): ?string
     {
-        return $this->created;
+        return $this->website;
     }
 
     public function setCreated(DateTimeInterface $created): self
@@ -173,9 +168,9 @@ class Client extends Entity implements ClientEntityInterface
         return $this;
     }
 
-    public function getModified(): DateTimeInterface
+    public function getCreated(): DateTimeInterface
     {
-        return $this->modified;
+        return $this->created;
     }
 
     public function setModified(DateTimeInterface $modified): self
@@ -183,6 +178,12 @@ class Client extends Entity implements ClientEntityInterface
         $this->modified = $modified;
         return $this;
     }
+
+    public function getModified(): DateTimeInterface
+    {
+        return $this->modified;
+    }
+
     // @codeCoverageIgnoreEnd
     // }}} Autocode
 

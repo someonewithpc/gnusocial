@@ -33,7 +33,7 @@ class ActorProfile extends Controller
 {
     public function actorViewId(Request $request, int $id): array
     {
-        $actor = Actor::getById($id);
+        $actor    = Actor::getById($id);
         $route_id = match ($actor->getType()) {
             Actor::PERSON => 'person_actor_view_id',
             Actor::GROUP  => 'group_actor_view_id',

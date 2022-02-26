@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types=1);
+declare(strict_types = 1);
 
 // {{{ License
 // This file is part of GNU social - https://www.gnu.org/software/social
@@ -48,15 +48,15 @@ class ActivityAnnounce extends Activity
         // The only core Announce we recognise is for (transitive) activities coming from Group actors
         if ($actor->isGroup()) {
             if ($type_object instanceof AbstractObject) {
-                $actual_to = array_flip(is_string($type_object->get('to')) ? [$type_object->get('to')] : $type_object->get('to'));
-                $actual_cc = array_flip(is_string($type_object->get('cc')) ? [$type_object->get('cc')] : $type_object->get('cc'));
+                $actual_to                               = array_flip(\is_string($type_object->get('to')) ? [$type_object->get('to')] : $type_object->get('to'));
+                $actual_cc                               = array_flip(\is_string($type_object->get('cc')) ? [$type_object->get('cc')] : $type_object->get('cc'));
                 $actual_cc[$type_activity->get('actor')] = true; // Add group to targets
-                foreach (is_string($type_activity->get('to')) ? [$type_activity->get('to')] : $type_activity->get('to') as $to) {
+                foreach (\is_string($type_activity->get('to')) ? [$type_activity->get('to')] : $type_activity->get('to') as $to) {
                     if ($to !== 'https://www.w3.org/ns/activitystreams#Public') {
                         $actual_to[$to] = true;
                     }
                 }
-                foreach (is_string($type_activity->get('cc')) ? [$type_activity->get('cc')] : $type_activity->get('cc') as $cc) {
+                foreach (\is_string($type_activity->get('cc')) ? [$type_activity->get('cc')] : $type_activity->get('cc') as $cc) {
                     if ($cc !== 'https://www.w3.org/ns/activitystreams#Public') {
                         $actual_cc[$cc] = true;
                     }

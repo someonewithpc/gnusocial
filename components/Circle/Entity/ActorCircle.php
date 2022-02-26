@@ -49,7 +49,7 @@ class ActorCircle extends Entity
     // {{{ Autocode
     // @codeCoverageIgnoreStart
     private int $id;
-    private ?int $tagger = null; // If null, is the special global self-tag circle
+    private ?int $tagger = null;
     private string $tag;
     private ?string $description = null;
     private ?bool $private       = false;
@@ -202,7 +202,7 @@ class ActorCircle extends Entity
             'description' => 'An actor can have lists of actors, to separate their feed or quickly mention his friend',
             'fields'      => [
                 'id'          => ['type' => 'serial',    'not null' => true, 'description' => 'unique identifier'], // An actor can be tagged by many actors
-                'tagger'      => ['type' => 'int',       'default' => null, 'foreign key' => true, 'target' => 'Actor.id', 'multiplicity' => 'many to one', 'name' => 'actor_list_tagger_fkey', 'description' => 'user making the tag, null if self-tag'],
+                'tagger'      => ['type' => 'int',       'default' => null, 'foreign key' => true, 'target' => 'Actor.id', 'multiplicity' => 'many to one', 'name' => 'actor_list_tagger_fkey', 'description' => 'user making the tag, null if self-tag. If null, is the special global self-tag circle'],
                 'tag'         => ['type' => 'varchar',   'length' => 64, 'foreign key' => true, 'target' => 'ActorTag.tag', 'multiplicity' => 'many to one', 'not null' => true, 'description' => 'actor tag'], // Join with ActorTag // // so, Doctrine doesn't like that the target is not unique, even though the pair is  // Many Actor Circles can reference (and probably will) an Actor Tag
                 'description' => ['type' => 'text',      'description' => 'description of the people tag'],
                 'private'     => ['type' => 'bool',      'default' => false, 'description' => 'is this tag private'],

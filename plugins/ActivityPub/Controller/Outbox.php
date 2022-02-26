@@ -32,15 +32,13 @@ declare(strict_types = 1);
 
 namespace Plugin\ActivityPub\Controller;
 
-use App\Core\DB\DB;
-use App\Entity\Actor;
-use Component\Notification\Entity\Notification;
 use function App\Core\I18n\_m;
 use App\Core\Log;
 use App\Core\Router\Router;
 use App\Entity\Activity;
+use App\Entity\Actor;
 use App\Util\Exception\ClientException;
-use Exception;
+use Component\Notification\Entity\Notification;
 use Plugin\ActivityPub\Util\OrderedCollectionController;
 use Symfony\Component\HttpFoundation\Request;
 
@@ -58,7 +56,7 @@ class Outbox extends OrderedCollectionController
     public function viewOutboxByActorId(Request $request, int $gsactor_id): array
     {
         $actor = Actor::getById($gsactor_id);
-        if (is_null($actor)) {
+        if (\is_null($actor)) {
             throw new ClientException(_m('No such actor.'), 404);
         } elseif (!$actor->getIsLocal()) {
             throw new ClientException(_m('We have no authority over a remote actor\'s outbox.'), 400);

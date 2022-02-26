@@ -53,7 +53,7 @@ class LocalGroup extends Entity
     // @codeCoverageIgnoreStart
     private int $actor_id;
     private string $nickname;
-    private string $type;
+    private string $type = 'group';
     private DateTimeInterface $created;
     private DateTimeInterface $modified;
 
@@ -81,7 +81,7 @@ class LocalGroup extends Entity
 
     public function setType(string $type): self
     {
-        $this->type = $type;
+        $this->type = mb_substr($type, 0, 64);
         return $this;
     }
 

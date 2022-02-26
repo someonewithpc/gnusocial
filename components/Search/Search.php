@@ -25,10 +25,10 @@ namespace Component\Search;
 
 use App\Core\Event;
 use App\Core\Form;
-use App\Util\Exception\ClientException;
 use function App\Core\I18n\_m;
 use App\Core\Modules\Component;
 use App\Util\Common;
+use App\Util\Exception\ClientException;
 use App\Util\Exception\RedirectException;
 use App\Util\Formatting;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;

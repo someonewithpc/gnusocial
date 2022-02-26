@@ -108,7 +108,7 @@ class ActorForms
 
             // Validate full name
             if ($target->getFullname() !== $data['full_name']) {
-                if (!is_null($data['full_name'])) {
+                if (!\is_null($data['full_name'])) {
                     if (mb_strlen($data['full_name']) > 64) {
                         throw new ClientException(_m('Full name cannot be more than 64 character long.'));
                     }

@@ -27,10 +27,10 @@ use App\Core\Controller;
 use App\Core\DB\DB;
 use App\Core\Event;
 use App\Core\Form;
-use App\Entity\Actor;
 use function App\Core\I18n\_m;
 use App\Core\Log;
 use App\Core\Router\Router;
+use App\Entity\Actor;
 use App\Entity\Note;
 use App\Util\Common;
 use App\Util\Exception\ClientException;
@@ -76,7 +76,6 @@ class Repeat extends Controller
             $repeat_activity = \Plugin\RepeatNote\RepeatNote::repeatNote(note: $note, actor_id: $actor_id);
             DB::flush();
             Event::handle('NewNotification', [$actor = Actor::getById($actor_id), $repeat_activity, [], _m('{nickname} repeated note {note_id}.', ['{nickname}' => $actor->getNickname(), '{note_id}' => $repeat_activity->getObjectId()])]);
-
 
             // Redirect user to where they came from
             // Prevent open redirect

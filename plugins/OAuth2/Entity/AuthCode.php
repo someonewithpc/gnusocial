@@ -48,20 +48,15 @@ class AuthCode extends Token implements AuthCodeEntityInterface
     private bool $revoked;
     private DateTimeInterface $created;
 
-    public function getId(): string
-    {
-        return $this->id;
-    }
-
     public function setId(string $id): self
     {
         $this->id = mb_substr($id, 0, 64);
         return $this;
     }
 
-    public function getExpiry(): DateTimeInterface
+    public function getId(): string
     {
-        return $this->expiry;
+        return $this->id;
     }
 
     public function setExpiry(DateTimeInterface $expiry): self
@@ -70,9 +65,9 @@ class AuthCode extends Token implements AuthCodeEntityInterface
         return $this;
     }
 
-    public function getUserId(): ?int
+    public function getExpiry(): DateTimeInterface
     {
-        return $this->user_id;
+        return $this->expiry;
     }
 
     public function setUserId(?int $user_id): self
@@ -81,9 +76,20 @@ class AuthCode extends Token implements AuthCodeEntityInterface
         return $this;
     }
 
-    public function getTokenScopes(): string
+    public function getUserId(): ?int
     {
-        return $this->token_scopes;
+        return $this->user_id;
+    }
+
+    public function setClientId(string $client_id): self
+    {
+        $this->client_id = mb_substr($client_id, 0, 64);
+        return $this;
+    }
+
+    public function getClientId(): string
+    {
+        return $this->client_id;
     }
 
     public function setTokenScopes(string $token_scopes): self
@@ -92,9 +98,9 @@ class AuthCode extends Token implements AuthCodeEntityInterface
         return $this;
     }
 
-    public function getRevoked(): bool
+    public function getTokenScopes(): string
     {
-        return $this->revoked;
+        return $this->token_scopes;
     }
 
     public function setRevoked(bool $revoked): self
@@ -103,9 +109,9 @@ class AuthCode extends Token implements AuthCodeEntityInterface
         return $this;
     }
 
-    public function getCreated(): DateTimeInterface
+    public function getRevoked(): bool
     {
-        return $this->created;
+        return $this->revoked;
     }
 
     public function setCreated(DateTimeInterface $created): self
@@ -114,19 +120,13 @@ class AuthCode extends Token implements AuthCodeEntityInterface
         return $this;
     }
 
+    public function getCreated(): DateTimeInterface
+    {
+        return $this->created;
+    }
+
     // @codeCoverageIgnoreEnd
     // }}} Autocode
-
-    public function getClientId(): string
-    {
-        return $this->client_id;
-    }
-
-    public function setClientId(string $client_id): self
-    {
-        $this->client_id = mb_substr($client_id, 0, 64);
-        return $this;
-    }
 
     public function getRedirectUri(): ?string
     {

@@ -27,10 +27,7 @@ use App\Core\ActorLocalRoles;
 use App\Core\Controller;
 use App\Core\Event;
 use App\Core\Form;
-use Symfony\Component\Form\Extension\Core\Type\TextType;
-use Symfony\Component\HttpFoundation\RedirectResponse;
 use function App\Core\I18n\_m;
-use App\Core\Router\Router;
 use App\Core\VisibilityScope;
 use App\Entity\Actor;
 use App\Util\Common;
@@ -38,13 +35,15 @@ use App\Util\Exception\ClientException;
 use App\Util\Exception\RedirectException;
 use App\Util\Form\FormFields;
 use Component\Posting\Posting;
+use InvalidArgumentException;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
+use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\HttpFoundation\File\Exception\FormSizeFileException;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\Routing\Exception\ResourceNotFoundException;
 use Symfony\Component\Validator\Constraints\Length;
 
 class Post extends Controller
@@ -74,23 +73,22 @@ class Post extends Controller
         ];
         Event::handle('PostingAvailableContentTypes', [&$available_content_types]);
 
-        if (!is_int($this->int('in'))) {
-            throw new \InvalidArgumentException('You must specify an In group/org.');
+        if (!\is_int($this->int('in'))) {
+            throw new InvalidArgumentException('You must specify an In group/org.');
         }
         $context_actor = Actor::getById($this->int('in'));
         if (!$context_actor->isGroup()) {
-            throw new \InvalidArgumentException('Only group blog posts are supported for now.');
+            throw new InvalidArgumentException('Only group blog posts are supported for now.');
         }
-        $in_targets = ["!{$context_actor->getNickname()}" => $context_actor->getId()];
+        $in_targets    = ["!{$context_actor->getNickname()}" => $context_actor->getId()];
         $form_params[] = ['in', ChoiceType::class, ['label' => _m('In:'), 'multiple' => false, 'expanded' => false, 'choices' => $in_targets]];
-
 
         $visibility_options = [
             _m('Public')    => VisibilityScope::EVERYWHERE->value,
             _m('Local')     => VisibilityScope::LOCAL->value,
             _m('Addressee') => VisibilityScope::ADDRESSEE->value,
         ];
-        if (!\is_null($context_actor) && $context_actor->isGroup()) {
+        if (!\is_null($context_actor) && $context_actor->isGroup()) { // @phpstan-ignore-line currently an open bug. See https://web.archive.org/web/20220226131651/https://github.com/phpstan/phpstan/issues/6234
             if ($actor->canModerate($context_actor)) {
                 if ($context_actor->getRoles() & ActorLocalRoles::PRIVATE_GROUP) {
                     $visibility_options = array_merge([_m('Group') => VisibilityScope::GROUP->value], $visibility_options);
@@ -147,7 +145,7 @@ class Post extends Controller
                         content_type: $content_type,
                         locale: $data['language'],
                         scope: VisibilityScope::from($data['visibility']),
-                        targets: [(int)$data['in']],
+                        targets: [(int) $data['in']],
                         reply_to: $data['reply_to_id'],
                         attachments: $data['attachments'],
                         process_note_content_extra_args: $extra_args,

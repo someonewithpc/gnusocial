@@ -137,18 +137,14 @@ abstract class Form
 
     /**
      * Handle the full life cycle of a form. Creates it with @param array $form_definition
-     * @param Request $request
-     * @param object|null $target
+     *
      * @param array $extra_args If specified, is used as $target->set($data[$key], $extra_args[$key])
-     * @param callable|null $after_step
-     * @param array $create_args
-     * @param SymfForm|null $testing_only_form
-     * @return mixed
+     *
      * @throws RedirectException
      * @throws ServerException
+     *
      * @see
      * self::create and inserts the submitted values into the database
-     *
      */
     public static function handle(array $form_definition, Request $request, ?object $target, array $extra_args = [], ?callable $before_step = null, ?callable $after_step = null, array $create_args = [], ?SymfForm $testing_only_form = null): mixed
     {

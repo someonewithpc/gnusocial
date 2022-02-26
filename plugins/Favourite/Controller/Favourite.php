@@ -26,10 +26,10 @@ namespace Plugin\Favourite\Controller;
 use App\Core\DB\DB;
 use App\Core\Event;
 use App\Core\Form;
-use App\Entity\Actor;
 use function App\Core\I18n\_m;
 use App\Core\Log;
 use App\Core\Router\Router;
+use App\Entity\Actor;
 use App\Util\Common;
 use App\Util\Exception\ClientException;
 use App\Util\Exception\InvalidFormException;
@@ -137,7 +137,6 @@ class Favourite extends FeedController
             if (!\is_null($activity = \Plugin\Favourite\Favourite::unfavourNote(note_id: $id, actor_id: $actor_id))) {
                 DB::flush();
                 Event::handle('NewNotification', [$actor = Actor::getById($actor_id), $activity, [], _m('{nickname} unfavoured note {note_id}.', ['{nickname}' => $actor->getNickname(), '{note_id}' => $activity->getObjectId()])]);
-
             } else {
                 throw new ClientException(_m('Note already unfavoured!'));
             }

@@ -48,20 +48,15 @@ class AccessToken extends Token implements AccessTokenEntityInterface
     private bool $revoked;
     private DateTimeInterface $created;
 
-    public function getId(): string
-    {
-        return $this->id;
-    }
-
     public function setId(string $id): self
     {
         $this->id = mb_substr($id, 0, 64);
         return $this;
     }
 
-    public function getExpiry(): DateTimeInterface
+    public function getId(): string
     {
-        return $this->expiry;
+        return $this->id;
     }
 
     public function setExpiry(DateTimeInterface $expiry): self
@@ -70,9 +65,9 @@ class AccessToken extends Token implements AccessTokenEntityInterface
         return $this;
     }
 
-    public function getUserId(): ?int
+    public function getExpiry(): DateTimeInterface
     {
-        return $this->user_id;
+        return $this->expiry;
     }
 
     public function setUserId(?int $user_id): self
@@ -81,9 +76,9 @@ class AccessToken extends Token implements AccessTokenEntityInterface
         return $this;
     }
 
-    public function getClientId(): string
+    public function getUserId(): ?int
     {
-        return $this->client_id;
+        return $this->user_id;
     }
 
     public function setClientId(string $client_id): self
@@ -92,9 +87,9 @@ class AccessToken extends Token implements AccessTokenEntityInterface
         return $this;
     }
 
-    public function getTokenScopes(): string
+    public function getClientId(): string
     {
-        return $this->token_scopes;
+        return $this->client_id;
     }
 
     public function setTokenScopes(string $token_scopes): self
@@ -103,9 +98,9 @@ class AccessToken extends Token implements AccessTokenEntityInterface
         return $this;
     }
 
-    public function getRevoked(): bool
+    public function getTokenScopes(): string
     {
-        return $this->revoked;
+        return $this->token_scopes;
     }
 
     public function setRevoked(bool $revoked): self
@@ -114,15 +109,20 @@ class AccessToken extends Token implements AccessTokenEntityInterface
         return $this;
     }
 
-    public function getCreated(): DateTimeInterface
+    public function getRevoked(): bool
     {
-        return $this->created;
+        return $this->revoked;
     }
 
     public function setCreated(DateTimeInterface $created): self
     {
         $this->created = $created;
         return $this;
+    }
+
+    public function getCreated(): DateTimeInterface
+    {
+        return $this->created;
     }
 
     // @codeCoverageIgnoreEnd

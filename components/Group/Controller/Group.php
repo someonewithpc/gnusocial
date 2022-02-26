@@ -28,7 +28,6 @@ use App\Core\Cache;
 use App\Core\Controller;
 use App\Core\DB\DB;
 use App\Core\Form;
-use App\Util\Nickname;
 use function App\Core\I18n\_m;
 use App\Core\Log;
 use App\Entity as E;
@@ -45,6 +44,7 @@ use App\Util\Exception\NotFoundException;
 use App\Util\Exception\RedirectException;
 use App\Util\Exception\ServerException;
 use App\Util\Form\ActorForms;
+use App\Util\Nickname;
 use Component\Group\Entity\GroupMember;
 use Component\Group\Entity\LocalGroup;
 use Component\Subscription\Entity\ActorSubscription;
@@ -135,7 +135,7 @@ class Group extends Controller
                 nickname: $data['group_nickname'],
                 check_already_used: true,
                 which: Nickname::CHECK_LOCAL_GROUP,
-                check_is_allowed: true
+                check_is_allowed: true,
             );
 
             $roles = ActorLocalRoles::VISITOR; // Can send direct messages to other actors
@@ -146,7 +146,7 @@ class Group extends Controller
 
             Log::info(
                 _m(
-                    'Actor id:{actor_id} nick:{actor_nick} created the '.($roles & ActorLocalRoles::PRIVATE_GROUP ? 'private' : 'public').' group {nickname}',
+                    'Actor id:{actor_id} nick:{actor_nick} created the ' . ($roles & ActorLocalRoles::PRIVATE_GROUP ? 'private' : 'public') . ' group {nickname}',
                     ['{actor_id}' => $actor->getId(), 'actor_nick' => $actor->getNickname(), 'nickname' => $nickname],
                 ),
             );

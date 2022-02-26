@@ -48,20 +48,15 @@ class RefreshToken extends Entity implements RefreshTokenEntityInterface
     private bool $revoked;
     private DateTimeInterface $created;
 
-    public function getId(): string
-    {
-        return $this->id;
-    }
-
     public function setId(string $id): self
     {
         $this->id = mb_substr($id, 0, 64);
         return $this;
     }
 
-    public function getExpiry(): DateTimeInterface
+    public function getId(): string
     {
-        return $this->expiry;
+        return $this->id;
     }
 
     public function setExpiry(DateTimeInterface $expiry): self
@@ -70,9 +65,9 @@ class RefreshToken extends Entity implements RefreshTokenEntityInterface
         return $this;
     }
 
-    public function getAccessTokenId(): ?string
+    public function getExpiry(): DateTimeInterface
     {
-        return $this->access_token_id;
+        return $this->expiry;
     }
 
     public function setAccessTokenId(?string $access_token_id): self
@@ -81,9 +76,9 @@ class RefreshToken extends Entity implements RefreshTokenEntityInterface
         return $this;
     }
 
-    public function getRevoked(): bool
+    public function getAccessTokenId(): ?string
     {
-        return $this->revoked;
+        return $this->access_token_id;
     }
 
     public function setRevoked(bool $revoked): self
@@ -92,15 +87,20 @@ class RefreshToken extends Entity implements RefreshTokenEntityInterface
         return $this;
     }
 
-    public function getCreated(): DateTimeInterface
+    public function getRevoked(): bool
     {
-        return $this->created;
+        return $this->revoked;
     }
 
     public function setCreated(DateTimeInterface $created): self
     {
         $this->created = $created;
         return $this;
+    }
+
+    public function getCreated(): DateTimeInterface
+    {
+        return $this->created;
     }
 
     // @codeCoverageIgnoreEnd

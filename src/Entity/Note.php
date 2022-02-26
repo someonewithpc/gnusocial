@@ -114,7 +114,7 @@ class Note extends Entity
 
     public function setContentType(string $content_type): self
     {
-        $this->content_type = mb_substr($content_type, 0, 129);
+        $this->content_type = \mb_substr($content_type, 0, 129);
         return $this;
     }
 
@@ -169,7 +169,7 @@ class Note extends Entity
 
     public function setSource(?string $source): self
     {
-        $this->source = \is_null($source) ? null : mb_substr($source, 0, 32);
+        $this->source = \is_null($source) ? null : \mb_substr($source, 0, 32);
         return $this;
     }
 
@@ -224,7 +224,7 @@ class Note extends Entity
 
     public function setTitle(?string $title): self
     {
-        $this->title = \is_null($title) ? null : mb_substr($title, 0, 129);
+        $this->title = \is_null($title) ? null : \mb_substr($title, 0, 129);
         return $this;
     }
 
@@ -233,24 +233,24 @@ class Note extends Entity
         return $this->title;
     }
 
-    public function setCreated(DateTimeInterface $created): self
+    public function setCreated(\DateTimeInterface $created): self
     {
         $this->created = $created;
         return $this;
     }
 
-    public function getCreated(): DateTimeInterface
+    public function getCreated(): \DateTimeInterface
     {
         return $this->created;
     }
 
-    public function setModified(DateTimeInterface $modified): self
+    public function setModified(\DateTimeInterface $modified): self
     {
         $this->modified = $modified;
         return $this;
     }
 
-    public function getModified(): DateTimeInterface
+    public function getModified(): \DateTimeInterface
     {
         return $this->modified;
     }

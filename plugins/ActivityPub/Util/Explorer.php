@@ -231,7 +231,7 @@ class Explorer
             return true;
         } else {
             try {
-                $this->discovered_actors[] = DB::wrapInTransaction(fn() => Model\Actor::fromJson(json_encode($res)))->getActor();
+                $this->discovered_actors[] = DB::wrapInTransaction(fn () => Model\Actor::fromJson(json_encode($res)))->getActor();
                 return true;
             } catch (Exception $e) {
                 Log::debug(

@@ -45,7 +45,7 @@ class GroupMember extends Entity
     private int $group_id;
     private int $actor_id;
     private int $roles;
-    private ?string $uri    = null;
+    private ?string $uri = null;
     private DateTimeInterface $created;
     private DateTimeInterface $modified;
 
