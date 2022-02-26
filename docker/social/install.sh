@@ -32,6 +32,8 @@ if [ ${DB_EXISTS} -ne 0 ]; then
     php bin/console doctrine:schema:create      || exit 1
     php bin/console app:populate_initial_values || exit 1
 
+    ./bin/install_plugins.sh
+
     echo "GNU social is installed"
 else
     echo "GNU social is already installed"

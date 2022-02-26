@@ -69,4 +69,7 @@ remove-file:
 flush-redis-cache:
 	docker exec -it $(call translate-container-name,$(strip $(DIR))_redis_1) sh -c 'redis-cli flushall'
 
-force-nuke-everything: down up flush-redis-cache database-force-nuke remove-var remove-file
+install-plugins:
+	docker exec -it $(call translate-container-name,$(strip $(DIR))_php_1) /var/www/social/bin/install_plugins.sh
+
+force-nuke-everything: down remove-var remove-file up flush-redis-cache database-force-nuke install-plugins
