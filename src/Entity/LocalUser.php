@@ -379,12 +379,10 @@ class LocalUser extends Entity implements UserInterface, PasswordAuthenticatedUs
      */
     public function setOutgoingEmailSanitized(?string $email): self
     {
-        $sanitized_email = filter_var($email, FILTER_SANITIZE_EMAIL);
-        if (!is_null($email) && !filter_var($sanitized_email, FILTER_VALIDATE_EMAIL)) {
+        if (is_null($email) || filter_var($email, FILTER_VALIDATE_EMAIL) === false) {
             throw new EmailException('Invalid email entry, please use a valid email');
         }
-        $this->outgoing_email = \is_null($sanitized_email) ? null : \mb_substr($sanitized_email, 0, 191);
-        return $this;
+        return $this->setOutgoingEmail($email);
     }
 
     /**
@@ -396,12 +394,10 @@ class LocalUser extends Entity implements UserInterface, PasswordAuthenticatedUs
      */
     public function setIncomingEmailSanitized(?string $email): self
     {
-        $sanitized_email = filter_var($email, FILTER_SANITIZE_EMAIL);
-        if (!is_null($email) && !filter_var($sanitized_email, FILTER_VALIDATE_EMAIL)) {
+        if (is_null($email) || filter_var($email, FILTER_VALIDATE_EMAIL) === false) {
             throw new EmailException('Invalid email entry, please use a valid email');
         }
-        $this->incoming_email = \is_null($sanitized_email) ? null : \mb_substr($sanitized_email, 0, 191);
-        return $this;
+        return $this->setIncomingEmail($email);
     }
 
     public function getActor(): Actor
