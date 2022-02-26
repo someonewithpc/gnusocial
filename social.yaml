@@ -39,9 +39,6 @@ parameters:
       adapters:
         default: redis://redis
 
-    storage:
-      dir: '%kernel.project_dir%/file/'
-
     avatar:
       server:
       ssl:
@@ -60,7 +57,7 @@ parameters:
     attachments:
       server:
       ssl:
-      dir: "%kernel.project_dir%/file/attachments/"
+      dir: "%kernel.project_dir%/file/media/attachments/"
       supported:
         application/gpx+xml: gpx
         application/msword: doc
@@ -117,7 +114,7 @@ parameters:
     thumbnail:
       server:
       ssl:
-      dir: "%kernel.project_dir%/file/thumbnails/"
+      dir: "%kernel.project_dir%/file/media/thumbnails/"
       smart_crop: false
       maximum_pixels: 256000
       minimum_width: 16
