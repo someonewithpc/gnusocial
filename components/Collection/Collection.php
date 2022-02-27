@@ -23,19 +23,30 @@ class Collection extends Component
      * Supports a variety of query terms and is used both in feeds and
      * in search. Uses query builders to allow for extension
      */
-    public static function query(string $query, int $page, ?string $locale = null, ?Actor $actor = null): array
+    public static function query(string $query, int $page, ?string $locale = null, ?Actor $actor = null, array $note_order_by = [], array $actor_order_by = []): array
     {
         $note_criteria  = null;
         $actor_criteria = null;
         if (!empty($query = trim($query))) {
             [$note_criteria, $actor_criteria] = Parser::parse($query, $locale, $actor);
         }
+
         $note_qb  = DB::createQueryBuilder();
         $actor_qb = DB::createQueryBuilder();
         // TODO consider selecting note related stuff, to avoid separate queries (though they're cached, so maybe it's okay)
-        $note_qb->select('note')->from('App\Entity\Note', 'note')->orderBy('note.created', 'DESC')->addOrderBy('note.id', 'DESC');
-        $actor_qb->select('actor')->from('App\Entity\Actor', 'actor')->orderBy('actor.created', 'DESC')->addOrderBy('actor.id', 'DESC');
+        $note_qb->select('note')->from('App\Entity\Note', 'note');
+        $actor_qb->select('actor')->from('App\Entity\Actor', 'actor');
         Event::handle('CollectionQueryAddJoins', [&$note_qb, &$actor_qb, $note_criteria, $actor_criteria]);
+
+        // Handle ordering
+        $note_order_by  = !empty($note_order_by) ? $note_order_by : ['note.created' => 'DESC', 'note.id' => 'DESC'];
+        $actor_order_by = !empty($actor_order_by) ? $actor_order_by : ['actor.created' => 'DESC', 'actor.id' => 'DESC'];
+        foreach ($note_order_by as $field => $order) {
+            $note_qb->addOrderBy($field, $order);
+        }
+        foreach ($actor_order_by as $field => $order) {
+            $actor_qb->addOrderBy($field, $order);
+        }
 
         $notes  = [];
         $actors = [];
