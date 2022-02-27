@@ -275,6 +275,7 @@ parameters:
 
     feeds:
       entries_per_page: 32
+      cached_replies: 8
 
     plugin_tree_notes:
       feed_replies: 3

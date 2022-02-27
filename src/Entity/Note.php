@@ -28,10 +28,10 @@ use App\Core\Cache;
 use App\Core\DB\DB;
 use App\Core\Entity;
 use App\Core\Event;
-use function App\Core\I18n\_m;
 use App\Core\Log;
 use App\Core\Router\Router;
 use App\Core\VisibilityScope;
+use App\Util\Common;
 use App\Util\Exception\ClientException;
 use App\Util\Exception\NoSuchNoteException;
 use App\Util\Formatting;
@@ -39,9 +39,10 @@ use Component\Avatar\Avatar;
 use Component\Conversation\Entity\Conversation;
 use Component\Language\Entity\Language;
 use Component\Notification\Entity\Attention;
-use DateTimeInterface;
-use function mb_substr;
 use const PREG_SPLIT_NO_EMPTY;
+use DateTimeInterface;
+use function App\Core\I18n\_m;
+use function mb_substr;
 
 /**
  * Entity for notes
@@ -406,13 +407,20 @@ class Note extends Entity
      */
     public function getReplies(int $offset = 0, int $limit = null): array
     {
-        return Cache::getList(self::cacheKeys($this->getId())['replies'],
-            fn () => DB::findBy(self::class, [
-                'reply_to' => $this->getId()
-            ],
-                order_by: ['created' => 'ASC', 'id' => 'ASC']),
+        return Cache::getListPartialCache(
+            key: self::cacheKeys($this->getId())['replies'],
+            calculate: function (int $limit, int $offset) {
+                return DB::findBy(
+                    self::class,
+                    ['reply_to' => $this->getId()],
+                    order_by: ['created' => 'ASC', 'id' => 'ASC'],
+                    limit: $limit,
+                    offset: $offset
+                );
+            },
+            max_cache_count: Common::config('feeds', 'cached_replies'),
             left: $offset,
-            right: $limit
+            right: $limit - $offset
         );
     }
 
