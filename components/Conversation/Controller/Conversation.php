@@ -62,8 +62,11 @@ class Conversation extends FeedController
         $page_title = _m('Conversation');
 
         return [
-            '_template'        => 'collection/notes.html.twig',
-            'notes'            => $this->query(query: "note-conversation:{$conversation_id}")['notes'] ?? [],
+            '_template' => 'collection/notes.html.twig',
+            'notes'     => $this->query(
+                query: "note-conversation:{$conversation_id}",
+                note_order_by: ['note.created' => 'ASC', 'note.id' => 'ASC'],
+            )['notes'] ?? [],
             'should_format'    => false,
             'page_title'       => $page_title,
             'notes_feed_title' => (new Heading(1, [], $page_title)),
@@ -138,9 +141,12 @@ class Conversation extends FeedController
 
         return [
             '_template' => 'conversation/mute.html.twig',
-            'notes'     => $this->query(query: "note-conversation:{$conversation_id}")['notes'] ?? [],
-            'is_muted'  => $is_muted,
-            'form'      => $form->createView(),
+            'notes'     => $this->query(
+                query: "note-conversation:{$conversation_id}",
+                note_order_by: ['note.created' => 'ASC', 'note.id' => 'ASC'],
+            )['notes'] ?? [],
+            'is_muted' => $is_muted,
+            'form'     => $form->createView(),
         ];
     }
 }
