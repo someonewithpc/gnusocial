@@ -36,7 +36,6 @@ use App\Core\VisibilityScope;
 use App\Entity\Activity;
 use App\Entity\Actor;
 use App\Entity\Note;
-use App\Entity\NoteType;
 use App\Util\Common;
 use App\Util\Exception\BugFoundException;
 use App\Util\Exception\ClientException;
@@ -247,7 +246,7 @@ class Posting extends Component
             rendered: $rendered,
             source: $source,
         );
-        $note->setType(NoteType::PAGE);
+        $note->setType('page');
         $note->setTitle($title);
 
         if ($flush_and_notify) {

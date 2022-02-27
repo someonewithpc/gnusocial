@@ -44,7 +44,6 @@ use App\Core\Log;
 use App\Core\Router\Router;
 use App\Core\VisibilityScope;
 use App\Entity\Note as GSNote;
-use App\Entity\NoteType;
 use App\Util\Common;
 use App\Util\Exception\ClientException;
 use App\Util\Exception\DuplicateFoundException;
@@ -155,8 +154,8 @@ class Note extends Model
             'reply_to'     => $reply_to = $handleInReplyTo($type_note),
             'modified'     => new DateTime(),
             'type'         => match ($type_note->get('type')) {
-                'Page'     => NoteType::PAGE,
-                default    => NoteType::NOTE
+                'Page'     => 'page',
+                default    => 'note'
             },
             'source' => $source,
         ];
@@ -354,8 +353,9 @@ class Note extends Model
         $attr = [
             '@context'         => ActivityPub::$activity_streams_two_context,
             'type'             => $object->getScope() === VisibilityScope::MESSAGE ? 'ChatMessage' : (match ($object->getType()) {
-                NoteType::NOTE => 'Note',
-                NoteType::PAGE => 'Page'
+                'note' => 'Note',
+                'page' => 'Page',
+                default => throw new \Exception('Unsupported note type.')
             }),
             'id'             => $object->getUrl(),
             'published'      => $object->getCreated()->format(DateTimeInterface::RFC3339),
