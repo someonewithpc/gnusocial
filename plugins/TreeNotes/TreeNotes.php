@@ -21,8 +21,11 @@ declare(strict_types = 1);
 
 namespace Plugin\TreeNotes;
 
+use App\Core\Event;
 use App\Core\Modules\Plugin;
 use App\Entity\Note;
+use App\Util\Common;
+use App\Util\Formatting;
 use Symfony\Component\HttpFoundation\Request;
 
 class TreeNotes extends Plugin
@@ -43,30 +46,43 @@ class TreeNotes extends Plugin
 
     /**
      * Formats general Feed view, allowing users to see a Note and its direct replies.
-     * These replies are then, shown independently of parent note, making sure that every single Note is shown at least once to users.
+     * These replies are then, shown independently of parent note, making sure that every single Note is shown at least
+     * once to users.
      *
-     * The list is transversed in reverse to prevent any parent Note from being processed twice. At the same time, this allows all direct replies to be rendered inside the same, respective, parent Note.
+     * The list is transversed in reverse to prevent any parent Note from being processed twice. At the same time,
+     * this allows all direct replies to be rendered inside the same, respective, parent Note.
      * Moreover, this implies the Entity\Note::getReplies() query will only be performed once, for every Note.
      *
-     * @param array $notes The Note list to be formatted, each element has two keys: 'note' (parent/current note), and 'replies' (array of notes in the same format)
+     * @param array $notes The Note list to be formatted, each element has two keys: 'note' (parent/current note),
+     *                     and 'replies' (array of notes in the same format)
      */
     private function feedFormatTree(array $notes): array
     {
-        $tree  = [];
-        $notes = array_reverse($notes);
+        $tree                = [];
+        $notes               = array_reverse($notes);
+        $max_replies_to_show = Common::config('plugin_tree_notes', 'feed_replies');
         foreach ($notes as $note) {
-            if (!\is_null($children = $note->getReplies())) {
-                $notes = array_filter($notes, fn (Note $n) => !\in_array($n, $children));
+            if (!\is_null($children = $note->getReplies(limit: $max_replies_to_show))) {
+                $total_replies = $note->getRepliesCount();
+                $show_more     = $total_replies > $max_replies_to_show;
+                $notes         = array_filter($notes, fn (Note $n) => !\in_array($n, $children));
 
                 $tree[] = [
                     'note'      => $note,
                     'replies'   => array_map(
-                        fn ($n) => ['note' => $n, 'replies' => []],
+                        fn ($n) => [
+                            'note'          => $n,
+                            'replies'       => [],
+                            'show_more'     => ($n->getRepliesCount() > $max_replies_to_show),
+                            'total_replies' => $n->getRepliesCount(),
+                        ],
                         $children,
                     ),
+                    'total_replies' => $total_replies,
+                    'show_more'     => $show_more,
                 ];
             } else {
-                $tree[] = ['note' => $note, 'replies' => []];
+                $tree[] = ['note' => $note, 'replies' => [], 'show_more' => false];
             }
         }
 
@@ -99,6 +115,24 @@ class TreeNotes extends Plugin
     {
         $children = array_filter($notes, fn (Note $note) => $note->getReplyTo() === $parent->getId());
 
-        return ['note' => $parent, 'replies' => $this->conversationFormatTree($children, $notes)];
+        return [
+            'note'      => $parent,
+            'replies'   => $this->conversationFormatTree($children, $notes),
+            'show_more' => false, // It's always false, we're showing everyone
+        ];
+    }
+
+    public function onAppendNoteBlock(Request $request, array $conversation, array &$res): bool
+    {
+        if (\array_key_exists('replies', $conversation)) {
+            $res[] = Formatting::twigRenderFile(
+                'tree_notes/note_replies_block.html.twig',
+                [
+                    'nickname'     => $conversation['note']->getActorNickname(),
+                    'conversation' => $conversation,
+                ],
+            );
+        }
+        return Event::next;
     }
 }

@@ -39,7 +39,10 @@
                 {% for conversation in notes %}
                     {% block current_note %}
                         {% if conversation is instanceof('array') %}
-                            {% set args = { 'type': 'vanilla_full', 'note': conversation['note'], 'replies': conversation['replies'] | default, 'extra': { 'depth': 0 } } %}
+                            {% set args = {
+                                'type': 'vanilla_full',
+                                'conversation': conversation
+                            } %}
                             {{ NoteFactory.constructor(args) }}
 {#                        {% else %}
                             {% set args = { 'type': 'vanilla_full', 'note': conversation, 'extra': { 'depth': 0 } } %}

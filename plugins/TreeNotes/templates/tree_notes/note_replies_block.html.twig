@@ -1,0 +1,19 @@
+{% import '/cards/macros/note/factory.html.twig' as NoteFactory %}
+<section class="note-replies" title="{{ 'Replies to ' | trans }}{{ nickname }}{{ '\'s note' | trans }}">
+  <div class="note-replies-start"></div>
+  <div class="u-in-reply-to replies">
+    {% for reply in conversation.replies %}
+      <span class="note-replies-indicator" role="presentation"></span>
+      {% set args = { 'type': 'vanilla_full', 'conversation': reply } %}
+      {{ NoteFactory.constructor(args) }}
+    {% endfor %}
+    {% if conversation.show_more %}
+      <a href="{{ conversation.note.getConversationUrl() }}">
+        {{ transchoice({
+          '1': 'Show an additional reply',
+          'other': 'Show # additional replies'
+        }, (conversation.total_replies - config('plugin_tree_notes', 'feed_replies'))) }}
+      </a>
+    {% endif %}
+  </div>
+</section>

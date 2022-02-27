@@ -24,6 +24,7 @@ declare(strict_types = 1);
 namespace Component\Posting;
 
 use App\Core\ActorLocalRoles;
+use App\Core\Cache;
 use App\Core\DB\DB;
 use App\Core\Event;
 use App\Core\Form;
@@ -332,6 +333,14 @@ class Posting extends Component
         DB::persist($note);
         Conversation::assignLocalConversation($note, $reply_to_id);
 
+        // Update replies cache
+        if (!\is_null($reply_to_id)) {
+            Cache::incr(Note::cacheKeys($reply_to_id)['replies-count']);
+            if (Cache::exists(Note::cacheKeys($reply_to_id)['replies'])) {
+                Cache::listPushRight(Note::cacheKeys($reply_to_id)['replies'], $note);
+            }
+        }
+
         // Need file and note ids for the next step
         $note->setUrl(Router::url('note_view', ['id' => $note->getId()], Router::ABSOLUTE_URL));
         if (!empty($content)) {
@@ -373,7 +382,7 @@ class Posting extends Component
                 $activity,
                 [
                     'note-attention' => $attention_ids,
-                    'object' => F\unique(F\flat_map($mentions, fn (array $m) => F\map($m['mentioned'] ?? [], fn (Actor $a) => $a->getId()))),
+                    'object'         => F\unique(F\flat_map($mentions, fn (array $m) => F\map($m['mentioned'] ?? [], fn (Actor $a) => $a->getId()))),
                 ],
                 _m('{nickname} created a note {note_id}.', [
                     '{nickname}' => $actor->getNickname(),

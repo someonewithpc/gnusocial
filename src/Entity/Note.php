@@ -269,6 +269,7 @@ class Note extends Entity
             'links'             => "note-links-{$note_id}",
             'tags'              => "note-tags-{$note_id}",
             'replies'           => "note-replies-{$note_id}",
+            'replies-count'     => "note-replies-count-{$note_id}",
         ];
     }
 
@@ -405,9 +406,24 @@ class Note extends Entity
     /**
      * Returns all **known** replies made to this entity
      */
-    public function getReplies(): array
+    public function getReplies(int $offset = 0, int $limit = null): array
     {
-        return Cache::getList(self::cacheKeys($this->getId())['replies'], fn () => DB::findBy('note', ['reply_to' => $this->getId()], order_by: ['created' => 'DESC', 'id' => 'DESC']));
+        return Cache::getList(self::cacheKeys($this->getId())['replies'],
+            fn () => DB::findBy(self::class, [
+                'reply_to' => $this->getId()
+            ],
+                order_by: ['created' => 'ASC', 'id' => 'ASC']),
+            left: $offset,
+            right: $limit
+        );
+    }
+
+    public function getRepliesCount(): int
+    {
+        return Cache::get(
+            self::cacheKeys($this->getId())['replies-count'],
+            fn() => DB::count(self::class, ['reply_to' => $this->getId()])
+        );
     }
 
     /**

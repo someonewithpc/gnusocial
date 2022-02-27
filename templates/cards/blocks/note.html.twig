@@ -22,23 +22,6 @@
     {% endif %}
 {% endblock note_actions %}
 
-{% block note_replies %}
-    {% import '/cards/macros/note/factory.html.twig' as NoteFactory %}
-
-    {% if replies is defined and replies is not empty %}
-        <section class="note-replies" title="{{ 'Replies to ' | trans }}{{ nickname }}{{ '\'s note' | trans }}">
-            <div class="note-replies-start"></div>
-            <div class="u-in-reply-to replies">
-                {% for conversation in replies %}
-                    <span class="note-replies-indicator" role="presentation"></span>
-                    {% set args = { 'type': 'vanilla_full', 'note': conversation['note'], 'replies': conversation['replies'] | default, 'extra': extra } %}
-                    {{ NoteFactory.constructor(args) }}
-                {% endfor %}
-            </div>
-        </section>
-    {% endif %}
-{% endblock note_replies %}
-
 {% block note_attachments %}
     {% if hide_attachments is not defined %}
         {% if note.getAttachments() is not empty %}

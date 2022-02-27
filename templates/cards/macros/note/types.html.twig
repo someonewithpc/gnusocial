@@ -1,9 +1,6 @@
-
 {# args: { 'type': { 'vanilla_full' }, 'note': note, ?'replies': { note, ?replies }, ?'extra': { 'foo': bar } #}
 {% macro vanilla_full(args) %}
-    {% set note = args.note %}
-    {% if args.replies is defined %}{% set replies = args.replies %}{% else %}{% set replies = null %}{% endif %}
-    {% if args.extra is defined %}{% set extra = args.extra %}{% else %}{% set extra = null %}{% endif %}
+    {% set note = args.conversation.note %}
 
     {% set actor = note.getActor() %}
     {% set nickname = actor.getNickname() %}
@@ -54,9 +51,10 @@
         {{ block('note_complementary', 'cards/blocks/note.html.twig') }}
     </article>
 
-    {% if replies is defined %}
-        {{ block('note_replies', 'cards/blocks/note.html.twig') }}
-    {% endif %}
+    {% set additional_blocks = handle_event('AppendNoteBlock',  app.request, args.conversation) %}
+    {% for block in additional_blocks %}
+        {{ block | raw }}
+    {% endfor %}
 {% endmacro vanilla_full %}
 
 

@@ -265,6 +265,14 @@ class Note extends Model
         // Assign conversation to this note
         Conversation::assignLocalConversation($obj, $reply_to);
 
+        // Update replies cache
+        if (!\is_null($reply_to)) {
+            Cache::incr(GSNote::cacheKeys($reply_to)['replies-count']);
+            if (Cache::exists(GSNote::cacheKeys($reply_to)['replies'])) {
+                Cache::listPushRight(GSNote::cacheKeys($reply_to)['replies'], $obj);
+            }
+        }
+
         $object_mention_ids = [];
         foreach ($type_note->get('tag') ?? [] as $ap_tag) {
             switch ($ap_tag->get('type')) {
