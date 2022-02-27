@@ -33,6 +33,7 @@ declare(strict_types = 1);
 namespace App\Twig;
 
 use App\Core\Event;
+use function App\Core\I18n\_m;
 use App\Core\Router\Router;
 use App\Entity\Actor;
 use App\Entity\Feed;
@@ -54,6 +55,11 @@ class Runtime implements RuntimeExtensionInterface, EventSubscriberInterface
     public function setRequest(Request $req)
     {
         $this->request = $req;
+    }
+
+    public function transchoice(array $message, int $count): string
+    {
+        return _m($message, ['count' => $count]);
     }
 
     public function isCurrentRouteActive(string ...$routes): string

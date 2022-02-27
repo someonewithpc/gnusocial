@@ -79,6 +79,7 @@ class Extension extends AbstractExtension
             new TwigFunction('open_details', [Runtime::class, 'openDetails']),
             new TwigFunction('show_stylesheets', [Runtime::class, 'getShowStylesheets']),
             new TwigFunction('add_right_panel_block', [Runtime::class, 'addRightPanelBlock']),
+            new TwigFunction('transchoice', [Runtime::class, 'transchoice']),
         ];
     }
 }
