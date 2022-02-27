@@ -318,6 +318,42 @@ abstract class Cache
     }
 
     /**
+     * Get a list partially from cache, partially from the DB
+     *
+     * Uses two fetches in the worst case, but the first is likely cached
+     *
+     * @param callable(int $limit, int $offset): (array<int,mixed>) $calculate
+     */
+    public static function getListPartialCache(string $key, callable $calculate, int $max_cache_count, int $left, ?int $right = null, string $pool = 'default', float $beta = 1.0): array
+    {
+        if ($left < $max_cache_count) {
+            $middle         = $max_cache_count;
+            $cached_portion = self::getList(
+                $key,
+                fn () => $calculate(limit: $max_cache_count, offset: 0),
+                pool: $pool,
+                max_count: $max_cache_count,
+                left: $left,
+                right: $right,
+                beta: $beta,
+            );
+        } else {
+            $middle         = $left;
+            $cached_portion = [];
+        }
+
+        $right ??= \PHP_INT_MAX;
+        $limit = $right - $middle;
+        if ($right > $max_cache_count) {
+            $non_cached_portion = $calculate(limit: $limit, offset: $middle);
+        } else {
+            $non_cached_portion = [];
+        }
+
+        return [...$cached_portion, ...$non_cached_portion];
+    }
+
+    /**
      * Push a value to the list
      */
     public static function listPushLeft(string $key, mixed $value, string $pool = 'default', ?int $max_count = null, float $beta = 1.0): void
