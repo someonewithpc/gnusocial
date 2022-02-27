@@ -290,7 +290,7 @@ class Note extends Model
                         'use_canonical' => $ap_tag->get('canonical') ?? false,
                         'language_id'   => $lang_id ?? null,
                     ]));
-                    Cache::pushList("tag-{$canonical_tag}", $obj);
+                    Cache::listPushLeft("tag-{$canonical_tag}", $obj);
                     foreach (Tag::cacheKeys($canonical_tag) as $key) {
                         Cache::delete($key);
                     }

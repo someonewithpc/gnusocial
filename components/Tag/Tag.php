@@ -93,7 +93,7 @@ class Tag extends Component
                 'use_canonical' => $extra_args['tag_use_canonical'] ?? false,
                 'language_id'   => $lang_id,
             ]));
-            Cache::pushList("tag-{$canonical_tag}", $note);
+            Cache::listPushLeft("tag-{$canonical_tag}", $note);
             foreach (self::cacheKeys($canonical_tag) as $key) {
                 Cache::delete($key);
             }

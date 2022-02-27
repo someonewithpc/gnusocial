@@ -225,7 +225,7 @@ abstract class Cache
     public static function exists(string $key, string $pool = 'default'): bool
     {
         if (isset(self::$redis[$pool])) {
-            return self::$redis[$pool]->exists($key);
+            return self::$redis[$pool]->exists($key) === 1;
         } else {
             // there's no set method, must be done this way
             return self::$pools[$pool]->hasItem($key);
@@ -237,7 +237,13 @@ abstract class Cache
      * for redis and others, trimming to $max_count if given
      * TODO(hugo): $calculate = [] is the same as false miss
      *
+     * @param string $key Cache key
      * @param callable(?CacheItem $item, bool &$save): (string|object|array<int,mixed>) $calculate
+     * @param string   $pool      Cache pool being used (between different cache managers (of the same or different systems))
+     * @param null|int $max_count When setting cache, it trims to max count
+     * @param null|int $left      Offset on Get
+     * @param null|int $right     Limit on Get
+     * @param float    $beta      Likelihood of recomputing value (1 to infinity)
      */
     public static function getList(string $key, callable $calculate, string $pool = 'default', ?int $max_count = null, ?int $left = null, ?int $right = null, float $beta = 1.0): array
     {
@@ -314,7 +320,7 @@ abstract class Cache
     /**
      * Push a value to the list
      */
-    public static function pushList(string $key, mixed $value, string $pool = 'default', ?int $max_count = null, float $beta = 1.0): void
+    public static function listPushLeft(string $key, mixed $value, string $pool = 'default', ?int $max_count = null, float $beta = 1.0): void
     {
         if (isset(self::$redis[$pool])) {
             self::$redis[$pool]
@@ -329,6 +335,29 @@ abstract class Cache
             array_unshift($res, $value);
             if (!\is_null($max_count)) {
                 $res = \array_slice($res, 0, $max_count); // Trim away the older values
+            }
+            self::set($key, $res, $pool);
+        }
+    }
+
+    /**
+     * Push a value to the list
+     */
+    public static function listPushRight(string $key, mixed $value, string $pool = 'default', ?int $max_count = null, float $beta = 1.0): void
+    {
+        if (isset(self::$redis[$pool])) {
+            self::$redis[$pool]
+                // doesn't need to be atomic, adding at one end, deleting at the other
+                ->multi(Redis::PIPELINE)
+                ->rPush($key, $value)
+                // trim to $max_count, if given
+                ->lTrim($key, -($max_count ?? 0), -1)
+                ->exec();
+        } else {
+            $res   = self::get($key, fn () => [], $pool, $beta);
+            $res[] = $value;
+            if (!\is_null($max_count)) {
+                $res = \array_slice($res, -$max_count, null); // Trim away the older values
             }
             self::set($key, $res, $pool);
         }

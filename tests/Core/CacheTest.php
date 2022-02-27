@@ -106,10 +106,14 @@ class CacheTest extends KernelTestCase
         static::assertSame(['foo'], Cache::getList($key . '1', fn ($i) => ['foo']));
         static::assertSame(['foo', 'bar'], Cache::getList($key, fn ($i) => ['foo', 'bar']));
         static::assertSame(['foo', 'bar'], Cache::getList($key, function () { $this->assertFalse('should not be called'); })); // Repeat to test no recompute lrange
-        Cache::pushList($key, 'quux');
+        Cache::listPushLeft($key, 'quux');
         static::assertSame(['quux', 'foo', 'bar'], Cache::getList($key, function ($i) { $this->assertFalse('should not be called'); }));
-        Cache::pushList($key, 'foobar', max_count: 2);
+        Cache::listPushLeft($key, 'foobar', max_count: 2);
         static::assertSame(['foobar', 'quux'], Cache::getList($key, function ($i) { $this->assertFalse('should not be called'); }));
+        Cache::listPushRight($key, 'foo');
+        static::assertSame(['foobar', 'quux', 'foo'], Cache::getList($key, function ($i) { $this->assertFalse('should not be called'); }));
+        Cache::listPushRight($key, 'bar', max_count: 2);
+        static::assertSame(['foo', 'bar'], Cache::getList($key, function ($i) { $this->assertFalse('should not be called'); }));
         static::assertTrue(Cache::deleteList($key));
     }
 
@@ -132,10 +136,14 @@ class CacheTest extends KernelTestCase
         static::assertSame(['foo'], Cache::getList($key . '1', fn ($i) => ['foo'], pool: 'file'));
         static::assertSame(['foo', 'bar'], Cache::getList($key, fn ($i) => ['foo', 'bar'], pool: 'file'));
         static::assertSame(['foo', 'bar'], Cache::getList($key, function () { $this->assertFalse('should not be called'); }, pool: 'file')); // Repeat to test no recompute lrange
-        Cache::pushList($key, 'quux', pool: 'file');
+        Cache::listPushLeft($key, 'quux', pool: 'file');
         static::assertSame(['quux', 'foo', 'bar'], Cache::getList($key, function ($i) { $this->assertFalse('should not be called'); }, pool: 'file'));
-        Cache::pushList($key, 'foobar', max_count: 2, pool: 'file');
+        Cache::listPushLeft($key, 'foobar', max_count: 2, pool: 'file');
         static::assertSame(['foobar', 'quux'], Cache::getList($key, function ($i) { $this->assertFalse('should not be called'); }, pool: 'file'));
+        Cache::listPushRight($key, 'foo');
+        static::assertSame(['foobar', 'quux', 'foo'], Cache::getList($key, function ($i) { $this->assertFalse('should not be called'); }));
+        Cache::listPushRight($key, 'bar', max_count: 2);
+        static::assertSame(['foo', 'bar'], Cache::getList($key, function ($i) { $this->assertFalse('should not be called'); }));
         static::assertTrue(Cache::deleteList($key, pool: 'file'));
     }
 }
